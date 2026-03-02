@@ -15,12 +15,11 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section("Appearance") {
-                    Picker("Mode", selection: $settings.appearanceMode) {
-                        Text("Dark").tag(0)
-                        Text("Light").tag(1)
-                        Text("System").tag(2)
+                    Picker("Theme", selection: $settings.appearanceMode) {
+                        ForEach(AppTheme.allCases, id: \.rawValue) { theme in
+                            Text(theme.displayName).tag(theme.rawValue)
+                        }
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 ConfigurableListSection(

@@ -17,17 +17,16 @@ final class SettingsManager {
     private let mealTypesKey = "customMealTypes"
     private let meterTypesKey = "customMeterTypes"
 
-    /// 0 = dark, 1 = light, 2 = system
     var appearanceMode: Int {
         didSet { UserDefaults.standard.set(appearanceMode, forKey: appearanceModeKey) }
     }
 
+    var currentTheme: AppTheme {
+        AppTheme(rawValue: appearanceMode) ?? .dark
+    }
+
     var preferredColorScheme: ColorScheme? {
-        switch appearanceMode {
-        case 0: return .dark
-        case 1: return .light
-        default: return nil
-        }
+        currentTheme.colorScheme
     }
 
     private let defaultEventTypes = [

@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var eventToEdit: GlucoseEvent?
     @State private var showingSettings = false
 
+    private var theme: AppTheme { settings.currentTheme }
+
     var body: some View {
         NavigationStack {
             List {
@@ -29,20 +31,25 @@ struct ContentView: View {
                     )
                 } else {
                     ForEach(groupedByDay, id: \.0) { date, dayEvents in
-                        Section(header: Text(date, style: .date)) {
+                        Section {
                             ForEach(dayEvents) { event in
-                                EventRow(event: event)
+                                EventRow(event: event, theme: theme)
+                                    .listRowBackground(theme.rowBackground)
                                     .contentShape(Rectangle())
                                     .onTapGesture { eventToEdit = event }
                             }
                             .onDelete { offsets in
                                 deleteEvents(dayEvents: dayEvents, offsets: offsets)
                             }
+                        } header: {
+                            Text(date, style: .date)
+                                .foregroundStyle(theme.sectionHeaderColor)
                         }
                     }
                 }
             }
             .navigationTitle("Blood Glucose")
+            .tint(theme.accentColor)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -50,6 +57,7 @@ struct ContentView: View {
                     } label: {
                         Label("Settings", systemImage: "gear")
                     }
+                    .tint(theme.toolbarIconColor)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -57,16 +65,20 @@ struct ContentView: View {
                     } label: {
                         Label("Add Event", systemImage: "plus")
                     }
+                    .tint(theme.toolbarIconColor)
                 }
             }
             .sheet(isPresented: $showingAddEvent) {
                 EventFormView()
+                    .preferredColorScheme(settings.preferredColorScheme)
             }
             .sheet(item: $eventToEdit) { event in
                 EventFormView(event: event)
+                    .preferredColorScheme(settings.preferredColorScheme)
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+                    .preferredColorScheme(settings.preferredColorScheme)
             }
         }
         .preferredColorScheme(settings.preferredColorScheme)
@@ -92,23 +104,25 @@ struct ContentView: View {
 
 struct EventRow: View {
     let event: GlucoseEvent
+    var theme: AppTheme = .dark
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(event.eventType)
                     .font(.headline)
+                    .foregroundStyle(theme.eventTypeColor)
                 Spacer()
                 Text(event.timestamp, format: .dateTime.hour().minute())
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryTextColor)
             }
 
             HStack(spacing: 12) {
                 if let mealType = event.mealType {
                     Label(mealType, systemImage: "fork.knife")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.secondaryTextColor)
                 }
                 if let glucose = event.bloodGlucose {
                     Label("\(glucose) mg/dL", systemImage: "drop.fill")
@@ -118,20 +132,20 @@ struct EventRow: View {
                 if let meter = event.meterType {
                     Label(meter, systemImage: "sensor.tag.radiowaves.forward")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.meterColor)
                 }
             }
 
             if !event.activityDescription.isEmpty {
                 Text(event.activityDescription)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.secondaryTextColor)
             }
 
             if !event.notes.isEmpty {
                 Text(event.notes)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(theme.tertiaryTextColor)
                     .lineLimit(2)
             }
         }

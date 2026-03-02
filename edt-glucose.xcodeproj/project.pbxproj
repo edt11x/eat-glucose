@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		287A0C6C2F55383500F70250 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 287A0C6B2F55383500F70250 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		283BD6412F552CA200AB8F0D /* edt-glucose.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "edt-glucose.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		287A0C6B2F55383500F70250 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +39,7 @@
 			children = (
 				283BD6432F552CA200AB8F0D /* edt-glucose */,
 				283BD6422F552CA200AB8F0D /* Products */,
+				287A0C6B2F55383500F70250 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				287A0C6C2F55383500F70250 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
