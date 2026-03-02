@@ -6,10 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Bindable var settings = SettingsManager.shared
+
+    @Query(sort: \GlucoseEvent.timestamp, order: .reverse) private var events: [GlucoseEvent]
+
+    @State private var showingExporter = false
+    @State private var showingImporter = false
+    @State private var exportDocument: JSONDocument?
+    @State private var showingImportAlert = false
+    @State private var importMessage = ""
+    @State private var showingImportConfirm = false
+    @State private var pendingImportEvents: [GlucoseEvent] = []
 
     var body: some View {
         NavigationStack {
@@ -19,6 +32,21 @@ struct SettingsView: View {
                         ForEach(AppTheme.allCases, id: \.rawValue) { theme in
                             Text(theme.displayName).tag(theme.rawValue)
                         }
+                    }
+                }
+
+                Section("Data") {
+                    Button {
+                        exportData()
+                    } label: {
+                        Label("Export Data (\(events.count) events)", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(events.isEmpty)
+
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("Import Data", systemImage: "square.and.arrow.down")
                     }
                 }
 
@@ -47,6 +75,79 @@ struct SettingsView: View {
                     Button("Done") { dismiss() }
                 }
             }
+            .fileExporter(
+                isPresented: $showingExporter,
+                document: exportDocument,
+                contentType: .json,
+                defaultFilename: "edt-glucose-export.json"
+            ) { result in
+                if case .failure(let error) = result {
+                    importMessage = "Export failed: \(error.localizedDescription)"
+                    showingImportAlert = true
+                }
+            }
+            .fileImporter(
+                isPresented: $showingImporter,
+                allowedContentTypes: [.json]
+            ) { result in
+                handleImport(result)
+            }
+            .alert("Import Data", isPresented: $showingImportConfirm) {
+                Button("Import") {
+                    for event in pendingImportEvents {
+                        modelContext.insert(event)
+                    }
+                    importMessage = "Successfully imported \(pendingImportEvents.count) events."
+                    pendingImportEvents = []
+                    showingImportAlert = true
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingImportEvents = []
+                }
+            } message: {
+                Text("Import \(pendingImportEvents.count) events? This will add them to your existing data.")
+            }
+            .alert("Data Transfer", isPresented: $showingImportAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(importMessage)
+            }
+        }
+    }
+
+    private func exportData() {
+        do {
+            let data = try DataExporter.exportJSON(events: events)
+            exportDocument = JSONDocument(data: data)
+            showingExporter = true
+        } catch {
+            importMessage = "Export failed: \(error.localizedDescription)"
+            showingImportAlert = true
+        }
+    }
+
+    private func handleImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            guard url.startAccessingSecurityScopedResource() else {
+                importMessage = "Could not access the selected file."
+                showingImportAlert = true
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            do {
+                let data = try Data(contentsOf: url)
+                let imported = try DataExporter.importJSON(data: data)
+                pendingImportEvents = imported
+                showingImportConfirm = true
+            } catch {
+                importMessage = "Import failed: \(error.localizedDescription)"
+                showingImportAlert = true
+            }
+        case .failure(let error):
+            importMessage = "Import failed: \(error.localizedDescription)"
+            showingImportAlert = true
         }
     }
 }
