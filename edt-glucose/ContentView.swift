@@ -33,10 +33,14 @@ struct ContentView: View {
                     ForEach(groupedByDay, id: \.0) { date, dayEvents in
                         Section {
                             ForEach(dayEvents) { event in
-                                EventRow(event: event, theme: theme)
-                                    .listRowBackground(theme.rowBackground)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture { eventToEdit = event }
+                                EventRow(
+                                    event: event,
+                                    theme: theme,
+                                    timeTo95: timeTo95(after: event)
+                                )
+                                .listRowBackground(theme.rowBackground)
+                                .contentShape(Rectangle())
+                                .onTapGesture { eventToEdit = event }
                             }
                             .onDelete { offsets in
                                 deleteEvents(dayEvents: dayEvents, offsets: offsets)
@@ -93,6 +97,18 @@ struct ContentView: View {
         return grouped.sorted { $0.key > $1.key }
     }
 
+    // Find how long after an "End of Meal" event until BG reaches 95 or below
+    private func timeTo95(after event: GlucoseEvent) -> TimeInterval? {
+        guard event.eventType == "End of Meal" else { return nil }
+        let subsequent = events
+            .filter { $0.timestamp > event.timestamp && $0.bloodGlucose != nil }
+            .sorted { $0.timestamp < $1.timestamp }
+        guard let target = subsequent.first(where: { ($0.bloodGlucose ?? 999) <= 95 }) else {
+            return nil
+        }
+        return target.timestamp.timeIntervalSince(event.timestamp)
+    }
+
     private func deleteEvents(dayEvents: [GlucoseEvent], offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -105,6 +121,7 @@ struct ContentView: View {
 struct EventRow: View {
     let event: GlucoseEvent
     var theme: AppTheme = .dark
+    var timeTo95: TimeInterval? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -136,6 +153,88 @@ struct EventRow: View {
                 }
             }
 
+            // BG Guess vs Actual
+            if let guess = event.bloodGlucoseGuess {
+                if let actual = event.bloodGlucose {
+                    let diff = actual - guess
+                    let icon = diff > 0 ? "arrow.up.right" : diff < 0 ? "arrow.down.right" : "equal"
+                    Label("Guessed \(guess), off by \(abs(diff))", systemImage: icon)
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                } else {
+                    Label("Guessed \(guess) mg/dL", systemImage: "questionmark.circle")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                }
+            }
+
+            // Medicine
+            if let med = event.medicineName {
+                HStack(spacing: 4) {
+                    Label(med, systemImage: "pills.fill")
+                        .font(.caption)
+                        .foregroundStyle(theme.secondaryTextColor)
+                    if let dose = event.medicineDose, let unit = event.medicineDoseUnit {
+                        Text("(\(dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(dose)) \(unit))")
+                            .font(.caption)
+                            .foregroundStyle(theme.tertiaryTextColor)
+                    }
+                }
+            }
+
+            // Walk distance
+            if let distance = event.walkDistanceMiles {
+                Label(String(format: "%.2f mi", distance), systemImage: "figure.walk")
+                    .font(.caption)
+                    .foregroundStyle(theme.secondaryTextColor)
+            }
+
+            // Meal details
+            if let food = event.foodDescription {
+                Label(food, systemImage: "takeoutbag.and.cup.and.straw.fill")
+                    .font(.caption)
+                    .foregroundStyle(theme.secondaryTextColor)
+            }
+
+            HStack(spacing: 12) {
+                if let cal = event.calorieGuess {
+                    Label("~\(cal) cal", systemImage: "flame.fill")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                }
+                if let carbs = event.carbGuess {
+                    Label("~\(carbs)g carbs", systemImage: "leaf.fill")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                }
+            }
+
+            if let location = event.locationName {
+                Label(location, systemImage: "mappin.and.ellipse")
+                    .font(.caption)
+                    .foregroundStyle(theme.tertiaryTextColor)
+            }
+
+            // A1C
+            if let a1c = event.a1cValue {
+                Label(String(format: "%.1f%%", a1c), systemImage: "percent")
+                    .font(.caption)
+                    .foregroundStyle(a1cColor(for: a1c))
+            }
+
+            // Time to 95
+            if let interval = timeTo95 {
+                let totalMinutes = Int(interval) / 60
+                let hours = totalMinutes / 60
+                let minutes = totalMinutes % 60
+                Label(
+                    hours > 0 ? "\(hours)h \(minutes)m to 95" : "\(minutes)m to 95",
+                    systemImage: "timer"
+                )
+                .font(.caption2)
+                .foregroundStyle(.green)
+            }
+
             if !event.activityDescription.isEmpty {
                 Text(event.activityDescription)
                     .font(.caption)
@@ -160,6 +259,12 @@ struct EventRow: View {
         } else {
             return .green
         }
+    }
+
+    private func a1cColor(for value: Double) -> Color {
+        if value < 5.7 { return .green }
+        else if value < 6.5 { return .yellow }
+        else { return .red }
     }
 }
 

@@ -24,6 +24,26 @@ struct EventFormView: View {
     @State private var activityDescription: String
     @State private var notes: String
 
+    // Medicine
+    @State private var medicineName: String
+    @State private var medicineDoseText: String
+    @State private var medicineDoseUnit: String
+
+    // Blood Glucose Guess
+    @State private var bloodGlucoseGuessText: String
+
+    // Walk
+    @State private var walkDistanceText: String
+
+    // Meal Enhancements
+    @State private var foodDescription: String
+    @State private var calorieGuessText: String
+    @State private var carbGuessText: String
+    @State private var locationName: String
+
+    // A1C
+    @State private var a1cValueText: String
+
     private var isEditing: Bool { existingEvent != nil }
 
     init(event: GlucoseEvent? = nil) {
@@ -36,10 +56,62 @@ struct EventFormView: View {
         _meterType = State(initialValue: event?.meterType ?? "")
         _activityDescription = State(initialValue: event?.activityDescription ?? "")
         _notes = State(initialValue: event?.notes ?? "")
+
+        // Medicine
+        _medicineName = State(initialValue: event?.medicineName ?? "None")
+        _medicineDoseText = State(initialValue: {
+            if let dose = event?.medicineDose {
+                return dose.truncatingRemainder(dividingBy: 1) == 0
+                    ? String(format: "%.0f", dose)
+                    : String(dose)
+            }
+            return ""
+        }())
+        _medicineDoseUnit = State(initialValue: event?.medicineDoseUnit ?? "units")
+
+        // BG Guess
+        _bloodGlucoseGuessText = State(initialValue:
+            event?.bloodGlucoseGuess != nil ? "\(event!.bloodGlucoseGuess!)" : "")
+
+        // Walk
+        _walkDistanceText = State(initialValue:
+            event?.walkDistanceMiles != nil ? String(format: "%.2f", event!.walkDistanceMiles!) : "")
+
+        // Meal enhancements
+        _foodDescription = State(initialValue: event?.foodDescription ?? "")
+        _calorieGuessText = State(initialValue:
+            event?.calorieGuess != nil ? "\(event!.calorieGuess!)" : "")
+        _carbGuessText = State(initialValue:
+            event?.carbGuess != nil ? "\(event!.carbGuess!)" : "")
+        _locationName = State(initialValue: event?.locationName ?? "")
+
+        // A1C
+        _a1cValueText = State(initialValue:
+            event?.a1cValue != nil ? String(format: "%.1f", event!.a1cValue!) : "")
     }
 
     private var showMealType: Bool {
         eventType == "Start of Meal" || eventType == "End of Meal"
+    }
+
+    private var showMealDetails: Bool {
+        eventType == "Start of Meal" || eventType == "End of Meal"
+    }
+
+    private var showBloodGlucose: Bool {
+        eventType == "Blood Glucose Measurement"
+    }
+
+    private var showMedicine: Bool {
+        eventType == "Blood Glucose Measurement"
+    }
+
+    private var showWalkDistance: Bool {
+        eventType == "Walk"
+    }
+
+    private var showA1C: Bool {
+        eventType == "A1C"
     }
 
     var body: some View {
@@ -66,26 +138,120 @@ struct EventFormView: View {
                     DatePicker("Date & Time", selection: $timestamp)
                 }
 
-                Section("Blood Glucose") {
-                    HStack {
-                        TextField("0–600", text: $bloodGlucoseText)
-                            .keyboardType(.numberPad)
-                            .onChange(of: bloodGlucoseText) { _, newValue in
-                                let filtered = newValue.filter(\.isNumber)
-                                if let value = Int(filtered), value > 600 {
-                                    bloodGlucoseText = "600"
-                                } else {
-                                    bloodGlucoseText = filtered
+                if showBloodGlucose {
+                    Section("Blood Glucose") {
+                        HStack {
+                            TextField("Guess", text: $bloodGlucoseGuessText)
+                                .keyboardType(.numberPad)
+                                .onChange(of: bloodGlucoseGuessText) { _, newValue in
+                                    let filtered = newValue.filter(\.isNumber)
+                                    if let value = Int(filtered), value > 600 {
+                                        bloodGlucoseGuessText = "600"
+                                    } else {
+                                        bloodGlucoseGuessText = filtered
+                                    }
                                 }
-                            }
-                        Text("mg/dL")
-                            .foregroundStyle(.secondary)
-                    }
+                            Text("mg/dL guess")
+                                .foregroundStyle(.secondary)
+                        }
 
-                    Picker("Meter", selection: $meterType) {
-                        Text("None").tag("")
-                        ForEach(settings.meterTypes, id: \.self) { type in
-                            Text(type).tag(type)
+                        HStack {
+                            TextField("0–600", text: $bloodGlucoseText)
+                                .keyboardType(.numberPad)
+                                .onChange(of: bloodGlucoseText) { _, newValue in
+                                    let filtered = newValue.filter(\.isNumber)
+                                    if let value = Int(filtered), value > 600 {
+                                        bloodGlucoseText = "600"
+                                    } else {
+                                        bloodGlucoseText = filtered
+                                    }
+                                }
+                            Text("mg/dL")
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Picker("Meter", selection: $meterType) {
+                            Text("None").tag("")
+                            ForEach(settings.meterTypes, id: \.self) { type in
+                                Text(type).tag(type)
+                            }
+                        }
+                    }
+                }
+
+                if showMedicine {
+                    Section("Medicine") {
+                        Picker("Medicine", selection: $medicineName) {
+                            ForEach(settings.medicineTypes) { med in
+                                Text(med.name).tag(med.name)
+                            }
+                        }
+                        .onChange(of: medicineName) { _, newName in
+                            if let config = settings.medicineTypes.first(where: { $0.name == newName }) {
+                                medicineDoseText = config.defaultDose > 0
+                                    ? (config.defaultDose.truncatingRemainder(dividingBy: 1) == 0
+                                        ? String(format: "%.0f", config.defaultDose)
+                                        : String(config.defaultDose))
+                                    : ""
+                                medicineDoseUnit = config.defaultUnit
+                            }
+                        }
+
+                        if medicineName != "None" {
+                            HStack {
+                                TextField("Dose", text: $medicineDoseText)
+                                    .keyboardType(.decimalPad)
+                                Picker("Unit", selection: $medicineDoseUnit) {
+                                    ForEach(settings.unitsOfMeasure, id: \.self) { unit in
+                                        Text(unit).tag(unit)
+                                    }
+                                }
+                                .labelsHidden()
+                            }
+                        }
+                    }
+                }
+
+                if showWalkDistance {
+                    Section("Walk Details") {
+                        HStack {
+                            TextField("0.00", text: $walkDistanceText)
+                                .keyboardType(.decimalPad)
+                            Text("miles")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if showMealDetails {
+                    Section("Meal Details") {
+                        TextField("Food Description", text: $foodDescription)
+
+                        HStack {
+                            TextField("Calorie guess", text: $calorieGuessText)
+                                .keyboardType(.numberPad)
+                            Text("cal")
+                                .foregroundStyle(.secondary)
+                        }
+
+                        HStack {
+                            TextField("Carb guess", text: $carbGuessText)
+                                .keyboardType(.numberPad)
+                            Text("g carbs")
+                                .foregroundStyle(.secondary)
+                        }
+
+                        TextField("Location", text: $locationName)
+                    }
+                }
+
+                if showA1C {
+                    Section("A1C Result") {
+                        HStack {
+                            TextField("0.0", text: $a1cValueText)
+                                .keyboardType(.decimalPad)
+                            Text("%")
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -114,26 +280,70 @@ struct EventFormView: View {
 
     private func saveEvent() {
         let glucose = Int(bloodGlucoseText).map { min(max($0, 0), 600) }
+        let glucoseGuess = Int(bloodGlucoseGuessText).map { min(max($0, 0), 600) }
+        let medicineDose = Double(medicineDoseText)
+        let walkDistance = Double(walkDistanceText)
+        let calorieGuess = Int(calorieGuessText)
+        let carbGuess = Int(carbGuessText)
+        let a1cValue = Double(a1cValueText)
+
+        let effectiveMedicineName = (showMedicine && medicineName != "None") ? medicineName : nil
+        let effectiveMedicineDose = effectiveMedicineName != nil ? medicineDose : nil
+        let effectiveMedicineDoseUnit = effectiveMedicineName != nil ? medicineDoseUnit : nil
+        let effectiveGlucoseGuess = showBloodGlucose ? glucoseGuess : nil
+        let effectiveWalkDistance = showWalkDistance ? walkDistance : nil
+        let effectiveFoodDescription = showMealDetails && !foodDescription.isEmpty ? foodDescription : nil
+        let effectiveCalorieGuess = showMealDetails ? calorieGuess : nil
+        let effectiveCarbGuess = showMealDetails ? carbGuess : nil
+        let effectiveLocationName = showMealDetails && !locationName.isEmpty ? locationName : nil
+        let effectiveA1cValue = showA1C ? a1cValue : nil
 
         if let event = existingEvent {
             event.timestamp = timestamp
             event.eventType = eventType
             event.mealType = showMealType && !mealType.isEmpty ? mealType : nil
-            event.bloodGlucose = glucose
-            event.meterType = !meterType.isEmpty ? meterType : nil
+            event.bloodGlucose = showBloodGlucose ? glucose : nil
+            event.meterType = showBloodGlucose && !meterType.isEmpty ? meterType : nil
             event.activityDescription = activityDescription
             event.notes = notes
+            event.medicineName = effectiveMedicineName
+            event.medicineDose = effectiveMedicineDose
+            event.medicineDoseUnit = effectiveMedicineDoseUnit
+            event.bloodGlucoseGuess = effectiveGlucoseGuess
+            event.walkDistanceMiles = effectiveWalkDistance
+            event.foodDescription = effectiveFoodDescription
+            event.calorieGuess = effectiveCalorieGuess
+            event.carbGuess = effectiveCarbGuess
+            event.locationName = effectiveLocationName
+            event.a1cValue = effectiveA1cValue
         } else {
             let newEvent = GlucoseEvent(
                 timestamp: timestamp,
                 eventType: eventType,
                 mealType: showMealType && !mealType.isEmpty ? mealType : nil,
-                bloodGlucose: glucose,
-                meterType: !meterType.isEmpty ? meterType : nil,
+                bloodGlucose: showBloodGlucose ? glucose : nil,
+                meterType: showBloodGlucose && !meterType.isEmpty ? meterType : nil,
                 activityDescription: activityDescription,
-                notes: notes
+                notes: notes,
+                medicineName: effectiveMedicineName,
+                medicineDose: effectiveMedicineDose,
+                medicineDoseUnit: effectiveMedicineDoseUnit,
+                bloodGlucoseGuess: effectiveGlucoseGuess,
+                walkDistanceMiles: effectiveWalkDistance,
+                foodDescription: effectiveFoodDescription,
+                calorieGuess: effectiveCalorieGuess,
+                carbGuess: effectiveCarbGuess,
+                locationName: effectiveLocationName,
+                a1cValue: effectiveA1cValue
             )
             modelContext.insert(newEvent)
+        }
+
+        // Schedule post-meal timer if enabled and this is an End of Meal event
+        if eventType == "End of Meal" && settings.postMealTimerEnabled {
+            Task {
+                await NotificationManager.shared.scheduleRandomPostMealTimer()
+            }
         }
 
         dismiss()

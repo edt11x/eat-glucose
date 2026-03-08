@@ -23,6 +23,8 @@ struct SettingsView: View {
     @State private var importMessage = ""
     @State private var showingImportConfirm = false
     @State private var pendingImportEvents: [GlucoseEvent] = []
+    @State private var showingAddTimerAlert = false
+    @State private var newTimerValue = ""
 
     var body: some View {
         NavigationStack {
@@ -48,6 +50,39 @@ struct SettingsView: View {
                     } label: {
                         Label("Import Data", systemImage: "square.and.arrow.down")
                     }
+
+                    Button {
+                        loadBundledTestData()
+                    } label: {
+                        Label("Load Bundled Test Data", systemImage: "doc.on.doc")
+                    }
+                }
+
+                Section {
+                    Toggle("Enable Post-Meal Timer", isOn: $settings.postMealTimerEnabled)
+
+                    if settings.postMealTimerEnabled {
+                        ForEach(settings.postMealTimerValues, id: \.self) { value in
+                            Text("\(value) minutes")
+                        }
+                        .onDelete { offsets in
+                            settings.postMealTimerValues.remove(atOffsets: offsets)
+                        }
+
+                        Button {
+                            showingAddTimerAlert = true
+                        } label: {
+                            Label("Add Timer Value", systemImage: "plus.circle")
+                        }
+                    }
+                } header: {
+                    HStack {
+                        Text("Post-Meal Timer")
+                        Spacer()
+                        Button("Reset") { settings.resetTimerValues() }
+                            .font(.caption)
+                            .textCase(.none)
+                    }
                 }
 
                 ConfigurableListSection(
@@ -66,6 +101,18 @@ struct SettingsView: View {
                     title: "Meter Types",
                     items: $settings.meterTypes,
                     onReset: { settings.resetMeterTypes() }
+                )
+
+                MedicineTypeListSection(
+                    items: $settings.medicineTypes,
+                    units: settings.unitsOfMeasure,
+                    onReset: { settings.resetMedicineTypes() }
+                )
+
+                ConfigurableListSection(
+                    title: "Units of Measure",
+                    items: $settings.unitsOfMeasure,
+                    onReset: { settings.resetUnitsOfMeasure() }
                 )
             }
             .navigationTitle("Settings")
@@ -112,6 +159,18 @@ struct SettingsView: View {
             } message: {
                 Text(importMessage)
             }
+            .alert("Add Timer Value", isPresented: $showingAddTimerAlert) {
+                TextField("Minutes", text: $newTimerValue)
+                    .keyboardType(.numberPad)
+                Button("Add") {
+                    if let value = Int(newTimerValue), !settings.postMealTimerValues.contains(value) {
+                        settings.postMealTimerValues.append(value)
+                        settings.postMealTimerValues.sort()
+                    }
+                    newTimerValue = ""
+                }
+                Button("Cancel", role: .cancel) { newTimerValue = "" }
+            }
         }
     }
 
@@ -146,6 +205,23 @@ struct SettingsView: View {
                 showingImportAlert = true
             }
         case .failure(let error):
+            importMessage = "Import failed: \(error.localizedDescription)"
+            showingImportAlert = true
+        }
+    }
+
+    private func loadBundledTestData() {
+        guard let url = Bundle.main.url(forResource: "edt-glucose-export-03-07-2026", withExtension: "json") else {
+            importMessage = "Bundled test file not found."
+            showingImportAlert = true
+            return
+        }
+        do {
+            let data = try Data(contentsOf: url)
+            let imported = try DataExporter.importJSON(data: data)
+            pendingImportEvents = imported
+            showingImportConfirm = true
+        } catch {
             importMessage = "Import failed: \(error.localizedDescription)"
             showingImportAlert = true
         }
@@ -197,6 +273,64 @@ struct ConfigurableListSection: View {
             }
             Button("Cancel", role: .cancel) {
                 newItemName = ""
+            }
+        }
+    }
+}
+
+struct MedicineTypeListSection: View {
+    @Binding var items: [MedicineTypeConfig]
+    let units: [String]
+    let onReset: () -> Void
+
+    @State private var showingAddAlert = false
+    @State private var newName = ""
+    @State private var newDose = ""
+    @State private var newUnit = "units"
+
+    var body: some View {
+        Section {
+            ForEach(items) { item in
+                VStack(alignment: .leading) {
+                    Text(item.name)
+                    if item.name != "None" {
+                        Text("Default: \(item.defaultDose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", item.defaultDose) : String(item.defaultDose)) \(item.defaultUnit)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .onDelete { offsets in items.remove(atOffsets: offsets) }
+            .onMove { from, to in items.move(fromOffsets: from, toOffset: to) }
+
+            Button {
+                showingAddAlert = true
+            } label: {
+                Label("Add Medicine Type", systemImage: "plus.circle")
+            }
+        } header: {
+            HStack {
+                Text("Medicine Types")
+                Spacer()
+                Button("Reset") { onReset() }
+                    .font(.caption)
+                    .textCase(.none)
+            }
+        }
+        .alert("Add Medicine Type", isPresented: $showingAddAlert) {
+            TextField("Name", text: $newName)
+            TextField("Default Dose", text: $newDose)
+            TextField("Unit (e.g., units, mg)", text: $newUnit)
+            Button("Add") {
+                let name = newName.trimmingCharacters(in: .whitespaces)
+                if !name.isEmpty && !items.contains(where: { $0.name == name }) {
+                    let dose = Double(newDose) ?? 0
+                    items.append(MedicineTypeConfig(name: name, defaultDose: dose, defaultUnit: newUnit))
+                }
+                newName = ""; newDose = ""; newUnit = "units"
+            }
+            Button("Cancel", role: .cancel) {
+                newName = ""; newDose = ""; newUnit = "units"
             }
         }
     }
