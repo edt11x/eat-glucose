@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var showingAddEvent = false
     @State private var eventToEdit: GlucoseEvent?
     @State private var showingSettings = false
+    @State private var showingFastingChart = false
+    @State private var showingMeterDeviation = false
 
     private var theme: AppTheme { settings.currentTheme }
 
@@ -36,7 +38,8 @@ struct ContentView: View {
                                 EventRow(
                                     event: event,
                                     theme: theme,
-                                    timeTo95: timeTo95(after: event)
+                                    timeTo95: timeTo95(after: event),
+                                    timeSinceLastMeal: timeSinceLastMeal(for: event)
                                 )
                                 .listRowBackground(theme.rowBackground)
                                 .contentShape(Rectangle())
@@ -64,12 +67,30 @@ struct ContentView: View {
                     .tint(theme.toolbarIconColor)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingAddEvent = true
-                    } label: {
-                        Label("Add Event", systemImage: "plus")
+                    HStack(spacing: 16) {
+                        Menu {
+                            Button {
+                                showingFastingChart = true
+                            } label: {
+                                Label("Fasting BG Chart", systemImage: "chart.xyaxis.line")
+                            }
+                            Button {
+                                showingMeterDeviation = true
+                            } label: {
+                                Label("Meter Comparison", systemImage: "arrow.left.arrow.right")
+                            }
+                        } label: {
+                            Label("Charts", systemImage: "chart.bar")
+                        }
+                        .tint(theme.toolbarIconColor)
+
+                        Button {
+                            showingAddEvent = true
+                        } label: {
+                            Label("Add Event", systemImage: "plus")
+                        }
+                        .tint(theme.toolbarIconColor)
                     }
-                    .tint(theme.toolbarIconColor)
                 }
             }
             .sheet(isPresented: $showingAddEvent) {
@@ -82,6 +103,14 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingFastingChart) {
+                FastingChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingMeterDeviation) {
+                MeterDeviationView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
         }
@@ -109,6 +138,16 @@ struct ContentView: View {
         return target.timestamp.timeIntervalSince(event.timestamp)
     }
 
+    // Find the time since the most recent meal event before this event
+    private func timeSinceLastMeal(for event: GlucoseEvent) -> TimeInterval? {
+        // Look for the most recent "Start of Meal" or "End of Meal" before this event
+        let mealEvents = events
+            .filter { ($0.eventType == "Start of Meal" || $0.eventType == "End of Meal") && $0.timestamp < event.timestamp }
+            .sorted { $0.timestamp > $1.timestamp }
+        guard let lastMeal = mealEvents.first else { return nil }
+        return event.timestamp.timeIntervalSince(lastMeal.timestamp)
+    }
+
     private func deleteEvents(dayEvents: [GlucoseEvent], offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -122,6 +161,7 @@ struct EventRow: View {
     let event: GlucoseEvent
     var theme: AppTheme = .dark
     var timeTo95: TimeInterval? = nil
+    var timeSinceLastMeal: TimeInterval? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -133,6 +173,19 @@ struct EventRow: View {
                 Text(event.timestamp, format: .dateTime.hour().minute())
                     .font(.subheadline)
                     .foregroundStyle(theme.secondaryTextColor)
+            }
+
+            // Time since last meal
+            if let interval = timeSinceLastMeal {
+                let totalMinutes = Int(interval) / 60
+                let hours = totalMinutes / 60
+                let minutes = totalMinutes % 60
+                Label(
+                    hours > 0 ? "\(hours)h \(minutes)m since meal" : "\(minutes)m since meal",
+                    systemImage: "clock"
+                )
+                .font(.caption2)
+                .foregroundStyle(theme.secondaryTextColor)
             }
 
             HStack(spacing: 12) {

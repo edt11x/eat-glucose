@@ -241,7 +241,18 @@ struct EventFormView: View {
                                 .foregroundStyle(.secondary)
                         }
 
-                        TextField("Location", text: $locationName)
+                        HStack {
+                            TextField("Location", text: $locationName)
+                            if !settings.locations.isEmpty {
+                                Picker("", selection: $locationName) {
+                                    Text("Custom").tag("")
+                                    ForEach(settings.locations, id: \.self) { loc in
+                                        Text(loc).tag(loc)
+                                    }
+                                }
+                                .labelsHidden()
+                            }
+                        }
                     }
                 }
 
@@ -297,6 +308,11 @@ struct EventFormView: View {
         let effectiveCarbGuess = showMealDetails ? carbGuess : nil
         let effectiveLocationName = showMealDetails && !locationName.isEmpty ? locationName : nil
         let effectiveA1cValue = showA1C ? a1cValue : nil
+
+        // Auto-save new location
+        if let loc = effectiveLocationName {
+            settings.addLocationIfNew(loc)
+        }
 
         if let event = existingEvent {
             event.timestamp = timestamp

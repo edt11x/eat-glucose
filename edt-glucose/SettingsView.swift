@@ -110,6 +110,12 @@ struct SettingsView: View {
                 )
 
                 ConfigurableListSection(
+                    title: "Locations",
+                    items: $settings.locations,
+                    onReset: { settings.resetLocations() }
+                )
+
+                ConfigurableListSection(
                     title: "Units of Measure",
                     items: $settings.unitsOfMeasure,
                     onReset: { settings.resetUnitsOfMeasure() }
@@ -126,7 +132,7 @@ struct SettingsView: View {
                 isPresented: $showingExporter,
                 document: exportDocument,
                 contentType: .json,
-                defaultFilename: "edt-glucose-export.json"
+                defaultFilename: exportFilename
             ) { result in
                 if case .failure(let error) = result {
                     importMessage = "Export failed: \(error.localizedDescription)"
@@ -174,11 +180,31 @@ struct SettingsView: View {
         }
     }
 
+    private var exportFilename: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM-dd-yyyy-HHmmss"
+        return "edt-glucose-export-\(formatter.string(from: Date())).json"
+    }
+
     private func exportData() {
         do {
             let data = try DataExporter.exportJSON(events: events)
-            exportDocument = JSONDocument(data: data)
-            showingExporter = true
+
+            // Try to save to iCloud Drive edt-glucose folder
+            if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?
+                .appendingPathComponent("Documents")
+                .appendingPathComponent("edt-glucose") {
+                try FileManager.default.createDirectory(at: iCloudURL, withIntermediateDirectories: true)
+                let filename = exportFilename
+                let fileURL = iCloudURL.appendingPathComponent(filename)
+                try data.write(to: fileURL, options: .withoutOverwriting)
+                importMessage = "Exported \(events.count) events to iCloud Drive/edt-glucose/\(filename)"
+                showingImportAlert = true
+            } else {
+                // Fallback to file exporter if iCloud is not available
+                exportDocument = JSONDocument(data: data)
+                showingExporter = true
+            }
         } catch {
             importMessage = "Export failed: \(error.localizedDescription)"
             showingImportAlert = true

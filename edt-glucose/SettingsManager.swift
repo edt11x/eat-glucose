@@ -25,6 +25,7 @@ final class SettingsManager {
     private let meterTypesKey = "customMeterTypes"
     private let medicineTypesKey = "customMedicineTypes"
     private let unitsOfMeasureKey = "customUnitsOfMeasure"
+    private let locationsKey = "customLocations"
     private let timerValuesKey = "postMealTimerValues"
     private let timerEnabledKey = "postMealTimerEnabled"
 
@@ -67,12 +68,15 @@ final class SettingsManager {
         MedicineTypeConfig(name: "None", defaultDose: 0, defaultUnit: "N/A"),
         MedicineTypeConfig(name: "Lispro - regular insulin", defaultDose: 3, defaultUnit: "units"),
         MedicineTypeConfig(name: "Lantis - long acting", defaultDose: 10, defaultUnit: "units"),
+        MedicineTypeConfig(name: "Toujeo - long acting", defaultDose: 10, defaultUnit: "units"),
         MedicineTypeConfig(name: "Berberine", defaultDose: 600, defaultUnit: "mg"),
     ]
 
     private let defaultUnitsOfMeasure = [
         "units", "mg", "mg/dL", "%", "N/A"
     ]
+
+    private let defaultLocations: [String] = []
 
     private let defaultTimerValues = [0, 30, 45, 60, 90, 120, 240]
 
@@ -98,6 +102,10 @@ final class SettingsManager {
 
     var unitsOfMeasure: [String] {
         didSet { UserDefaults.standard.set(unitsOfMeasure, forKey: unitsOfMeasureKey) }
+    }
+
+    var locations: [String] {
+        didSet { UserDefaults.standard.set(locations, forKey: locationsKey) }
     }
 
     var postMealTimerValues: [Int] {
@@ -146,6 +154,12 @@ final class SettingsManager {
             self.unitsOfMeasure = defaultUnitsOfMeasure
         }
 
+        if let saved = UserDefaults.standard.stringArray(forKey: locationsKey) {
+            self.locations = saved
+        } else {
+            self.locations = defaultLocations
+        }
+
         if let saved = UserDefaults.standard.array(forKey: timerValuesKey) as? [Int] {
             self.postMealTimerValues = saved
         } else {
@@ -160,5 +174,13 @@ final class SettingsManager {
     func resetMeterTypes() { meterTypes = defaultMeterTypes }
     func resetMedicineTypes() { medicineTypes = defaultMedicineTypes }
     func resetUnitsOfMeasure() { unitsOfMeasure = defaultUnitsOfMeasure }
+    func resetLocations() { locations = defaultLocations }
     func resetTimerValues() { postMealTimerValues = defaultTimerValues }
+
+    func addLocationIfNew(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty && !locations.contains(trimmed) {
+            locations.append(trimmed)
+        }
+    }
 }
