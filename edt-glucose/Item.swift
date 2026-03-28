@@ -38,6 +38,14 @@ final class GlucoseEvent {
     // A1C
     var a1cValue: Double?
 
+    // Meal nutrition estimates
+    var proteinGuess: Int?
+    var glycemicIndexGuess: Int?
+
+    // Test strip tracking
+    var testStripLot: String?
+    var testStripExpiration: Date?
+
     init(
         timestamp: Date = Date(),
         eventType: String = "Blood Glucose Measurement",
@@ -55,7 +63,11 @@ final class GlucoseEvent {
         calorieGuess: Int? = nil,
         carbGuess: Int? = nil,
         locationName: String? = nil,
-        a1cValue: Double? = nil
+        a1cValue: Double? = nil,
+        proteinGuess: Int? = nil,
+        glycemicIndexGuess: Int? = nil,
+        testStripLot: String? = nil,
+        testStripExpiration: Date? = nil
     ) {
         self.timestamp = timestamp
         self.eventType = eventType
@@ -74,5 +86,9 @@ final class GlucoseEvent {
         self.carbGuess = carbGuess
         self.locationName = locationName
         self.a1cValue = a1cValue
+        self.proteinGuess = proteinGuess
+        self.glycemicIndexGuess = glycemicIndexGuess
+        self.testStripLot = testStripLot
+        self.testStripExpiration = testStripExpiration
     }
 }

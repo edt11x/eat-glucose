@@ -44,6 +44,15 @@ struct EventFormView: View {
     // A1C
     @State private var a1cValueText: String
 
+    // Meal nutrition
+    @State private var proteinGuessText: String
+    @State private var glycemicIndexGuessText: String
+
+    // Test strip
+    @State private var testStripLot: String
+    @State private var testStripExpiration: Date?
+    @State private var hasTestStripExpiration: Bool
+
     private var isEditing: Bool { existingEvent != nil }
 
     init(event: GlucoseEvent? = nil) {
@@ -88,6 +97,25 @@ struct EventFormView: View {
         // A1C
         _a1cValueText = State(initialValue:
             event?.a1cValue != nil ? String(format: "%.1f", event!.a1cValue!) : "")
+
+        // Meal nutrition
+        _proteinGuessText = State(initialValue:
+            event?.proteinGuess != nil ? "\(event!.proteinGuess!)" : "")
+        _glycemicIndexGuessText = State(initialValue:
+            event?.glycemicIndexGuess != nil ? "\(event!.glycemicIndexGuess!)" : "")
+
+        // Test strip - auto-fill from settings for new events
+        if let event = event {
+            _testStripLot = State(initialValue: event.testStripLot ?? "")
+            _testStripExpiration = State(initialValue: event.testStripExpiration)
+            _hasTestStripExpiration = State(initialValue: event.testStripExpiration != nil)
+        } else {
+            let meter = event?.meterType ?? ""
+            let defaults = settings.testStripDefaults[meter]
+            _testStripLot = State(initialValue: defaults?.lot ?? "")
+            _testStripExpiration = State(initialValue: defaults?.expiration)
+            _hasTestStripExpiration = State(initialValue: defaults?.expiration != nil)
+        }
     }
 
     private var showMealType: Bool {
@@ -176,6 +204,27 @@ struct EventFormView: View {
                                 Text(type).tag(type)
                             }
                         }
+                        .onChange(of: meterType) { _, newMeter in
+                            if let defaults = settings.testStripDefaults[newMeter] {
+                                if testStripLot.isEmpty {
+                                    testStripLot = defaults.lot
+                                }
+                                if testStripExpiration == nil {
+                                    testStripExpiration = defaults.expiration
+                                    hasTestStripExpiration = defaults.expiration != nil
+                                }
+                            }
+                        }
+
+                        TextField("Strip Lot #", text: $testStripLot)
+
+                        Toggle("Strip Expiration", isOn: $hasTestStripExpiration)
+                        if hasTestStripExpiration {
+                            DatePicker("Expiration", selection: Binding(
+                                get: { testStripExpiration ?? Date() },
+                                set: { testStripExpiration = $0 }
+                            ), displayedComponents: .date)
+                        }
                     }
                 }
 
@@ -242,16 +291,25 @@ struct EventFormView: View {
                         }
 
                         HStack {
-                            TextField("Location", text: $locationName)
-                            if !settings.locations.isEmpty {
-                                Picker("", selection: $locationName) {
-                                    Text("Custom").tag("")
-                                    ForEach(settings.locations, id: \.self) { loc in
-                                        Text(loc).tag(loc)
+                            TextField("Protein guess", text: $proteinGuessText)
+                                .keyboardType(.numberPad)
+                            Text("g protein")
+                                .foregroundStyle(.secondary)
+                        }
+
+                        HStack {
+                            TextField("Glycemic index", text: $glycemicIndexGuessText)
+                                .keyboardType(.numberPad)
+                                .onChange(of: glycemicIndexGuessText) { _, newValue in
+                                    let filtered = newValue.filter(\.isNumber)
+                                    if let value = Int(filtered), value > 100 {
+                                        glycemicIndexGuessText = "100"
+                                    } else {
+                                        glycemicIndexGuessText = filtered
                                     }
                                 }
-                                .labelsHidden()
-                            }
+                            Text("GI (0–100)")
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -265,6 +323,39 @@ struct EventFormView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                }
+
+                Section("Location") {
+                    HStack {
+                        TextField("Location", text: $locationName)
+                        if !settings.locations.isEmpty {
+                            Picker("", selection: $locationName) {
+                                Text("Custom").tag("")
+                                ForEach(settings.locations, id: \.self) { loc in
+                                    Text(loc).tag(loc)
+                                }
+                            }
+                            .labelsHidden()
+                        }
+                    }
+                    Button {
+                        Task {
+                            if let name = await LocationManager.shared.requestLocationName() {
+                                locationName = name
+                            }
+                        }
+                    } label: {
+                        if LocationManager.shared.isLocating {
+                            HStack {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text("Getting location...")
+                            }
+                        } else {
+                            Label("Use Current Location", systemImage: "location.fill")
+                        }
+                    }
+                    .disabled(LocationManager.shared.isLocating)
                 }
 
                 Section("Activity") {
@@ -297,6 +388,8 @@ struct EventFormView: View {
         let calorieGuess = Int(calorieGuessText)
         let carbGuess = Int(carbGuessText)
         let a1cValue = Double(a1cValueText)
+        let proteinGuess = Int(proteinGuessText)
+        let glycemicIndexGuess = Int(glycemicIndexGuessText).map { min(max($0, 0), 100) }
 
         let effectiveMedicineName = (showMedicine && medicineName != "None") ? medicineName : nil
         let effectiveMedicineDose = effectiveMedicineName != nil ? medicineDose : nil
@@ -306,12 +399,21 @@ struct EventFormView: View {
         let effectiveFoodDescription = showMealDetails && !foodDescription.isEmpty ? foodDescription : nil
         let effectiveCalorieGuess = showMealDetails ? calorieGuess : nil
         let effectiveCarbGuess = showMealDetails ? carbGuess : nil
-        let effectiveLocationName = showMealDetails && !locationName.isEmpty ? locationName : nil
+        let effectiveProteinGuess = showMealDetails ? proteinGuess : nil
+        let effectiveGlycemicIndexGuess = showMealDetails ? glycemicIndexGuess : nil
+        let effectiveLocationName = !locationName.isEmpty ? locationName : nil
         let effectiveA1cValue = showA1C ? a1cValue : nil
+        let effectiveTestStripLot = showBloodGlucose && !testStripLot.isEmpty ? testStripLot : nil
+        let effectiveTestStripExpiration = showBloodGlucose && hasTestStripExpiration ? testStripExpiration : nil
 
         // Auto-save new location
         if let loc = effectiveLocationName {
             settings.addLocationIfNew(loc)
+        }
+
+        // Auto-save test strip defaults for this meter type
+        if let lot = effectiveTestStripLot, !meterType.isEmpty {
+            settings.updateTestStripDefault(for: meterType, lot: lot, expiration: effectiveTestStripExpiration)
         }
 
         if let event = existingEvent {
@@ -332,6 +434,10 @@ struct EventFormView: View {
             event.carbGuess = effectiveCarbGuess
             event.locationName = effectiveLocationName
             event.a1cValue = effectiveA1cValue
+            event.proteinGuess = effectiveProteinGuess
+            event.glycemicIndexGuess = effectiveGlycemicIndexGuess
+            event.testStripLot = effectiveTestStripLot
+            event.testStripExpiration = effectiveTestStripExpiration
         } else {
             let newEvent = GlucoseEvent(
                 timestamp: timestamp,
@@ -350,7 +456,11 @@ struct EventFormView: View {
                 calorieGuess: effectiveCalorieGuess,
                 carbGuess: effectiveCarbGuess,
                 locationName: effectiveLocationName,
-                a1cValue: effectiveA1cValue
+                a1cValue: effectiveA1cValue,
+                proteinGuess: effectiveProteinGuess,
+                glycemicIndexGuess: effectiveGlycemicIndexGuess,
+                testStripLot: effectiveTestStripLot,
+                testStripExpiration: effectiveTestStripExpiration
             )
             modelContext.insert(newEvent)
         }

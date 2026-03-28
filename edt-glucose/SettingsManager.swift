@@ -8,6 +8,11 @@
 import Foundation
 import SwiftUI
 
+struct TestStripDefault: Codable, Equatable {
+    var lot: String
+    var expiration: Date?
+}
+
 struct MedicineTypeConfig: Codable, Equatable, Identifiable {
     var id: String { name }
     var name: String
@@ -28,6 +33,7 @@ final class SettingsManager {
     private let locationsKey = "customLocations"
     private let timerValuesKey = "postMealTimerValues"
     private let timerEnabledKey = "postMealTimerEnabled"
+    private let testStripDefaultsKey = "testStripDefaults"
 
     var appearanceMode: Int {
         didSet { UserDefaults.standard.set(appearanceMode, forKey: appearanceModeKey) }
@@ -116,6 +122,14 @@ final class SettingsManager {
         didSet { UserDefaults.standard.set(postMealTimerEnabled, forKey: timerEnabledKey) }
     }
 
+    var testStripDefaults: [String: TestStripDefault] {
+        didSet {
+            if let data = try? JSONEncoder().encode(testStripDefaults) {
+                UserDefaults.standard.set(data, forKey: testStripDefaultsKey)
+            }
+        }
+    }
+
     private init() {
         if UserDefaults.standard.object(forKey: appearanceModeKey) != nil {
             self.appearanceMode = UserDefaults.standard.integer(forKey: appearanceModeKey)
@@ -167,6 +181,13 @@ final class SettingsManager {
         }
 
         self.postMealTimerEnabled = UserDefaults.standard.bool(forKey: timerEnabledKey)
+
+        if let data = UserDefaults.standard.data(forKey: testStripDefaultsKey),
+           let saved = try? JSONDecoder().decode([String: TestStripDefault].self, from: data) {
+            self.testStripDefaults = saved
+        } else {
+            self.testStripDefaults = [:]
+        }
     }
 
     func resetEventTypes() { eventTypes = defaultEventTypes }
@@ -176,6 +197,10 @@ final class SettingsManager {
     func resetUnitsOfMeasure() { unitsOfMeasure = defaultUnitsOfMeasure }
     func resetLocations() { locations = defaultLocations }
     func resetTimerValues() { postMealTimerValues = defaultTimerValues }
+
+    func updateTestStripDefault(for meterType: String, lot: String, expiration: Date?) {
+        testStripDefaults[meterType] = TestStripDefault(lot: lot, expiration: expiration)
+    }
 
     func addLocationIfNew(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)

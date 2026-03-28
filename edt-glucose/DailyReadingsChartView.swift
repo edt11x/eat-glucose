@@ -1,97 +1,88 @@
 //
-//  FastingChartView.swift
+//  DailyReadingsChartView.swift
 //  edt-glucose
 //
-//  Created by Edward Thompson on 3/21/26.
+//  Created by Edward Thompson on 3/28/26.
 //
 
 import SwiftUI
 import SwiftData
 import Charts
 
-struct FastingDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let glucose: Int
-}
-
-struct FastingChartView: View {
+struct DailyReadingsChartView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
-    private var fastingReadings: [FastingDataPoint] {
-        let calendar = Calendar.current
+    @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
 
-        // Group BG measurement events by calendar day
+    private var dailyReadings: [FastingDataPoint] {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: selectedDate)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= dayStart
+                && $0.timestamp < dayEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { FastingDataPoint(date: $0.timestamp, glucose: $0.bloodGlucose!) }
+    }
+
+    private var averageGlucose: Int {
+        let values = dailyReadings.map(\.glucose)
+        guard !values.isEmpty else { return 0 }
+        return values.reduce(0, +) / values.count
+    }
+
+    private var daysWithData: [Date] {
+        let calendar = Calendar.current
         let bgEvents = events.filter {
             $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
         }
-
-        let grouped = Dictionary(grouping: bgEvents) { event in
-            calendar.startOfDay(for: event.timestamp)
-        }
-
-        var results: [FastingDataPoint] = []
-
-        for (dayStart, dayEvents) in grouped {
-            // 5:00 AM on this day
-            let fiveAM = calendar.date(bySettingHour: 5, minute: 0, second: 0, of: dayStart)!
-
-            // Find the first BG reading at or after 5:00 AM
-            let afterFiveAM = dayEvents
-                .filter { $0.timestamp >= fiveAM }
-                .sorted { $0.timestamp < $1.timestamp }
-
-            if let first = afterFiveAM.first, let glucose = first.bloodGlucose {
-                results.append(FastingDataPoint(date: dayStart, glucose: glucose))
-            }
-        }
-
-        return results.sorted { $0.date < $1.date }
+        let days = Set(bgEvents.map { calendar.startOfDay(for: $0.timestamp) })
+        return days.sorted(by: >)
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if fastingReadings.isEmpty {
+                if dailyReadings.isEmpty {
                     ContentUnavailableView(
-                        "No Fasting Data",
-                        systemImage: "chart.xyaxis.line",
-                        description: Text("Fasting readings are the first blood glucose measurement after 5:00 AM each day.")
+                        "No Readings",
+                        systemImage: "chart.line.uptrend.xyaxis",
+                        description: Text("No blood glucose readings for this day.")
                     )
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("First BG reading after 5:00 AM each day")
-                                .font(.caption)
-                                .foregroundStyle(theme.secondaryTextColor)
-                                .padding(.horizontal)
-
                             Chart {
-                                ForEach(fastingReadings) { point in
+                                ForEach(dailyReadings) { point in
                                     LineMark(
-                                        x: .value("Date", point.date, unit: .day),
+                                        x: .value("Time", point.date),
                                         y: .value("mg/dL", point.glucose)
                                     )
                                     .foregroundStyle(Color.blue)
                                     .interpolationMethod(.catmullRom)
 
                                     PointMark(
-                                        x: .value("Date", point.date, unit: .day),
+                                        x: .value("Time", point.date),
                                         y: .value("mg/dL", point.glucose)
                                     )
                                     .foregroundStyle(glucoseColor(for: point.glucose))
-                                    .symbolSize(30)
+                                    .symbolSize(40)
                                 }
 
-                                RuleMark(y: .value("Average", averageFastingGlucose))
+                                RuleMark(y: .value("Average", averageGlucose))
                                     .foregroundStyle(.orange.opacity(0.7))
                                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                                     .annotation(position: .top, alignment: .leading) {
-                                        Text("Avg: \(averageFastingGlucose)")
+                                        Text("Avg: \(averageGlucose)")
                                             .font(.caption2)
                                             .foregroundStyle(.orange)
                                     }
@@ -103,8 +94,7 @@ struct FastingChartView: View {
 
                             // Summary stats
                             VStack(alignment: .leading, spacing: 8) {
-                                let values = fastingReadings.map(\.glucose)
-                                let avg = values.reduce(0, +) / max(values.count, 1)
+                                let values = dailyReadings.map(\.glucose)
                                 let minVal = values.min() ?? 0
                                 let maxVal = values.max() ?? 0
 
@@ -113,24 +103,24 @@ struct FastingChartView: View {
                                     .foregroundStyle(theme.eventTypeColor)
 
                                 HStack(spacing: 24) {
-                                    StatBox(label: "Average", value: "\(avg)", unit: "mg/dL", theme: theme)
+                                    StatBox(label: "Average", value: "\(averageGlucose)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Min", value: "\(minVal)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Max", value: "\(maxVal)", unit: "mg/dL", theme: theme)
-                                    StatBox(label: "Days", value: "\(values.count)", unit: "", theme: theme)
+                                    StatBox(label: "Readings", value: "\(values.count)", unit: "", theme: theme)
                                 }
                             }
                             .padding()
 
-                            // Table of readings
+                            // Readings table
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Readings")
                                     .font(.headline)
                                     .foregroundStyle(theme.eventTypeColor)
                                     .padding(.horizontal)
 
-                                ForEach(fastingReadings.reversed()) { point in
+                                ForEach(dailyReadings) { point in
                                     HStack {
-                                        Text(point.date, format: .dateTime.month().day().year())
+                                        Text(point.date, format: .dateTime.hour().minute())
                                             .font(.caption)
                                             .foregroundStyle(theme.secondaryTextColor)
                                         Spacer()
@@ -148,24 +138,27 @@ struct FastingChartView: View {
                     }
                 }
             }
-            .navigationTitle("Fasting BG")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Picker("Day", selection: $selectedDate) {
+                        ForEach(daysWithData, id: \.self) { day in
+                            Text(day, format: .dateTime.month().day().year())
+                                .tag(day)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
             }
+            .navigationTitle("Daily Readings")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 
-    private var averageFastingGlucose: Int {
-        let values = fastingReadings.map(\.glucose)
-        guard !values.isEmpty else { return 0 }
-        return values.reduce(0, +) / values.count
-    }
-
     private var yDomain: ClosedRange<Int> {
-        let values = fastingReadings.map(\.glucose)
+        let values = dailyReadings.map(\.glucose)
         let minVal = max((values.min() ?? 60) - 10, 0)
         let maxVal = (values.max() ?? 200) + 10
         return minVal...maxVal
@@ -182,31 +175,7 @@ struct FastingChartView: View {
     }
 }
 
-struct StatBox: View {
-    let label: String
-    let value: String
-    let unit: String
-    var theme: AppTheme = .dark
-
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(theme.eventTypeColor)
-            if !unit.isEmpty {
-                Text(unit)
-                    .font(.caption2)
-                    .foregroundStyle(theme.tertiaryTextColor)
-            }
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(theme.secondaryTextColor)
-        }
-    }
-}
-
 #Preview {
-    FastingChartView()
+    DailyReadingsChartView()
         .modelContainer(for: GlucoseEvent.self, inMemory: true)
 }

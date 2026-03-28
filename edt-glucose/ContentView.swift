@@ -19,11 +19,16 @@ struct ContentView: View {
     @State private var showingSettings = false
     @State private var showingFastingChart = false
     @State private var showingMeterDeviation = false
+    @State private var showingDailyChart = false
+    @State private var showingPeakChart = false
+    @State private var showingWeeklyCurve = false
+    @State private var showingA1CEstimate = false
 
     private var theme: AppTheme { settings.currentTheme }
 
     var body: some View {
         NavigationStack {
+            TimelineView(.periodic(from: .now, by: 60)) { context in
             List {
                 if events.isEmpty {
                     ContentUnavailableView(
@@ -32,6 +37,39 @@ struct ContentView: View {
                         description: Text("Tap + to log your first event.")
                     )
                 } else {
+                    // Time summary at top
+                    Section {
+                        if let bgInterval = timeSinceLastBG(now: context.date) {
+                            let totalMinutes = Int(bgInterval) / 60
+                            let hours = totalMinutes / 60
+                            let minutes = totalMinutes % 60
+                            Label(
+                                hours > 0 ? "\(hours)h \(minutes)m since last BG" : "\(minutes)m since last BG",
+                                systemImage: "drop.fill"
+                            )
+                            .font(.subheadline)
+                            .foregroundStyle(theme.secondaryTextColor)
+                        }
+                        if let mealInterval = timeSinceLastMealEnd(now: context.date) {
+                            let totalMinutes = Int(mealInterval) / 60
+                            let hours = totalMinutes / 60
+                            let minutes = totalMinutes % 60
+                            Label(
+                                hours > 0 ? "\(hours)h \(minutes)m since last meal" : "\(minutes)m since last meal",
+                                systemImage: "fork.knife"
+                            )
+                            .font(.subheadline)
+                            .foregroundStyle(theme.secondaryTextColor)
+                        }
+                        if let eA1C = estimatedA1C {
+                            Label(String(format: "eA1C: %.1f%%", eA1C), systemImage: "percent")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(a1cColor(for: eA1C))
+                        }
+                    }
+                    .listRowBackground(theme.rowBackground)
+
                     ForEach(groupedByDay, id: \.0) { date, dayEvents in
                         Section {
                             ForEach(dayEvents) { event in
@@ -39,7 +77,8 @@ struct ContentView: View {
                                     event: event,
                                     theme: theme,
                                     timeTo95: timeTo95(after: event),
-                                    timeSinceLastMeal: timeSinceLastMeal(for: event)
+                                    timeSinceLastMeal: timeSinceLastMeal(for: event),
+                                    meterDeviations: meterDeviations
                                 )
                                 .listRowBackground(theme.rowBackground)
                                 .contentShape(Rectangle())
@@ -55,6 +94,7 @@ struct ContentView: View {
                     }
                 }
             }
+            } // TimelineView
             .navigationTitle("Blood Glucose")
             .tint(theme.accentColor)
             .toolbar {
@@ -70,10 +110,32 @@ struct ContentView: View {
                     HStack(spacing: 16) {
                         Menu {
                             Button {
+                                showingDailyChart = true
+                            } label: {
+                                Label("Daily Readings", systemImage: "chart.line.uptrend.xyaxis")
+                            }
+                            Button {
                                 showingFastingChart = true
                             } label: {
                                 Label("Fasting BG Chart", systemImage: "chart.xyaxis.line")
                             }
+                            Button {
+                                showingPeakChart = true
+                            } label: {
+                                Label("Peak Readings", systemImage: "chart.line.flattrend.xyaxis")
+                            }
+                            Divider()
+                            Button {
+                                showingWeeklyCurve = true
+                            } label: {
+                                Label("Weekly Curve", systemImage: "waveform.path.ecg")
+                            }
+                            Button {
+                                showingA1CEstimate = true
+                            } label: {
+                                Label("A1C Estimate", systemImage: "percent")
+                            }
+                            Divider()
                             Button {
                                 showingMeterDeviation = true
                             } label: {
@@ -109,8 +171,24 @@ struct ContentView: View {
                 FastingChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
+            .sheet(isPresented: $showingDailyChart) {
+                DailyReadingsChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingPeakChart) {
+                PeakReadingsChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
             .sheet(isPresented: $showingMeterDeviation) {
                 MeterDeviationView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingWeeklyCurve) {
+                WeeklyCurveChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingA1CEstimate) {
+                A1CEstimateChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
         }
@@ -148,6 +226,42 @@ struct ContentView: View {
         return event.timestamp.timeIntervalSince(lastMeal.timestamp)
     }
 
+    // Meter deviation data for multi-meter estimates
+    private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
+        MultiMeterEstimator.computeDeviations(from: events)
+    }
+
+    // Time since the most recent blood glucose measurement
+    private func timeSinceLastBG(now: Date) -> TimeInterval? {
+        guard let last = events.first(where: {
+            $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
+        }) else { return nil }
+        return now.timeIntervalSince(last.timestamp)
+    }
+
+    // Time since the most recent "End of Meal" event
+    private func timeSinceLastMealEnd(now: Date) -> TimeInterval? {
+        guard let last = events.first(where: { $0.eventType == "End of Meal" }) else { return nil }
+        return now.timeIntervalSince(last.timestamp)
+    }
+
+    // Estimated A1C from all blood glucose readings using ADAG formula
+    private var estimatedA1C: Double? {
+        let bgValues = events.compactMap { event -> Int? in
+            guard event.eventType == "Blood Glucose Measurement" else { return nil }
+            return event.bloodGlucose
+        }
+        guard !bgValues.isEmpty else { return nil }
+        let avgBG = Double(bgValues.reduce(0, +)) / Double(bgValues.count)
+        return (avgBG + 46.7) / 28.7
+    }
+
+    private func a1cColor(for value: Double) -> Color {
+        if value < 5.7 { return .green }
+        else if value < 6.5 { return .yellow }
+        else { return .red }
+    }
+
     private func deleteEvents(dayEvents: [GlucoseEvent], offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -162,6 +276,7 @@ struct EventRow: View {
     var theme: AppTheme = .dark
     var timeTo95: TimeInterval? = nil
     var timeSinceLastMeal: TimeInterval? = nil
+    var meterDeviations: [MultiMeterEstimator.MeterDeviation] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -204,6 +319,16 @@ struct EventRow: View {
                         .font(.caption)
                         .foregroundStyle(theme.meterColor)
                 }
+            }
+
+            // Multi-meter average estimate
+            if let bg = event.bloodGlucose, let meter = event.meterType,
+               let estimate = MultiMeterEstimator.estimate(
+                   reading: bg, meterType: meter, deviations: meterDeviations
+               ) {
+                Label(String(format: "~%.0f avg (all meters)", estimate), systemImage: "function")
+                    .font(.caption2)
+                    .foregroundStyle(theme.tertiaryTextColor)
             }
 
             // BG Guess vs Actual
@@ -259,6 +384,34 @@ struct EventRow: View {
                     Label("~\(carbs)g carbs", systemImage: "leaf.fill")
                         .font(.caption2)
                         .foregroundStyle(theme.tertiaryTextColor)
+                }
+                if let protein = event.proteinGuess {
+                    Label("~\(protein)g protein", systemImage: "fish.fill")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                }
+                if let gi = event.glycemicIndexGuess {
+                    Label("GI ~\(gi)", systemImage: "gauge.with.needle")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                }
+            }
+
+            // Test strip info
+            if let lot = event.testStripLot {
+                HStack(spacing: 12) {
+                    Label("Lot: \(lot)", systemImage: "tag.fill")
+                        .font(.caption2)
+                        .foregroundStyle(theme.tertiaryTextColor)
+                    if let exp = event.testStripExpiration {
+                        Label {
+                            Text(exp, format: .dateTime.month().year())
+                        } icon: {
+                            Image(systemName: "calendar")
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(exp < Date() ? .red : theme.tertiaryTextColor)
+                    }
                 }
             }
 

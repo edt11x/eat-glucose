@@ -30,6 +30,10 @@ struct GlucoseEventData: Codable {
     var carbGuess: Int?
     var locationName: String?
     var a1cValue: Double?
+    var proteinGuess: Int?
+    var glycemicIndexGuess: Int?
+    var testStripLot: String?
+    var testStripExpiration: Date?
 
     // Backwards-compatible decoder: old JSON missing new keys will decode cleanly
     init(from decoder: Decoder) throws {
@@ -52,6 +56,10 @@ struct GlucoseEventData: Codable {
         carbGuess = try container.decodeIfPresent(Int.self, forKey: .carbGuess)
         locationName = try container.decodeIfPresent(String.self, forKey: .locationName)
         a1cValue = try container.decodeIfPresent(Double.self, forKey: .a1cValue)
+        proteinGuess = try container.decodeIfPresent(Int.self, forKey: .proteinGuess)
+        glycemicIndexGuess = try container.decodeIfPresent(Int.self, forKey: .glycemicIndexGuess)
+        testStripLot = try container.decodeIfPresent(String.self, forKey: .testStripLot)
+        testStripExpiration = try container.decodeIfPresent(Date.self, forKey: .testStripExpiration)
     }
 
     init(from event: GlucoseEvent) {
@@ -72,6 +80,10 @@ struct GlucoseEventData: Codable {
         self.carbGuess = event.carbGuess
         self.locationName = event.locationName
         self.a1cValue = event.a1cValue
+        self.proteinGuess = event.proteinGuess
+        self.glycemicIndexGuess = event.glycemicIndexGuess
+        self.testStripLot = event.testStripLot
+        self.testStripExpiration = event.testStripExpiration
     }
 
     func toGlucoseEvent() -> GlucoseEvent {
@@ -92,7 +104,11 @@ struct GlucoseEventData: Codable {
             calorieGuess: calorieGuess,
             carbGuess: carbGuess,
             locationName: locationName,
-            a1cValue: a1cValue
+            a1cValue: a1cValue,
+            proteinGuess: proteinGuess,
+            glycemicIndexGuess: glycemicIndexGuess,
+            testStripLot: testStripLot,
+            testStripExpiration: testStripExpiration
         )
     }
 }

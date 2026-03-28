@@ -1,82 +1,68 @@
 //
-//  FastingChartView.swift
+//  PeakReadingsChartView.swift
 //  edt-glucose
 //
-//  Created by Edward Thompson on 3/21/26.
+//  Created by Edward Thompson on 3/28/26.
 //
 
 import SwiftUI
 import SwiftData
 import Charts
 
-struct FastingDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let glucose: Int
-}
-
-struct FastingChartView: View {
+struct PeakReadingsChartView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
-    private var fastingReadings: [FastingDataPoint] {
+    private var peakReadings: [FastingDataPoint] {
         let calendar = Calendar.current
-
-        // Group BG measurement events by calendar day
         let bgEvents = events.filter {
             $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
         }
-
         let grouped = Dictionary(grouping: bgEvents) { event in
             calendar.startOfDay(for: event.timestamp)
         }
-
         var results: [FastingDataPoint] = []
-
         for (dayStart, dayEvents) in grouped {
-            // 5:00 AM on this day
-            let fiveAM = calendar.date(bySettingHour: 5, minute: 0, second: 0, of: dayStart)!
-
-            // Find the first BG reading at or after 5:00 AM
-            let afterFiveAM = dayEvents
-                .filter { $0.timestamp >= fiveAM }
-                .sorted { $0.timestamp < $1.timestamp }
-
-            if let first = afterFiveAM.first, let glucose = first.bloodGlucose {
-                results.append(FastingDataPoint(date: dayStart, glucose: glucose))
+            if let peak = dayEvents.compactMap(\.bloodGlucose).max() {
+                results.append(FastingDataPoint(date: dayStart, glucose: peak))
             }
         }
-
         return results.sorted { $0.date < $1.date }
+    }
+
+    private var averagePeak: Int {
+        let values = peakReadings.map(\.glucose)
+        guard !values.isEmpty else { return 0 }
+        return values.reduce(0, +) / values.count
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if fastingReadings.isEmpty {
+                if peakReadings.isEmpty {
                     ContentUnavailableView(
-                        "No Fasting Data",
-                        systemImage: "chart.xyaxis.line",
-                        description: Text("Fasting readings are the first blood glucose measurement after 5:00 AM each day.")
+                        "No Data",
+                        systemImage: "chart.line.flattrend.xyaxis",
+                        description: Text("No blood glucose readings available.")
                     )
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("First BG reading after 5:00 AM each day")
+                            Text("Highest BG reading per day")
                                 .font(.caption)
                                 .foregroundStyle(theme.secondaryTextColor)
                                 .padding(.horizontal)
 
                             Chart {
-                                ForEach(fastingReadings) { point in
+                                ForEach(peakReadings) { point in
                                     LineMark(
                                         x: .value("Date", point.date, unit: .day),
                                         y: .value("mg/dL", point.glucose)
                                     )
-                                    .foregroundStyle(Color.blue)
+                                    .foregroundStyle(Color.red.opacity(0.8))
                                     .interpolationMethod(.catmullRom)
 
                                     PointMark(
@@ -87,11 +73,11 @@ struct FastingChartView: View {
                                     .symbolSize(30)
                                 }
 
-                                RuleMark(y: .value("Average", averageFastingGlucose))
+                                RuleMark(y: .value("Average", averagePeak))
                                     .foregroundStyle(.orange.opacity(0.7))
                                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                                     .annotation(position: .top, alignment: .leading) {
-                                        Text("Avg: \(averageFastingGlucose)")
+                                        Text("Avg Peak: \(averagePeak)")
                                             .font(.caption2)
                                             .foregroundStyle(.orange)
                                     }
@@ -103,8 +89,7 @@ struct FastingChartView: View {
 
                             // Summary stats
                             VStack(alignment: .leading, spacing: 8) {
-                                let values = fastingReadings.map(\.glucose)
-                                let avg = values.reduce(0, +) / max(values.count, 1)
+                                let values = peakReadings.map(\.glucose)
                                 let minVal = values.min() ?? 0
                                 let maxVal = values.max() ?? 0
 
@@ -113,22 +98,22 @@ struct FastingChartView: View {
                                     .foregroundStyle(theme.eventTypeColor)
 
                                 HStack(spacing: 24) {
-                                    StatBox(label: "Average", value: "\(avg)", unit: "mg/dL", theme: theme)
-                                    StatBox(label: "Min", value: "\(minVal)", unit: "mg/dL", theme: theme)
-                                    StatBox(label: "Max", value: "\(maxVal)", unit: "mg/dL", theme: theme)
+                                    StatBox(label: "Avg Peak", value: "\(averagePeak)", unit: "mg/dL", theme: theme)
+                                    StatBox(label: "Min Peak", value: "\(minVal)", unit: "mg/dL", theme: theme)
+                                    StatBox(label: "Max Peak", value: "\(maxVal)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Days", value: "\(values.count)", unit: "", theme: theme)
                                 }
                             }
                             .padding()
 
-                            // Table of readings
+                            // Readings table
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Readings")
+                                Text("Daily Peaks")
                                     .font(.headline)
                                     .foregroundStyle(theme.eventTypeColor)
                                     .padding(.horizontal)
 
-                                ForEach(fastingReadings.reversed()) { point in
+                                ForEach(peakReadings.reversed()) { point in
                                     HStack {
                                         Text(point.date, format: .dateTime.month().day().year())
                                             .font(.caption)
@@ -148,7 +133,7 @@ struct FastingChartView: View {
                     }
                 }
             }
-            .navigationTitle("Fasting BG")
+            .navigationTitle("Peak Readings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -158,14 +143,8 @@ struct FastingChartView: View {
         }
     }
 
-    private var averageFastingGlucose: Int {
-        let values = fastingReadings.map(\.glucose)
-        guard !values.isEmpty else { return 0 }
-        return values.reduce(0, +) / values.count
-    }
-
     private var yDomain: ClosedRange<Int> {
-        let values = fastingReadings.map(\.glucose)
+        let values = peakReadings.map(\.glucose)
         let minVal = max((values.min() ?? 60) - 10, 0)
         let maxVal = (values.max() ?? 200) + 10
         return minVal...maxVal
@@ -182,31 +161,7 @@ struct FastingChartView: View {
     }
 }
 
-struct StatBox: View {
-    let label: String
-    let value: String
-    let unit: String
-    var theme: AppTheme = .dark
-
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(theme.eventTypeColor)
-            if !unit.isEmpty {
-                Text(unit)
-                    .font(.caption2)
-                    .foregroundStyle(theme.tertiaryTextColor)
-            }
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(theme.secondaryTextColor)
-        }
-    }
-}
-
 #Preview {
-    FastingChartView()
+    PeakReadingsChartView()
         .modelContainer(for: GlucoseEvent.self, inMemory: true)
 }
