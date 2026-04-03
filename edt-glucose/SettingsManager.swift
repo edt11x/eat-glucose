@@ -20,6 +20,15 @@ struct MedicineTypeConfig: Codable, Equatable, Identifiable {
     var defaultUnit: String
 }
 
+struct MealPreset: Codable, Equatable, Identifiable {
+    var id: String { name }
+    var name: String
+    var calorieGuess: Int?
+    var carbGuess: Int?
+    var proteinGuess: Int?
+    var glycemicIndexGuess: Int?
+}
+
 @Observable
 final class SettingsManager {
     static let shared = SettingsManager()
@@ -34,6 +43,8 @@ final class SettingsManager {
     private let timerValuesKey = "postMealTimerValues"
     private let timerEnabledKey = "postMealTimerEnabled"
     private let testStripDefaultsKey = "testStripDefaults"
+    private let activitiesKey = "customActivities"
+    private let mealPresetsKey = "savedMealPresets"
 
     var appearanceMode: Int {
         didSet { UserDefaults.standard.set(appearanceMode, forKey: appearanceModeKey) }
@@ -83,6 +94,7 @@ final class SettingsManager {
     ]
 
     private let defaultLocations: [String] = []
+    private let defaultActivities: [String] = []
 
     private let defaultTimerValues = [0, 30, 45, 60, 90, 120, 240]
 
@@ -126,6 +138,18 @@ final class SettingsManager {
         didSet {
             if let data = try? JSONEncoder().encode(testStripDefaults) {
                 UserDefaults.standard.set(data, forKey: testStripDefaultsKey)
+            }
+        }
+    }
+
+    var activities: [String] {
+        didSet { UserDefaults.standard.set(activities, forKey: activitiesKey) }
+    }
+
+    var mealPresets: [MealPreset] {
+        didSet {
+            if let data = try? JSONEncoder().encode(mealPresets) {
+                UserDefaults.standard.set(data, forKey: mealPresetsKey)
             }
         }
     }
@@ -188,6 +212,19 @@ final class SettingsManager {
         } else {
             self.testStripDefaults = [:]
         }
+
+        if let saved = UserDefaults.standard.stringArray(forKey: activitiesKey) {
+            self.activities = saved
+        } else {
+            self.activities = defaultActivities
+        }
+
+        if let data = UserDefaults.standard.data(forKey: mealPresetsKey),
+           let saved = try? JSONDecoder().decode([MealPreset].self, from: data) {
+            self.mealPresets = saved
+        } else {
+            self.mealPresets = []
+        }
     }
 
     func resetEventTypes() { eventTypes = defaultEventTypes }
@@ -208,4 +245,23 @@ final class SettingsManager {
             locations.append(trimmed)
         }
     }
+
+    func resetActivities() { activities = defaultActivities }
+
+    func addActivityIfNew(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty && !activities.contains(trimmed) {
+            activities.append(trimmed)
+        }
+    }
+
+    func saveMealPreset(_ preset: MealPreset) {
+        if let idx = mealPresets.firstIndex(where: { $0.name == preset.name }) {
+            mealPresets[idx] = preset
+        } else {
+            mealPresets.append(preset)
+        }
+    }
+
+    func resetMealPresets() { mealPresets = [] }
 }

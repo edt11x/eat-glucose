@@ -23,6 +23,9 @@ struct ContentView: View {
     @State private var showingPeakChart = false
     @State private var showingWeeklyCurve = false
     @State private var showingA1CEstimate = false
+    @State private var showingMealSpacingChart = false
+    @State private var showingPreMealScatter = false
+    @State private var showingBestMealSpacing = false
 
     private var theme: AppTheme { settings.currentTheme }
 
@@ -62,10 +65,21 @@ struct ContentView: View {
                             .foregroundStyle(theme.secondaryTextColor)
                         }
                         if let eA1C = estimatedA1C {
-                            Label(String(format: "eA1C: %.1f%%", eA1C), systemImage: "percent")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(a1cColor(for: eA1C))
+                            let equivalentBG = eA1C * 28.7 - 46.7
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 4) {
+                                    Label(String(format: "eA1C: %.1f%%", eA1C), systemImage: "percent")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(a1cColor(for: eA1C))
+                                    Text(String(format: "(%.0f mg/dL)", equivalentBG))
+                                        .font(.subheadline)
+                                        .foregroundStyle(a1cColor(for: eA1C))
+                                }
+                                Text("eA1C = (avgBG + 46.7) / 28.7")
+                                    .font(.caption2)
+                                    .foregroundStyle(theme.tertiaryTextColor)
+                            }
                         }
                     }
                     .listRowBackground(theme.rowBackground)
@@ -76,7 +90,6 @@ struct ContentView: View {
                                 EventRow(
                                     event: event,
                                     theme: theme,
-                                    timeTo95: timeTo95(after: event),
                                     timeSinceLastMeal: timeSinceLastMeal(for: event),
                                     meterDeviations: meterDeviations
                                 )
@@ -137,6 +150,22 @@ struct ContentView: View {
                             }
                             Divider()
                             Button {
+                                showingPreMealScatter = true
+                            } label: {
+                                Label("Pre-Meal BG Scatter", systemImage: "chart.dots.scatter")
+                            }
+                            Button {
+                                showingMealSpacingChart = true
+                            } label: {
+                                Label("Avg Time Between Meals", systemImage: "clock.arrow.2.circlepath")
+                            }
+                            Button {
+                                showingBestMealSpacing = true
+                            } label: {
+                                Label("Best Meal Spacing", systemImage: "star.circle")
+                            }
+                            Divider()
+                            Button {
                                 showingMeterDeviation = true
                             } label: {
                                 Label("Meter Comparison", systemImage: "arrow.left.arrow.right")
@@ -191,6 +220,18 @@ struct ContentView: View {
                 A1CEstimateChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
+            .sheet(isPresented: $showingMealSpacingChart) {
+                AvgTimeBetweenMealsChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingPreMealScatter) {
+                PreMealBGScatterView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingBestMealSpacing) {
+                BestMealSpacingView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
         }
         .preferredColorScheme(settings.preferredColorScheme)
     }
@@ -202,18 +243,6 @@ struct ContentView: View {
             calendar.startOfDay(for: event.timestamp)
         }
         return grouped.sorted { $0.key > $1.key }
-    }
-
-    // Find how long after an "End of Meal" event until BG reaches 95 or below
-    private func timeTo95(after event: GlucoseEvent) -> TimeInterval? {
-        guard event.eventType == "End of Meal" else { return nil }
-        let subsequent = events
-            .filter { $0.timestamp > event.timestamp && $0.bloodGlucose != nil }
-            .sorted { $0.timestamp < $1.timestamp }
-        guard let target = subsequent.first(where: { ($0.bloodGlucose ?? 999) <= 95 }) else {
-            return nil
-        }
-        return target.timestamp.timeIntervalSince(event.timestamp)
     }
 
     // Find the time since the most recent meal event before this event
@@ -274,7 +303,6 @@ struct ContentView: View {
 struct EventRow: View {
     let event: GlucoseEvent
     var theme: AppTheme = .dark
-    var timeTo95: TimeInterval? = nil
     var timeSinceLastMeal: TimeInterval? = nil
     var meterDeviations: [MultiMeterEstimator.MeterDeviation] = []
 
@@ -426,19 +454,6 @@ struct EventRow: View {
                 Label(String(format: "%.1f%%", a1c), systemImage: "percent")
                     .font(.caption)
                     .foregroundStyle(a1cColor(for: a1c))
-            }
-
-            // Time to 95
-            if let interval = timeTo95 {
-                let totalMinutes = Int(interval) / 60
-                let hours = totalMinutes / 60
-                let minutes = totalMinutes % 60
-                Label(
-                    hours > 0 ? "\(hours)h \(minutes)m to 95" : "\(minutes)m to 95",
-                    systemImage: "timer"
-                )
-                .font(.caption2)
-                .foregroundStyle(.green)
             }
 
             if !event.activityDescription.isEmpty {

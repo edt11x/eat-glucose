@@ -16,6 +16,37 @@ struct PeakReadingsChartView: View {
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
+    private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
+        MultiMeterEstimator.computeDeviations(from: events)
+    }
+
+    private var peakMultiMeterReadings: [FastingDataPoint] {
+        let calendar = Calendar.current
+        let bgEvents = events.filter {
+            $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
+        }
+        let grouped = Dictionary(grouping: bgEvents) { event in
+            calendar.startOfDay(for: event.timestamp)
+        }
+        var results: [FastingDataPoint] = []
+        for (dayStart, dayEvents) in grouped {
+            // Find the event with the highest multi-meter estimate for the day
+            var bestEstimate: Double? = nil
+            for event in dayEvents {
+                if let bg = event.bloodGlucose, let meter = event.meterType,
+                   let estimate = MultiMeterEstimator.estimate(reading: bg, meterType: meter, deviations: meterDeviations) {
+                    if bestEstimate == nil || estimate > bestEstimate! {
+                        bestEstimate = estimate
+                    }
+                }
+            }
+            if let est = bestEstimate {
+                results.append(FastingDataPoint(date: dayStart, glucose: Int(est.rounded())))
+            }
+        }
+        return results.sorted { $0.date < $1.date }
+    }
+
     private var peakReadings: [FastingDataPoint] {
         let calendar = Calendar.current
         let bgEvents = events.filter {
@@ -81,11 +112,45 @@ struct PeakReadingsChartView: View {
                                             .font(.caption2)
                                             .foregroundStyle(.orange)
                                     }
+
+                                if !peakMultiMeterReadings.isEmpty {
+                                    ForEach(peakMultiMeterReadings) { point in
+                                        LineMark(
+                                            x: .value("Date", point.date, unit: .day),
+                                            y: .value("mg/dL", point.glucose),
+                                            series: .value("Series", "Multi-Meter")
+                                        )
+                                        .foregroundStyle(.orange)
+                                        .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 2]))
+                                        .interpolationMethod(.catmullRom)
+                                    }
+                                }
                             }
                             .chartYAxisLabel("mg/dL")
                             .chartYScale(domain: yDomain)
                             .frame(height: 300)
                             .padding()
+
+                            // Legend
+                            if !peakMultiMeterReadings.isEmpty {
+                                HStack(spacing: 16) {
+                                    HStack(spacing: 4) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.red.opacity(0.8))
+                                            .frame(width: 16, height: 3)
+                                        Text("Peak BG")
+                                    }
+                                    HStack(spacing: 4) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.orange)
+                                            .frame(width: 16, height: 3)
+                                        Text("Multi-Meter Est.")
+                                    }
+                                }
+                                .font(.caption2)
+                                .foregroundStyle(theme.secondaryTextColor)
+                                .padding(.horizontal)
+                            }
 
                             // Summary stats
                             VStack(alignment: .leading, spacing: 8) {

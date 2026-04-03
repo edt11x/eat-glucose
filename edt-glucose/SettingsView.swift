@@ -116,6 +116,17 @@ struct SettingsView: View {
                 )
 
                 ConfigurableListSection(
+                    title: "Activities",
+                    items: $settings.activities,
+                    onReset: { settings.resetActivities() }
+                )
+
+                MealPresetListSection(
+                    items: $settings.mealPresets,
+                    onReset: { settings.resetMealPresets() }
+                )
+
+                ConfigurableListSection(
                     title: "Units of Measure",
                     items: $settings.unitsOfMeasure,
                     onReset: { settings.resetUnitsOfMeasure() }
@@ -237,7 +248,7 @@ struct SettingsView: View {
     }
 
     private func loadBundledTestData() {
-        guard let url = Bundle.main.url(forResource: "edt-glucose-export-03-07-2026", withExtension: "json") else {
+        guard let url = Bundle.main.url(forResource: "edt-glucose-export-04-02-2026-201706", withExtension: "json") else {
             importMessage = "Bundled test file not found."
             showingImportAlert = true
             return
@@ -357,6 +368,39 @@ struct MedicineTypeListSection: View {
             }
             Button("Cancel", role: .cancel) {
                 newName = ""; newDose = ""; newUnit = "units"
+            }
+        }
+    }
+}
+
+struct MealPresetListSection: View {
+    @Binding var items: [MealPreset]
+    let onReset: () -> Void
+
+    var body: some View {
+        Section {
+            ForEach(items) { preset in
+                VStack(alignment: .leading) {
+                    Text(preset.name)
+                    HStack(spacing: 8) {
+                        if let cal = preset.calorieGuess { Text("\(cal) cal") }
+                        if let carbs = preset.carbGuess { Text("\(carbs)g carbs") }
+                        if let protein = preset.proteinGuess { Text("\(protein)g protein") }
+                        if let gi = preset.glycemicIndexGuess { Text("GI \(gi)") }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            .onDelete { offsets in items.remove(atOffsets: offsets) }
+            .onMove { from, to in items.move(fromOffsets: from, toOffset: to) }
+        } header: {
+            HStack {
+                Text("Meal Presets")
+                Spacer()
+                Button("Reset") { onReset() }
+                    .font(.caption)
+                    .textCase(.none)
             }
         }
     }

@@ -11,6 +11,7 @@ import SwiftData
 struct EventFormView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \GlucoseEvent.timestamp, order: .reverse) private var allEvents: [GlucoseEvent]
 
     let settings = SettingsManager.shared
 
@@ -159,11 +160,19 @@ struct EventFormView: View {
                                 Text(type).tag(type)
                             }
                         }
+                        .onChange(of: mealType) { _, _ in
+                            populateFromStartOfMeal()
+                        }
                     }
                 }
 
                 Section("Date & Time") {
                     DatePicker("Date & Time", selection: $timestamp)
+                }
+                .onChange(of: eventType) { _, newType in
+                    if newType == "End of Meal" {
+                        populateFromStartOfMeal()
+                    }
                 }
 
                 if showBloodGlucose {
@@ -274,6 +283,25 @@ struct EventFormView: View {
 
                 if showMealDetails {
                     Section("Meal Details") {
+                        if !settings.mealPresets.isEmpty {
+                            Picker("Saved Meal", selection: Binding(
+                                get: { foodDescription },
+                                set: { newValue in
+                                    foodDescription = newValue
+                                    if let preset = settings.mealPresets.first(where: { $0.name == newValue }) {
+                                        if let cal = preset.calorieGuess { calorieGuessText = "\(cal)" }
+                                        if let carbs = preset.carbGuess { carbGuessText = "\(carbs)" }
+                                        if let protein = preset.proteinGuess { proteinGuessText = "\(protein)" }
+                                        if let gi = preset.glycemicIndexGuess { glycemicIndexGuessText = "\(gi)" }
+                                    }
+                                }
+                            )) {
+                                Text("Custom").tag("")
+                                ForEach(settings.mealPresets) { preset in
+                                    Text(preset.name).tag(preset.name)
+                                }
+                            }
+                        }
                         TextField("Food Description", text: $foodDescription)
 
                         HStack {
@@ -359,7 +387,18 @@ struct EventFormView: View {
                 }
 
                 Section("Activity") {
-                    TextField("Activity Description", text: $activityDescription)
+                    HStack {
+                        TextField("Activity Description", text: $activityDescription)
+                        if !settings.activities.isEmpty {
+                            Picker("", selection: $activityDescription) {
+                                Text("Custom").tag("")
+                                ForEach(settings.activities, id: \.self) { activity in
+                                    Text(activity).tag(activity)
+                                }
+                            }
+                            .labelsHidden()
+                        }
+                    }
                 }
 
                 Section("Notes") {
@@ -377,6 +416,26 @@ struct EventFormView: View {
                     Button("Save") { saveEvent() }
                 }
             }
+        }
+    }
+
+    private func findMatchingStartOfMeal(mealType: String) -> GlucoseEvent? {
+        allEvents.first { event in
+            event.eventType == "Start of Meal"
+            && event.mealType == mealType
+            && !mealType.isEmpty
+        }
+    }
+
+    private func populateFromStartOfMeal() {
+        guard eventType == "End of Meal", !mealType.isEmpty, !isEditing else { return }
+        if let startEvent = findMatchingStartOfMeal(mealType: mealType) {
+            if let food = startEvent.foodDescription { foodDescription = food }
+            if let cal = startEvent.calorieGuess { calorieGuessText = "\(cal)" }
+            if let carbs = startEvent.carbGuess { carbGuessText = "\(carbs)" }
+            if let protein = startEvent.proteinGuess { proteinGuessText = "\(protein)" }
+            if let gi = startEvent.glycemicIndexGuess { glycemicIndexGuessText = "\(gi)" }
+            if let loc = startEvent.locationName { locationName = loc }
         }
     }
 
@@ -414,6 +473,24 @@ struct EventFormView: View {
         // Auto-save test strip defaults for this meter type
         if let lot = effectiveTestStripLot, !meterType.isEmpty {
             settings.updateTestStripDefault(for: meterType, lot: lot, expiration: effectiveTestStripExpiration)
+        }
+
+        // Auto-save new activity
+        if !activityDescription.isEmpty {
+            settings.addActivityIfNew(activityDescription)
+        }
+
+        // Auto-save meal preset if all nutrition fields are filled
+        if showMealDetails, let food = effectiveFoodDescription,
+           let cal = calorieGuess, let carbs = carbGuess,
+           let protein = proteinGuess, let gi = glycemicIndexGuess {
+            settings.saveMealPreset(MealPreset(
+                name: food,
+                calorieGuess: cal,
+                carbGuess: carbs,
+                proteinGuess: protein,
+                glycemicIndexGuess: gi
+            ))
         }
 
         if let event = existingEvent {

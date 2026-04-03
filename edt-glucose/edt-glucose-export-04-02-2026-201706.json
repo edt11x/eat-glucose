@@ -1,0 +1,3261 @@
+{
+  "events" : [
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 88,
+      "bloodGlucoseGuess" : 81,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-03T00:15:58Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-04-02T18:46:27Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Pilot Salad and my fixings",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-04-02T18:10:48Z"
+    },
+    {
+      "activityDescription" : "Before Lunch ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-02T18:02:38Z"
+    },
+    {
+      "activityDescription" : "Random Measurement ",
+      "bloodGlucose" : 112,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-02T15:31:35Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-04-02T15:22:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Snack",
+      "notes" : "",
+      "proteinGuess" : 306,
+      "timestamp" : "2026-04-02T14:49:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-04-02T13:08:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-04-02T12:52:42Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 86,
+      "bloodGlucoseGuess" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-02T12:34:58Z"
+    },
+    {
+      "activityDescription" : "Bedtime",
+      "bloodGlucose" : 95,
+      "bloodGlucoseGuess" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Toujeo - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "Big meal",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-02T03:57:08Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-04-02T01:32:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-04-02T00:47:04Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 77,
+      "bloodGlucoseGuess" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-02T00:12:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-04-01T20:19:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salad",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-04-01T19:47:47Z"
+    },
+    {
+      "activityDescription" : "Before Lunch ",
+      "bloodGlucose" : 78,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-01T19:09:58Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-04-01T15:57:06Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Snack",
+      "notes" : "",
+      "proteinGuess" : 30,
+      "timestamp" : "2026-04-01T15:27:18Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-04-01T13:14:53Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-04-01T13:04:44Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 75,
+      "bloodGlucoseGuess" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-01T12:56:34Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 85,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Toujeo - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-04-01T03:55:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-04-01T00:45:32Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-04-01T00:06:29Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 64,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-31T23:29:09Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-31T20:06:27Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salad ",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-31T19:05:18Z"
+    },
+    {
+      "activityDescription" : "Before Lunch ",
+      "bloodGlucose" : 62,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-31T18:57:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-31T14:52:29Z"
+    },
+    {
+      "activityDescription" : "Snack at work ",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Snack",
+      "notes" : "",
+      "proteinGuess" : 30,
+      "timestamp" : "2026-03-31T14:06:44Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-31T12:16:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-31T12:07:26Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 83,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-31T11:53:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "bloodGlucose" : 90,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Toujeo - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-31T03:58:14Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-31T00:52:20Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-31T00:10:42Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 94,
+      "bloodGlucoseGuess" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "testStripExpiration" : "2027-07-31T23:34:00Z",
+      "testStripLot" : "DP5EHEG41A",
+      "timestamp" : "2026-03-30T23:33:45Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 83,
+      "bloodGlucoseGuess" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-30T23:33:16Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-30T18:00:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salaf",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-30T17:29:01Z"
+    },
+    {
+      "activityDescription" : "Before lunch",
+      "bloodGlucose" : 90,
+      "bloodGlucoseGuess" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-30T17:16:16Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-30T15:33:33Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 80,
+      "carbGuess" : 5,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Starbucks Double shot energy, sugar free",
+      "locationName" : "975 Pittsburgh Dr, Delaware",
+      "mealType" : "Snack",
+      "notes" : "",
+      "proteinGuess" : 10,
+      "timestamp" : "2026-03-30T14:27:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-30T13:16:04Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-30T13:06:12Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 84,
+      "bloodGlucoseGuess" : 95,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-30T12:48:25Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Toujeo - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-30T03:47:58Z"
+    },
+    {
+      "activityDescription" : "Random Measurement ",
+      "bloodGlucose" : 93,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-30T01:31:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-29T21:11:51Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Steak dinner and Brussel sprouts ",
+      "locationName" : "The Greene Town Center, Beavercreek",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-29T20:22:00Z"
+    },
+    {
+      "activityDescription" : "Club Ocean after Indoor BMX races",
+      "bloodGlucose" : 140,
+      "bloodGlucoseGuess" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "The Greene Town Center, Beavercreek",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-29T20:21:56Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-29T16:26:35Z"
+    },
+    {
+      "activityDescription" : "Driving to Dayton BMX",
+      "calorieGuess" : 710,
+      "carbGuess" : 52,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Chicken Bacon Ranch Wrap ",
+      "locationName" : "I-270 W, Columbus",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "proteinGuess" : 43,
+      "timestamp" : "2026-03-29T15:45:48Z"
+    },
+    {
+      "activityDescription" : "Driving to Dayton BMX",
+      "bloodGlucose" : 93,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "I-270 W, Columbus",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-29T15:44:58Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-29T13:00:49Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 8,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Oikos Shake",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "proteinGuess" : 30,
+      "timestamp" : "2026-03-29T12:45:23Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 82,
+      "bloodGlucoseGuess" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-29T12:01:23Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 88,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Toujeo - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-29T03:50:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-29T01:53:46Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Benihana’s Steak and Shrimp ",
+      "locationName" : "Polaris Fashion Place, Columbus",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-29T00:28:25Z"
+    },
+    {
+      "activityDescription" : "Benihana’s with Patrick ",
+      "bloodGlucose" : 72,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "Polaris Fashion Place, Columbus",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-29T00:27:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-28T19:14:35Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salad",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-28T18:50:43Z"
+    },
+    {
+      "activityDescription" : "Before lunch ",
+      "bloodGlucose" : 63,
+      "eventType" : "Blood Glucose Measurement",
+      "locationName" : "708 Glenn Rd, Delaware",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "testStripExpiration" : "2027-02-28T19:39:00Z",
+      "testStripLot" : "45001 89630",
+      "timestamp" : "2026-03-28T18:39:11Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-28T16:00:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Okios Protein Shake",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-28T15:38:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-28T13:57:59Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-28T13:30:16Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 54,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-28T13:17:46Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 45,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-28T13:17:28Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 77,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-28T03:36:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-28T01:08:28Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "locationName" : "Home",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-28T00:35:18Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 87,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-27T23:53:45Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 73,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-27T23:53:13Z"
+    },
+    {
+      "activityDescription" : "Lunch",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-27T19:16:06Z"
+    },
+    {
+      "activityDescription" : "Before lunch",
+      "bloodGlucose" : 95,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-27T19:03:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-27T17:22:22Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-27T16:38:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-27T12:58:08Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 106,
+      "bloodGlucoseGuess" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-27T12:44:47Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 89,
+      "bloodGlucoseGuess" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-27T12:44:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "bloodGlucose" : 101,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-27T03:32:46Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-27T03:32:31Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-27T00:35:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-26T23:44:16Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 97,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-26T23:20:36Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 86,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-26T23:20:08Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-26T19:30:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-26T18:38:25Z"
+    },
+    {
+      "activityDescription" : "Before Lunch",
+      "bloodGlucose" : 88,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-26T18:16:36Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-26T16:00:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-26T13:46:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-26T12:10:06Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-26T11:56:15Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 78,
+      "bloodGlucoseGuess" : 81,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-26T11:40:08Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-26T02:10:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-26T01:10:07Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-26T00:37:52Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 82,
+      "bloodGlucoseGuess" : 79,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-25T23:58:57Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-25T18:00:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Salaf",
+      "locationName" : "Vertiv",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-25T17:37:57Z"
+    },
+    {
+      "activityDescription" : "Lunchtime ",
+      "bloodGlucose" : 89,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-25T17:25:59Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-25T15:19:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-25T14:03:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-25T12:55:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-25T12:47:55Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 73,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-25T12:34:25Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 91,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-25T03:52:08Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-25T00:49:41Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-25T00:15:00Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 76,
+      "bloodGlucoseGuess" : 89,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-24T23:43:45Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-24T16:52:56Z"
+    },
+    {
+      "activityDescription" : "Lunch at El Vaquero with Vertiv folks",
+      "calorieGuess" : 1000,
+      "carbGuess" : 60,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Taco Salad ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-24T16:35:23Z"
+    },
+    {
+      "activityDescription" : "Lunch at El Vaquero with Vertiv folks",
+      "bloodGlucose" : 94,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-24T16:31:38Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-24T15:04:38Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-24T14:15:23Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-24T13:15:00Z"
+    },
+    {
+      "activityDescription" : "Breakfast with Dan and Pat at Hamburger Inn",
+      "calorieGuess" : 700,
+      "carbGuess" : 10,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Western Omlet",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-24T12:40:00Z"
+    },
+    {
+      "activityDescription" : "Breakfast with Dan and Pat at Hamburger Inn",
+      "bloodGlucose" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-24T12:34:50Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-24T03:57:37Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-24T00:54:32Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup ",
+      "locationName" : "Home",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-24T00:23:10Z"
+    },
+    {
+      "activityDescription" : "Before dinner",
+      "bloodGlucose" : 72,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-23T23:54:51Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-23T19:22:24Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad",
+      "locationName" : "Vertiv",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-23T18:50:39Z"
+    },
+    {
+      "activityDescription" : "Before lunch ",
+      "bloodGlucose" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-23T18:39:50Z"
+    },
+    {
+      "activityDescription" : "Random measurement ",
+      "bloodGlucose" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-23T17:27:24Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-23T16:37:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-23T15:13:18Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-23T13:17:27Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-23T13:02:55Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 75,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-23T12:51:55Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 104,
+      "bloodGlucoseGuess" : 92,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-23T03:50:57Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-22T23:24:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Hibachi meal at Sue’s",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-22T23:10:17Z"
+    },
+    {
+      "activityDescription" : "Sue’s house, before dinner ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-22T23:08:13Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-22T18:40:04Z"
+    },
+    {
+      "activityDescription" : "On my way to Sue’s ",
+      "calorieGuess" : 420,
+      "carbGuess" : 6,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Sheetz Egg Life Grab and Go",
+      "locationName" : "Sheetz",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-22T18:24:26Z"
+    },
+    {
+      "activityDescription" : "At Sheetz, on the way to Sue’s",
+      "bloodGlucose" : 87,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-22T18:09:05Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-22T16:17:26Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-22T14:19:07Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-22T14:02:53Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 81,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-22T13:46:18Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 110,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-22T03:54:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-21T23:43:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Benihana’s",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-21T22:40:50Z"
+    },
+    {
+      "activityDescription" : "Benihana’s with Patrick ",
+      "bloodGlucose" : 99,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-21T22:40:07Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-21T19:26:20Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 600,
+      "carbGuess" : 7,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "2 Large Hot dogs",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-21T19:18:51Z"
+    },
+    {
+      "activityDescription" : "Roller Skating Park with Patrick ",
+      "bloodGlucose" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-21T19:18:10Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-21T15:34:48Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-21T14:58:23Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-21T14:19:48Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-21T14:04:13Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 86,
+      "bloodGlucoseGuess" : 88,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-21T12:33:26Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 92,
+      "bloodGlucoseGuess" : 92,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-21T02:34:32Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-21T01:13:19Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-21T00:28:22Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 81,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-20T23:56:12Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-20T18:18:46Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-20T17:44:42Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-20T17:29:15Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-20T15:30:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-20T14:43:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-20T12:59:55Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt with nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-20T12:45:57Z"
+    },
+    {
+      "activityDescription" : "Waking up, before breakfast ",
+      "bloodGlucose" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-20T12:35:00Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-20T03:50:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-20T00:40:11Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-20T00:08:22Z"
+    },
+    {
+      "activityDescription" : "At home, before dinner ",
+      "bloodGlucose" : 75,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T23:40:55Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-19T19:20:56Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-19T18:51:11Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 81,
+      "bloodGlucoseGuess" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T18:38:44Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-19T16:56:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-19T16:36:40Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-19T12:18:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-19T12:09:08Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 59,
+      "bloodGlucoseGuess" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T11:54:10Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 79,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T03:47:29Z"
+    },
+    {
+      "activityDescription" : "1\/2 hour after finishing dinner ",
+      "bloodGlucose" : 89,
+      "bloodGlucoseGuess" : 110,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T02:03:04Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-19T01:20:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup",
+      "locationName" : "Home",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-19T00:30:00Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 78,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-19T00:06:57Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-18T19:08:27Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad",
+      "locationName" : "Vertiv",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-18T18:10:22Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-18T17:56:04Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-18T16:11:33Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-18T15:49:05Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-18T13:12:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-18T12:53:31Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 82,
+      "bloodGlucoseGuess" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-18T12:37:36Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 98,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-18T03:17:28Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-18T01:31:50Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-18T01:00:00Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-18T00:25:33Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-17T17:45:00Z"
+    },
+    {
+      "activityDescription" : "Lunch after walk",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-17T17:23:49Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-17T17:10:12Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-17T15:37:40Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "carbGuess" : 3,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein Shake",
+      "locationName" : "Vertiv ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-17T15:11:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-17T12:56:30Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt with nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-17T12:41:59Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-17T12:31:41Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-17T03:58:54Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-17T01:45:06Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-17T00:45:54Z"
+    },
+    {
+      "activityDescription" : "Before Dinner at home",
+      "bloodGlucose" : 76,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-16T23:44:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-16T19:18:24Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Big salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-16T18:51:52Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 78,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-16T18:32:24Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-16T16:04:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 8,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein Shake ",
+      "locationName" : "Vertiv",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-16T15:32:52Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-16T12:15:04Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-16T12:09:01Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 76,
+      "bloodGlucoseGuess" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-16T11:54:05Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 96,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-16T03:58:40Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-16T00:39:31Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-16T00:03:29Z"
+    },
+    {
+      "activityDescription" : "",
+      "bloodGlucose" : 66,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-15T23:19:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-15T17:15:00Z"
+    },
+    {
+      "activityDescription" : "Waffle House ",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Fiesta Chicken Protein Bowl",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-15T16:46:29Z"
+    },
+    {
+      "activityDescription" : "Waffle House ",
+      "bloodGlucose" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-15T16:43:35Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-15T14:24:33Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-15T14:07:20Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 75,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-15T13:56:50Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 93,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-15T04:53:45Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-15T02:31:31Z"
+    },
+    {
+      "activityDescription" : "Salad",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Salad",
+      "notes" : "",
+      "timestamp" : "2026-03-15T02:29:13Z"
+    },
+    {
+      "activityDescription" : "",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-15T02:27:38Z"
+    },
+    {
+      "activityDescription" : "",
+      "bloodGlucose" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-14T17:49:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-14T14:50:32Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein Shake",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-14T13:58:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-14T13:06:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 300,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, nuts , berries and coffee ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-14T12:53:10Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 83,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-14T12:18:47Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-14T03:17:15Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-14T01:15:31Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed soup ",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-14T00:34:30Z"
+    },
+    {
+      "activityDescription" : "Test before dinner ",
+      "bloodGlucose" : 81,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T23:57:28Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-13T19:40:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-13T19:07:02Z"
+    },
+    {
+      "activityDescription" : "At work before lunch",
+      "bloodGlucose" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T18:32:26Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-13T16:13:13Z"
+    },
+    {
+      "activityDescription" : "Working ",
+      "calorieGuess" : 170,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein shake",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-13T15:38:14Z"
+    },
+    {
+      "activityDescription" : "A bit after breakfast to see what the blood glucose rise is.",
+      "bloodGlucose" : 101,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T15:19:20Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-13T13:41:45Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 250,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt, berries and nuts",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-13T13:33:56Z"
+    },
+    {
+      "activityDescription" : "Breakfast at work ",
+      "bloodGlucose" : 78,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T13:24:32Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 91,
+      "bloodGlucoseGuess" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T03:31:30Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "End of Meal",
+      "foodDescription" : "Ed soup",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-13T01:22:14Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Ed Soup",
+      "locationName" : "Home",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-13T00:44:38Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 82,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-13T00:18:05Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "foodDescription" : "Salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-12T18:47:07Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Salad",
+      "locationName" : "Vertiv",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-12T18:14:21Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 86,
+      "bloodGlucoseGuess" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-12T17:59:57Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-12T15:11:09Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 8,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein shake",
+      "locationName" : "Vertiv ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-12T14:39:51Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-12T12:22:31Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 200,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yogurt nuts and berries ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-12T11:54:32Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 88,
+      "bloodGlucoseGuess" : 95,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-12T11:42:57Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 92,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-12T03:57:56Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 79,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-11T23:52:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-11T19:18:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Salad ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-11T18:55:07Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-11T18:42:05Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-11T15:17:44Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 160,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein shake",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-11T14:59:38Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-11T13:09:09Z"
+    },
+    {
+      "activityDescription" : "Breakfast ",
+      "calorieGuess" : 200,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek Yogurt, nuts and berries with coffee ",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-11T13:00:00Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 81,
+      "bloodGlucoseGuess" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-11T12:49:16Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-11T03:44:48Z"
+    },
+    {
+      "activityDescription" : "Coding ",
+      "bloodGlucose" : 91,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-11T01:42:25Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-11T01:07:35Z"
+    },
+    {
+      "activityDescription" : "Dinner",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "My soup",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-11T00:20:49Z"
+    },
+    {
+      "activityDescription" : "Home Getting ready for dinner ",
+      "bloodGlucose" : 79,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T23:56:15Z"
+    },
+    {
+      "activityDescription" : "After lunch test",
+      "bloodGlucose" : 104,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T20:15:52Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-10T19:52:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Tuna an salad",
+      "locationName" : "Vertiv ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-10T19:04:43Z"
+    },
+    {
+      "activityDescription" : "Before lunch, after walk",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T18:31:40Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-10T16:06:18Z"
+    },
+    {
+      "activityDescription" : "Vertiv work",
+      "calorieGuess" : 160,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Premier Protein ",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-10T15:28:23Z"
+    },
+    {
+      "activityDescription" : "Random Measurement",
+      "bloodGlucose" : 96,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T15:26:35Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-10T13:10:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 200,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Greek yougurt and coffee ",
+      "locationName" : "Home",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-10T13:01:34Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 79,
+      "bloodGlucoseGuess" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T12:39:48Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 92,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T03:53:47Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 9,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-10T03:53:28Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-10T00:51:55Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "My soup",
+      "locationName" : "Home",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-10T00:15:12Z"
+    },
+    {
+      "activityDescription" : "Before dinner ",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-09T23:44:04Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "End of Meal",
+      "foodDescription" : "Salad",
+      "locationName" : "Vertiv ",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-09T19:13:51Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1008,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Salad",
+      "locationName" : "Vertiv",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-09T18:45:00Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 93,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-09T17:54:47Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 8,
+      "eventType" : "End of Meal",
+      "foodDescription" : "Protein Shake",
+      "locationName" : "Work",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-09T16:00:16Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 170,
+      "carbGuess" : 8,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Protein Shake ",
+      "locationName" : "Work",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-09T14:25:58Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-09T13:08:11Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-09T12:59:20Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 81,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-09T12:48:55Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-09T03:35:26Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "foodDescription" : "Nuts",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-09T02:31:20Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Nuts",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-09T02:14:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-09T01:03:55Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 1000,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Steak dinner",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-09T00:36:57Z"
+    },
+    {
+      "activityDescription" : "Dinner from Quaker State",
+      "bloodGlucose" : 66,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-09T00:36:11Z"
+    },
+    {
+      "activityDescription" : "Panera Bread lunch with Patrick’s family ",
+      "calorieGuess" : 800,
+      "eventType" : "End of Meal",
+      "foodDescription" : "Salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-08T17:30:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "calorieGuess" : 800,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Panera Bread Salad",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-08T17:05:10Z"
+    },
+    {
+      "activityDescription" : "Panera Bread",
+      "bloodGlucose" : 80,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-08T17:04:45Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 72,
+      "bloodGlucoseGuess" : 93,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-08T13:09:22Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 64,
+      "bloodGlucoseGuess" : 93,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "Don’t feel bad",
+      "timestamp" : "2026-03-08T13:06:41Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-08T02:59:13Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 106,
+      "eventType" : "Blood Glucose Measurement",
+      "medicineDose" : 10,
+      "medicineDoseUnit" : "units",
+      "medicineName" : "Lantis - long acting",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-08T02:58:46Z"
+    },
+    {
+      "activityDescription" : "Bonefish Grill",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-07T23:06:37Z"
+    },
+    {
+      "activityDescription" : "Arnold Classic ",
+      "eventType" : "End of Meal",
+      "notes" : "",
+      "timestamp" : "2026-03-07T19:08:28Z"
+    },
+    {
+      "activityDescription" : "Arnold Classic ",
+      "calorieGuess" : 700,
+      "eventType" : "Start of Meal",
+      "foodDescription" : "Salad",
+      "notes" : "",
+      "timestamp" : "2026-03-07T19:03:28Z"
+    },
+    {
+      "activityDescription" : "Before Lunch ",
+      "bloodGlucose" : 107,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-07T18:59:46Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-07T15:35:32Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-07T13:30:00Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 91,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-07T13:08:38Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-07T13:08:13Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 85,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-07T04:54:41Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-07T01:59:17Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-07T01:30:00Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 84,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-07T01:01:06Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-06T20:45:00Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-06T20:04:31Z"
+    },
+    {
+      "activityDescription" : "After walk before lunch ",
+      "bloodGlucose" : 97,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-06T19:50:37Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-06T16:53:12Z"
+    },
+    {
+      "activityDescription" : "Protein Shake ",
+      "eventType" : "Start of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-06T15:43:13Z"
+    },
+    {
+      "activityDescription" : "Waking up ",
+      "bloodGlucose" : 87,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-06T13:30:16Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 89,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-06T04:54:33Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-06T01:49:20Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-06T00:59:40Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 81,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-06T00:32:55Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-05T20:20:27Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-05T19:34:00Z"
+    },
+    {
+      "activityDescription" : "At Vertiv after walk, before lunch ",
+      "bloodGlucose" : 105,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-05T19:33:33Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-05T17:19:15Z"
+    },
+    {
+      "activityDescription" : "Protein shake",
+      "eventType" : "Start of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-05T16:39:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-05T12:51:08Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-05T12:40:28Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 96,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-05T12:25:46Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-05T03:50:08Z"
+    },
+    {
+      "activityDescription" : "Cracker Barrel ",
+      "bloodGlucose" : 78,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-05T00:23:56Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-04T18:36:04Z"
+    },
+    {
+      "activityDescription" : "Before Lunch, after walk",
+      "bloodGlucose" : 86,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-04T18:17:56Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-04T16:43:32Z"
+    },
+    {
+      "activityDescription" : "Protein Shake",
+      "eventType" : "Start of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-04T15:33:57Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 106,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-04T13:29:39Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 104,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "Big late dinner ",
+      "timestamp" : "2026-03-04T04:56:43Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-04T02:23:41Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-04T00:57:27Z"
+    },
+    {
+      "activityDescription" : "Before Dinner",
+      "bloodGlucose" : 89,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-04T00:32:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-03T20:26:22Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-03T19:51:30Z"
+    },
+    {
+      "activityDescription" : "After walk, before lunch ",
+      "bloodGlucose" : 107,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-03T19:34:02Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-03T16:36:35Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Snack",
+      "notes" : "",
+      "timestamp" : "2026-03-03T16:00:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-03T14:04:03Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Breakfast",
+      "notes" : "",
+      "timestamp" : "2026-03-03T13:51:41Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 114,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-03T13:35:45Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 94,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-03T04:52:37Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 96,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-03T04:52:16Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-03T01:25:43Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Dinner",
+      "notes" : "",
+      "timestamp" : "2026-03-03T00:51:55Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 92,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-03T00:16:49Z"
+    },
+    {
+      "activityDescription" : "Before Dinner ",
+      "bloodGlucose" : 90,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-03T00:16:21Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "End of Meal",
+      "mealType" : "Lunch",
+      "notes" : "Big salad lots of nuts",
+      "timestamp" : "2026-03-02T19:26:34Z"
+    },
+    {
+      "activityDescription" : "",
+      "eventType" : "Start of Meal",
+      "mealType" : "Lunch",
+      "notes" : "",
+      "timestamp" : "2026-03-02T18:58:08Z"
+    },
+    {
+      "activityDescription" : "Lunch measurement ",
+      "bloodGlucose" : 121,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-02T17:37:51Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 100,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Keto Mojo",
+      "notes" : "",
+      "timestamp" : "2026-03-02T12:31:56Z"
+    },
+    {
+      "activityDescription" : "Waking up",
+      "bloodGlucose" : 98,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-02T12:31:30Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 102,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Contour Next",
+      "notes" : "",
+      "timestamp" : "2026-03-02T04:55:33Z"
+    },
+    {
+      "activityDescription" : "Bedtime ",
+      "bloodGlucose" : 98,
+      "eventType" : "Blood Glucose Measurement",
+      "meterType" : "Precision Neo",
+      "notes" : "",
+      "timestamp" : "2026-03-02T04:55:09Z"
+    }
+  ],
+  "exportDate" : "2026-04-03T00:17:06Z"
+}
