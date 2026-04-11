@@ -2,6 +2,8 @@
 
 A blood glucose tracking app for iPhone built with SwiftUI and SwiftData.
 
+**Vibe Coded with [Anthropic Claude](https://www.anthropic.com).**
+
 ## Overview
 
 edt-glucose lets you log blood glucose measurements and related daily events — meals, medicine, walks, A1C results, bedtime, and more — and view them in a chronological list organized by day. It provides extensive charting and analysis including smoothed weekly curves, estimated A1C, multi-meter averaging, and meter comparison. All data is stored persistently on-device using SwiftData with optional iCloud export.
@@ -55,6 +57,9 @@ Access from the chart icon in the toolbar:
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time using multi-meter average BG values. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
 - **Meter Comparison** — Compares each meter against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs.
+- **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
+- **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
+- **Pre-Meal BG Scatter** — Scatter plot of pre-meal BG readings vs hours since last meal, filterable by meal type.
 
 ### Multi-Meter Average Formula
 
@@ -180,6 +185,9 @@ edt-glucose/
 ├── WeeklyCurveChartView.swift    # Historical vs current week comparison
 ├── A1CEstimateChartView.swift    # Rolling eA1C over time
 ├── MeterDeviationView.swift      # Meter comparison analysis
+├── AvgTimeBetweenMealsChartView.swift  # Average meal spacing over time
+├── BestMealSpacingView.swift     # Meal spacing vs BG scatter plot
+├── PreMealBGScatterView.swift    # Pre-meal BG vs time since last meal
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
 └── Assets.xcassets/              # App icon and colors
 ```
