@@ -26,6 +26,7 @@ struct ContentView: View {
     @State private var showingMealSpacingChart = false
     @State private var showingPreMealScatter = false
     @State private var showingBestMealSpacing = false
+    @State private var showingBedtimeChart = false
 
     private var theme: AppTheme { settings.currentTheme }
 
@@ -133,6 +134,11 @@ struct ContentView: View {
                                 Label("Fasting BG Chart", systemImage: "chart.xyaxis.line")
                             }
                             Button {
+                                showingBedtimeChart = true
+                            } label: {
+                                Label("Bedtime BG Chart", systemImage: "moon.fill")
+                            }
+                            Button {
                                 showingPeakChart = true
                             } label: {
                                 Label("Peak Readings", systemImage: "chart.line.flattrend.xyaxis")
@@ -198,6 +204,10 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingFastingChart) {
                 FastingChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingBedtimeChart) {
+                BedtimeChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
             .sheet(isPresented: $showingDailyChart) {

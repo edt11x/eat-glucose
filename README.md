@@ -53,6 +53,7 @@ Access from the chart icon in the toolbar:
 
 - **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table.
 - **Fasting BG Chart** — First BG reading after 5:00 AM each day with average dotted line, summary stats, and reading table.
+- **Bedtime BG Chart** — Last BG reading before 5:00 AM each day with average dotted line, multi-meter estimate, summary stats, and reading table.
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time using multi-meter average BG values. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
@@ -180,6 +181,7 @@ edt-glucose/
 ├── MultiMeterEstimator.swift     # Shared deviation computation + multi-meter formula
 ├── LocationManager.swift         # GPS + reverse geocoding
 ├── FastingChartView.swift        # Fasting BG chart
+├── BedtimeChartView.swift       # Bedtime BG chart
 ├── DailyReadingsChartView.swift  # Daily BG readings chart
 ├── PeakReadingsChartView.swift   # Peak BG per day chart
 ├── WeeklyCurveChartView.swift    # Historical vs current week comparison
