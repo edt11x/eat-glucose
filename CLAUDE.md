@@ -17,7 +17,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 - **SwiftUI** — all views
 - **SwiftData** — single `@Model` class `GlucoseEvent` in `Item.swift`, on-device SQLite
-- **Swift Charts** — fasting, daily, peak, weekly curve, and A1C estimate charts
+- **Swift Charts** — fasting, bedtime, daily, peak, weekly curve, A1C estimate, meal spacing, and pre-meal scatter charts
 - **CoreLocation** — GPS location with reverse geocoding via `LocationManager`
 - **UserDefaults** — user-configurable lists and preferences via `SettingsManager` singleton
 - **@Observable** — `SettingsManager` and `LocationManager` use Observation framework
@@ -36,10 +36,14 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `Item.swift` | `GlucoseEvent` SwiftData model |
 | `DataExporter.swift` | JSON import/export, `Codable` DTO, `FileDocument` |
 | `FastingChartView.swift` | Fasting BG chart with average line |
+| `BedtimeChartView.swift` | Bedtime BG chart (last reading before 5 AM) |
 | `DailyReadingsChartView.swift` | Day's BG readings chart with day picker |
 | `PeakReadingsChartView.swift` | Peak (max) BG per day chart |
 | `WeeklyCurveChartView.swift` | Historical smoothed vs current week comparison |
 | `A1CEstimateChartView.swift` | Rolling 90-day estimated A1C chart |
+| `AvgTimeBetweenMealsChartView.swift` | Daily average hours between meals over time |
+| `BestMealSpacingView.swift` | Meal spacing vs BG scatter plot |
+| `PreMealBGScatterView.swift` | Pre-meal BG vs time since last meal scatter |
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
 | `LocationManager.swift` | GPS + reverse geocoding (`@MainActor @Observable`) |
