@@ -337,6 +337,8 @@ struct EventRow: View {
     var timeSinceLastMeal: TimeInterval? = nil
     var meterDeviations: [MultiMeterEstimator.MeterDeviation] = []
 
+    private var settings: SettingsManager { SettingsManager.shared }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
