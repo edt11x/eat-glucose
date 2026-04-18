@@ -46,6 +46,10 @@ final class GlucoseEvent {
     var testStripLot: String?
     var testStripExpiration: Date?
 
+    // Experiment tracking
+    var experimentQuantity: Double?
+    var experimentQuantityUnit: String?
+
     init(
         timestamp: Date = Date(),
         eventType: String = "Blood Glucose Measurement",
@@ -67,7 +71,9 @@ final class GlucoseEvent {
         proteinGuess: Int? = nil,
         glycemicIndexGuess: Int? = nil,
         testStripLot: String? = nil,
-        testStripExpiration: Date? = nil
+        testStripExpiration: Date? = nil,
+        experimentQuantity: Double? = nil,
+        experimentQuantityUnit: String? = nil
     ) {
         self.timestamp = timestamp
         self.eventType = eventType
@@ -90,5 +96,7 @@ final class GlucoseEvent {
         self.glycemicIndexGuess = glycemicIndexGuess
         self.testStripLot = testStripLot
         self.testStripExpiration = testStripExpiration
+        self.experimentQuantity = experimentQuantity
+        self.experimentQuantityUnit = experimentQuantityUnit
     }
 }

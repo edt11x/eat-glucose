@@ -27,6 +27,8 @@ struct ContentView: View {
     @State private var showingPreMealScatter = false
     @State private var showingBestMealSpacing = false
     @State private var showingBedtimeChart = false
+    @State private var showingAverageBGChart = false
+    @State private var showingExperimentComparison = false
 
     private var theme: AppTheme { settings.currentTheme }
 
@@ -139,6 +141,11 @@ struct ContentView: View {
                                 Label("Bedtime BG Chart", systemImage: "moon.fill")
                             }
                             Button {
+                                showingAverageBGChart = true
+                            } label: {
+                                Label("Average BG", systemImage: "chart.line.uptrend.xyaxis.circle")
+                            }
+                            Button {
                                 showingPeakChart = true
                             } label: {
                                 Label("Peak Readings", systemImage: "chart.line.flattrend.xyaxis")
@@ -169,6 +176,12 @@ struct ContentView: View {
                                 showingBestMealSpacing = true
                             } label: {
                                 Label("Best Meal Spacing", systemImage: "star.circle")
+                            }
+                            Divider()
+                            Button {
+                                showingExperimentComparison = true
+                            } label: {
+                                Label("Experiment Comparison", systemImage: "flask.fill")
                             }
                             Divider()
                             Button {
@@ -240,6 +253,14 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingBestMealSpacing) {
                 BestMealSpacingView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingAverageBGChart) {
+                AverageBGChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingExperimentComparison) {
+                ExperimentComparisonChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
         }
@@ -450,6 +471,20 @@ struct EventRow: View {
                         .font(.caption2)
                         .foregroundStyle(exp < Date() ? .red : theme.tertiaryTextColor)
                     }
+                }
+            }
+
+            // Experiment details
+            if settings.experiments.contains(event.eventType) {
+                if let qty = event.experimentQuantity, let unit = event.experimentQuantityUnit {
+                    Label(
+                        qty.truncatingRemainder(dividingBy: 1) == 0
+                            ? String(format: "%.0f %@", qty, unit)
+                            : String(format: "%.1f %@", qty, unit),
+                        systemImage: "flask.fill"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(theme.secondaryTextColor)
                 }
             }
 

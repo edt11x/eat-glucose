@@ -21,7 +21,7 @@ At the top of the event list, the app displays:
 
 Each event captures:
 
-- **Event Type** — Blood Glucose Measurement, Start of Meal, End of Meal, Walk, A1C, or Bedtime.
+- **Event Type** — Blood Glucose Measurement, Start of Meal, End of Meal, Walk, A1C, Bedtime, or any user-defined Experiment.
 - **Date & Time** — Defaults to the current time. Tap to edit if logging a past event.
 - **Blood Glucose** — Optional reading in mg/dL (0–600). Input is validated and clamped to this range.
 - **BG Guess** — Guess your blood glucose before measuring to track prediction accuracy.
@@ -33,6 +33,7 @@ Each event captures:
 - **Meal Details** — Food description, estimated calories, carbs, protein, and glycemic index.
 - **Walk Distance** — Distance in miles for Walk events.
 - **A1C** — A1C percentage for A1C events.
+- **Experiment Details** — Quantity and unit of measure for experiment events (e.g., 2000 mg Inositol).
 - **Location** — Available for all event types. Enter manually, select from history, or use GPS with reverse geocoding.
 - **Activity Description** — Optional free-text field.
 - **Notes** — Optional free-text field.
@@ -61,6 +62,15 @@ Access from the chart icon in the toolbar:
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
 - **Pre-Meal BG Scatter** — Scatter plot of pre-meal BG readings vs hours since last meal, filterable by meal type.
+- **Average BG** — Daily average of all BG readings with multi-meter estimate line, average dotted line, summary stats, and readings table.
+- **Experiment Comparison** — Compare BG data during a named experiment against the same duration before it started. Select between Fasting BG or Average BG metrics. Shows overlaid before/during series with summary stats and change delta.
+
+### Experiments
+
+Track named experiments (e.g., supplements like Inositol, dietary changes) to measure their impact on blood glucose:
+- **Define experiments** in Settings under "Experiments" (e.g., "Inositol", "Low Carb Week").
+- **Log experiment events** — each experiment appears as a selectable event type with quantity, unit of measure, and notes.
+- **Compare results** — the Experiment Comparison chart overlays BG data from before and during the experiment to visualize changes.
 
 ### Multi-Meter Average Formula
 
@@ -117,6 +127,7 @@ Access settings by tapping the gear icon in the top-left corner:
 - **Meter Types** — Add, delete, or reorder. Reset to defaults.
 - **Medicine Types** — Add with default dose and unit. Reset to defaults.
 - **Locations** — Auto-saved from events and GPS, manually editable. Reset to defaults.
+- **Experiments** — Add named experiments to track (e.g., supplements, dietary changes). Reset to defaults.
 - **Units of Measure** — Customize available dose units. Reset to defaults.
 
 ### Themes
@@ -158,7 +169,7 @@ Access settings by tapping the gear icon in the top-left corner:
 
 - **SwiftUI** — All views are built with SwiftUI.
 - **SwiftData** — `GlucoseEvent` is the single `@Model` class. Data is stored on-device in SQLite via SwiftData.
-- **Swift Charts** — Fasting, bedtime, daily (with day/week/month historical overlays), peak, weekly curve, A1C estimate, meal spacing, and pre-meal scatter chart visualizations.
+- **Swift Charts** — Fasting, bedtime, daily (with day/week/month historical overlays), average, peak, weekly curve, A1C estimate, meal spacing, pre-meal scatter, and experiment comparison chart visualizations.
 - **CoreLocation** — GPS location and reverse geocoding via `LocationManager`.
 - **UserNotifications** — Post-meal timer reminders via `NotificationManager` (Swift `actor`).
 - **UserDefaults** — User-configurable lists and theme preference via `SettingsManager` singleton.
@@ -190,6 +201,8 @@ edt-glucose/
 ├── AvgTimeBetweenMealsChartView.swift  # Average meal spacing over time
 ├── BestMealSpacingView.swift     # Meal spacing vs BG scatter plot
 ├── PreMealBGScatterView.swift    # Pre-meal BG vs time since last meal
+├── AverageBGChartView.swift     # Daily average BG chart
+├── ExperimentComparisonChartView.swift  # Before vs during experiment comparison
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
 └── Assets.xcassets/              # App icon and colors
 ```

@@ -54,6 +54,10 @@ struct EventFormView: View {
     @State private var testStripExpiration: Date?
     @State private var hasTestStripExpiration: Bool
 
+    // Experiment
+    @State private var experimentQuantityText: String
+    @State private var experimentQuantityUnit: String
+
     private var isEditing: Bool { existingEvent != nil }
 
     init(event: GlucoseEvent? = nil) {
@@ -105,6 +109,17 @@ struct EventFormView: View {
         _glycemicIndexGuessText = State(initialValue:
             event?.glycemicIndexGuess != nil ? "\(event!.glycemicIndexGuess!)" : "")
 
+        // Experiment
+        _experimentQuantityText = State(initialValue: {
+            if let qty = event?.experimentQuantity {
+                return qty.truncatingRemainder(dividingBy: 1) == 0
+                    ? String(format: "%.0f", qty)
+                    : String(qty)
+            }
+            return ""
+        }())
+        _experimentQuantityUnit = State(initialValue: event?.experimentQuantityUnit ?? "mg")
+
         // Test strip - auto-fill from settings for new events
         if let event = event {
             _testStripLot = State(initialValue: event.testStripLot ?? "")
@@ -143,6 +158,10 @@ struct EventFormView: View {
         eventType == "A1C"
     }
 
+    private var showExperiment: Bool {
+        settings.experiments.contains(eventType)
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -150,6 +169,11 @@ struct EventFormView: View {
                     Picker("Event Type", selection: $eventType) {
                         ForEach(settings.eventTypes, id: \.self) { type in
                             Text(type).tag(type)
+                        }
+                        if !settings.experiments.isEmpty {
+                            ForEach(settings.experiments, id: \.self) { exp in
+                                Text("🧪 \(exp)").tag(exp)
+                            }
                         }
                     }
 
@@ -353,6 +377,21 @@ struct EventFormView: View {
                     }
                 }
 
+                if showExperiment {
+                    Section("Experiment Details") {
+                        HStack {
+                            TextField("Quantity", text: $experimentQuantityText)
+                                .keyboardType(.decimalPad)
+                            Picker("Unit", selection: $experimentQuantityUnit) {
+                                ForEach(settings.unitsOfMeasure, id: \.self) { unit in
+                                    Text(unit).tag(unit)
+                                }
+                            }
+                            .labelsHidden()
+                        }
+                    }
+                }
+
                 Section("Location") {
                     HStack {
                         TextField("Location", text: $locationName)
@@ -464,6 +503,9 @@ struct EventFormView: View {
         let effectiveA1cValue = showA1C ? a1cValue : nil
         let effectiveTestStripLot = showBloodGlucose && !testStripLot.isEmpty ? testStripLot : nil
         let effectiveTestStripExpiration = showBloodGlucose && hasTestStripExpiration ? testStripExpiration : nil
+        let experimentQuantity = Double(experimentQuantityText)
+        let effectiveExperimentQuantity = showExperiment ? experimentQuantity : nil
+        let effectiveExperimentQuantityUnit = showExperiment && experimentQuantity != nil ? experimentQuantityUnit : nil
 
         // Auto-save new location
         if let loc = effectiveLocationName {
@@ -515,6 +557,8 @@ struct EventFormView: View {
             event.glycemicIndexGuess = effectiveGlycemicIndexGuess
             event.testStripLot = effectiveTestStripLot
             event.testStripExpiration = effectiveTestStripExpiration
+            event.experimentQuantity = effectiveExperimentQuantity
+            event.experimentQuantityUnit = effectiveExperimentQuantityUnit
         } else {
             let newEvent = GlucoseEvent(
                 timestamp: timestamp,
@@ -537,7 +581,9 @@ struct EventFormView: View {
                 proteinGuess: effectiveProteinGuess,
                 glycemicIndexGuess: effectiveGlycemicIndexGuess,
                 testStripLot: effectiveTestStripLot,
-                testStripExpiration: effectiveTestStripExpiration
+                testStripExpiration: effectiveTestStripExpiration,
+                experimentQuantity: effectiveExperimentQuantity,
+                experimentQuantityUnit: effectiveExperimentQuantityUnit
             )
             modelContext.insert(newEvent)
         }

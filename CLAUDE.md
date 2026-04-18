@@ -17,7 +17,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 - **SwiftUI** — all views
 - **SwiftData** — single `@Model` class `GlucoseEvent` in `Item.swift`, on-device SQLite
-- **Swift Charts** — fasting, bedtime, daily, peak, weekly curve, A1C estimate, meal spacing, and pre-meal scatter charts
+- **Swift Charts** — fasting, bedtime, daily, average, peak, weekly curve, A1C estimate, meal spacing, pre-meal scatter, and experiment comparison charts
 - **CoreLocation** — GPS location with reverse geocoding via `LocationManager`
 - **UserDefaults** — user-configurable lists and preferences via `SettingsManager` singleton
 - **@Observable** — `SettingsManager` and `LocationManager` use Observation framework
@@ -44,6 +44,8 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `AvgTimeBetweenMealsChartView.swift` | Daily average hours between meals over time |
 | `BestMealSpacingView.swift` | Meal spacing vs BG scatter plot |
 | `PreMealBGScatterView.swift` | Pre-meal BG vs time since last meal scatter |
+| `AverageBGChartView.swift` | Daily average BG chart with multi-meter estimates |
+| `ExperimentComparisonChartView.swift` | Before vs during experiment BG comparison |
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
 | `LocationManager.swift` | GPS + reverse geocoding (`@MainActor @Observable`) |
@@ -67,7 +69,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 Core fields: `timestamp`, `eventType`, `mealType?`, `bloodGlucose?`, `meterType?`, `activityDescription`, `notes`
 
-Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `locationName?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`
+Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `locationName?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `experimentQuantity?`, `experimentQuantityUnit?`
 
 ## Event Types & Conditional Logic
 
@@ -78,6 +80,7 @@ Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `bloodGl
 | Walk | Walk distance in miles |
 | A1C | A1C percentage input |
 | Bedtime | Activity + notes only |
+| Experiments (user-defined) | Experiment quantity, unit of measure |
 | All types | Location (with GPS), activity, notes |
 
 ## Multi-Meter Average Formula

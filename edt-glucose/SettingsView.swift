@@ -127,6 +127,12 @@ struct SettingsView: View {
                 )
 
                 ConfigurableListSection(
+                    title: "Experiments",
+                    items: $settings.experiments,
+                    onReset: { settings.resetExperiments() }
+                )
+
+                ConfigurableListSection(
                     title: "Units of Measure",
                     items: $settings.unitsOfMeasure,
                     onReset: { settings.resetUnitsOfMeasure() }

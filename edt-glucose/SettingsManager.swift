@@ -45,6 +45,7 @@ final class SettingsManager {
     private let testStripDefaultsKey = "testStripDefaults"
     private let activitiesKey = "customActivities"
     private let mealPresetsKey = "savedMealPresets"
+    private let experimentsKey = "customExperiments"
 
     var appearanceMode: Int {
         didSet { UserDefaults.standard.set(appearanceMode, forKey: appearanceModeKey) }
@@ -95,6 +96,7 @@ final class SettingsManager {
 
     private let defaultLocations: [String] = []
     private let defaultActivities: [String] = []
+    private let defaultExperiments: [String] = []
 
     private let defaultTimerValues = [0, 30, 45, 60, 90, 120, 240]
 
@@ -152,6 +154,10 @@ final class SettingsManager {
                 UserDefaults.standard.set(data, forKey: mealPresetsKey)
             }
         }
+    }
+
+    var experiments: [String] {
+        didSet { UserDefaults.standard.set(experiments, forKey: experimentsKey) }
     }
 
     private init() {
@@ -225,6 +231,12 @@ final class SettingsManager {
         } else {
             self.mealPresets = []
         }
+
+        if let saved = UserDefaults.standard.stringArray(forKey: experimentsKey) {
+            self.experiments = saved
+        } else {
+            self.experiments = defaultExperiments
+        }
     }
 
     func resetEventTypes() { eventTypes = defaultEventTypes }
@@ -264,4 +276,13 @@ final class SettingsManager {
     }
 
     func resetMealPresets() { mealPresets = [] }
+
+    func resetExperiments() { experiments = defaultExperiments }
+
+    func addExperimentIfNew(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty && !experiments.contains(trimmed) {
+            experiments.append(trimmed)
+        }
+    }
 }
