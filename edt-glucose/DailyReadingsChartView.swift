@@ -97,8 +97,71 @@ struct DailyReadingsChartView: View {
             }
     }
 
+    // For week mode: readings normalized to offset from current week's Monday start
+    private var weeklyReadings: [FastingDataPoint] {
+        readingsForWeekNormalized(weeksBack: 0)
+    }
+
+    private func readingsForWeekNormalized(weeksBack: Int) -> [FastingDataPoint] {
+        var cal = Calendar.current
+        cal.firstWeekday = 2 // Monday
+        let currentWeekStart = cal.dateInterval(of: .weekOfYear, for: selectedDate)!.start
+        let targetWeekStart = cal.date(byAdding: .day, value: -7 * weeksBack, to: currentWeekStart)!
+        let targetWeekEnd = cal.date(byAdding: .day, value: 7, to: targetWeekStart)!
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= targetWeekStart
+                && $0.timestamp < targetWeekEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { event in
+                // Normalize: preserve offset from week start, but map onto current week
+                let offset = event.timestamp.timeIntervalSince(targetWeekStart)
+                let normalizedDate = currentWeekStart.addingTimeInterval(offset)
+                return FastingDataPoint(date: normalizedDate, glucose: event.bloodGlucose!)
+            }
+    }
+
+    // For month mode: readings normalized to offset from current month start
+    private var monthlyReadings: [FastingDataPoint] {
+        readingsForMonthNormalized(monthsBack: 0)
+    }
+
+    private func readingsForMonthNormalized(monthsBack: Int) -> [FastingDataPoint] {
+        let calendar = Calendar.current
+        let currentMonthStart = calendar.dateInterval(of: .month, for: selectedDate)!.start
+        let targetMonthStart = calendar.date(byAdding: .month, value: -monthsBack, to: currentMonthStart)!
+        let targetMonthEnd = calendar.date(byAdding: .month, value: 1, to: targetMonthStart)!
+        let currentMonthDays = Double(calendar.range(of: .day, in: .month, for: currentMonthStart)!.count)
+        let targetMonthDays = Double(calendar.range(of: .day, in: .month, for: targetMonthStart)!.count)
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= targetMonthStart
+                && $0.timestamp < targetMonthEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { event in
+                // Normalize: scale offset proportionally to handle different month lengths
+                let offset = event.timestamp.timeIntervalSince(targetMonthStart)
+                let fraction = offset / (targetMonthDays * 86400)
+                let normalizedOffset = fraction * (currentMonthDays * 86400)
+                let normalizedDate = currentMonthStart.addingTimeInterval(normalizedOffset)
+                return FastingDataPoint(date: normalizedDate, glucose: event.bloodGlucose!)
+            }
+    }
+
     private var currentReadings: [FastingDataPoint] {
-        navigationStep == .day ? dailyReadings : rangeReadings
+        switch navigationStep {
+        case .day: return dailyReadings
+        case .week: return weeklyReadings
+        case .month: return monthlyReadings
+        }
     }
 
     private var averageGlucose: Int {
@@ -107,15 +170,28 @@ struct DailyReadingsChartView: View {
         return values.reduce(0, +) / values.count
     }
 
+    private let historicalOffsets = [1, 3, 5]
+
     private var allVisibleValues: [Int] {
-        if navigationStep == .day {
+        switch navigationStep {
+        case .day:
             var values = dailyReadings.map(\.glucose)
             for offset in 1...5 {
                 values.append(contentsOf: readingsForDayNormalized(offset: offset).map(\.glucose))
             }
             return values
-        } else {
-            return rangeReadings.map(\.glucose)
+        case .week:
+            var values = weeklyReadings.map(\.glucose)
+            for offset in historicalOffsets {
+                values.append(contentsOf: readingsForWeekNormalized(weeksBack: offset).map(\.glucose))
+            }
+            return values
+        case .month:
+            var values = monthlyReadings.map(\.glucose)
+            for offset in historicalOffsets {
+                values.append(contentsOf: readingsForMonthNormalized(monthsBack: offset).map(\.glucose))
+            }
+            return values
         }
     }
 
@@ -154,19 +230,41 @@ struct DailyReadingsChartView: View {
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            if navigationStep == .day {
+                            switch navigationStep {
+                            case .day:
                                 dayChart
-                            } else {
-                                rangeChart
+                            case .week:
+                                weekChart
+                            case .month:
+                                monthChart
                             }
 
-                            // Legend (day mode only)
-                            if navigationStep == .day {
+                            // Legend
+                            switch navigationStep {
+                            case .day:
                                 HStack(spacing: 12) {
                                     legendItem(color: .blue, label: "Selected Day")
                                     legendItem(color: .blue.opacity(0.63), label: "1d ago")
                                     legendItem(color: .blue.opacity(0.27), label: "3d ago")
                                     legendItem(color: .blue.opacity(0.15), label: "5d ago")
+                                }
+                                .font(.caption2)
+                                .padding(.horizontal)
+                            case .week:
+                                HStack(spacing: 12) {
+                                    legendItem(color: .blue, label: "This Week")
+                                    legendItem(color: .blue.opacity(0.5), label: "1w ago")
+                                    legendItem(color: .blue.opacity(0.3), label: "3w ago")
+                                    legendItem(color: .blue.opacity(0.15), label: "5w ago")
+                                }
+                                .font(.caption2)
+                                .padding(.horizontal)
+                            case .month:
+                                HStack(spacing: 12) {
+                                    legendItem(color: .blue, label: "This Month")
+                                    legendItem(color: .blue.opacity(0.5), label: "1m ago")
+                                    legendItem(color: .blue.opacity(0.3), label: "3m ago")
+                                    legendItem(color: .blue.opacity(0.15), label: "5m ago")
                                 }
                                 .font(.caption2)
                                 .padding(.horizontal)
@@ -315,14 +413,85 @@ struct DailyReadingsChartView: View {
         .padding()
     }
 
-    // MARK: - Week/Month chart with actual timestamps
+    // MARK: - Week chart with historical overlays
 
-    private var rangeChart: some View {
+    private var weekChart: some View {
         Chart {
-            ForEach(rangeReadings) { point in
+            // Historical week overlays (faded)
+            ForEach(historicalOffsets.reversed(), id: \.self) { weeksBack in
+                let prevReadings = readingsForWeekNormalized(weeksBack: weeksBack)
+                let opacity: Double = weeksBack == 1 ? 0.5 : weeksBack == 3 ? 0.3 : 0.15
+                ForEach(prevReadings) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("mg/dL", point.glucose),
+                        series: .value("Series", "Week-\(weeksBack)")
+                    )
+                    .foregroundStyle(Color.blue.opacity(opacity))
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                }
+            }
+
+            // Current week (full opacity, smoothed)
+            ForEach(weeklyReadings) { point in
                 LineMark(
                     x: .value("Time", point.date),
+                    y: .value("mg/dL", point.glucose),
+                    series: .value("Series", "Current")
+                )
+                .foregroundStyle(Color.blue)
+                .interpolationMethod(.catmullRom)
+
+                PointMark(
+                    x: .value("Time", point.date),
                     y: .value("mg/dL", point.glucose)
+                )
+                .foregroundStyle(glucoseColor(for: point.glucose))
+                .symbolSize(30)
+            }
+
+            RuleMark(y: .value("Average", averageGlucose))
+                .foregroundStyle(.orange.opacity(0.7))
+                .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
+                .annotation(position: .top, alignment: .leading) {
+                    Text("Avg: \(averageGlucose)")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
+        }
+        .chartYAxisLabel("mg/dL")
+        .chartYScale(domain: yDomain)
+        .frame(height: 300)
+        .padding()
+    }
+
+    // MARK: - Month chart with historical overlays
+
+    private var monthChart: some View {
+        Chart {
+            // Historical month overlays (faded)
+            ForEach(historicalOffsets.reversed(), id: \.self) { monthsBack in
+                let prevReadings = readingsForMonthNormalized(monthsBack: monthsBack)
+                let opacity: Double = monthsBack == 1 ? 0.5 : monthsBack == 3 ? 0.3 : 0.15
+                ForEach(prevReadings) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("mg/dL", point.glucose),
+                        series: .value("Series", "Month-\(monthsBack)")
+                    )
+                    .foregroundStyle(Color.blue.opacity(opacity))
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                }
+            }
+
+            // Current month (full opacity, smoothed)
+            ForEach(monthlyReadings) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("mg/dL", point.glucose),
+                    series: .value("Series", "Current")
                 )
                 .foregroundStyle(Color.blue)
                 .interpolationMethod(.catmullRom)

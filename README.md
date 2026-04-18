@@ -51,13 +51,13 @@ Each event captures:
 
 Access from the chart icon in the toolbar:
 
-- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table.
+- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
 - **Fasting BG Chart** — First BG reading after 5:00 AM each day with average dotted line, summary stats, and reading table.
 - **Bedtime BG Chart** — Last BG reading before 5:00 AM each day with average dotted line, multi-meter estimate, summary stats, and reading table.
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time using multi-meter average BG values. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
-- **Meter Comparison** — Compares each meter against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs.
+- **Meter Comparison** — Shows all meters (from events and Settings) compared against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs. Meters without comparison pairs display a status message with their reading count.
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
 - **Pre-Meal BG Scatter** — Scatter plot of pre-meal BG readings vs hours since last meal, filterable by meal type.
@@ -158,7 +158,7 @@ Access settings by tapping the gear icon in the top-left corner:
 
 - **SwiftUI** — All views are built with SwiftUI.
 - **SwiftData** — `GlucoseEvent` is the single `@Model` class. Data is stored on-device in SQLite via SwiftData.
-- **Swift Charts** — Fasting, daily, peak, weekly curve, and A1C estimate chart visualizations.
+- **Swift Charts** — Fasting, bedtime, daily (with day/week/month historical overlays), peak, weekly curve, A1C estimate, meal spacing, and pre-meal scatter chart visualizations.
 - **CoreLocation** — GPS location and reverse geocoding via `LocationManager`.
 - **UserNotifications** — Post-meal timer reminders via `NotificationManager` (Swift `actor`).
 - **UserDefaults** — User-configurable lists and theme preference via `SettingsManager` singleton.

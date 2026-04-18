@@ -21,6 +21,7 @@ struct MeterDeviationResult: Identifiable {
     let pairs: [MeterPair]
     let averageDeviation: Double
     let averagePercentDeviation: Double
+    var totalReadings: Int = 0
 }
 
 struct MeterDeviationView: View {
@@ -43,11 +44,15 @@ struct MeterDeviationView: View {
         }
 
         let precisionEvents = bgEvents.filter { $0.meterType == referenceMeter }
-        let otherMeters = Set(bgEvents.compactMap(\.meterType)).filter { $0 != referenceMeter && $0 != "N/A" }
+        // Include all meters from events AND from settings (user-added meters)
+        let metersFromEvents = Set(bgEvents.compactMap(\.meterType))
+        let metersFromSettings = Set(settings.meterTypes)
+        let allMeters = metersFromEvents.union(metersFromSettings)
+            .filter { $0 != referenceMeter && $0 != "N/A" }
 
         var results: [MeterDeviationResult] = []
 
-        for meter in otherMeters.sorted() {
+        for meter in allMeters.sorted() {
             let meterEvents = bgEvents.filter { $0.meterType == meter }
             var pairs: [MeterPair] = []
 
@@ -67,6 +72,8 @@ struct MeterDeviationView: View {
                 }
             }
 
+            let readingCount = meterEvents.count
+
             if !pairs.isEmpty {
                 let avgDev = Double(pairs.map(\.deviation).reduce(0, +)) / Double(pairs.count)
                 let avgPctDev: Double = {
@@ -81,7 +88,17 @@ struct MeterDeviationView: View {
                     meterName: meter,
                     pairs: pairs,
                     averageDeviation: avgDev,
-                    averagePercentDeviation: avgPctDev
+                    averagePercentDeviation: avgPctDev,
+                    totalReadings: readingCount
+                ))
+            } else {
+                // Show meter even without comparison pairs
+                results.append(MeterDeviationResult(
+                    meterName: meter,
+                    pairs: [],
+                    averageDeviation: 0,
+                    averagePercentDeviation: 0,
+                    totalReadings: readingCount
                 ))
             }
         }
@@ -94,9 +111,9 @@ struct MeterDeviationView: View {
             Group {
                 if deviationResults.isEmpty {
                     ContentUnavailableView(
-                        "No Comparison Data",
+                        "No Other Meters",
                         systemImage: "arrow.left.arrow.right",
-                        description: Text("To compare meters, take readings with the Precision Neo and another meter within 5 minutes of each other.")
+                        description: Text("Add a meter besides \(referenceMeter) in Settings to begin comparing meters.")
                     )
                 } else {
                     List {
@@ -114,35 +131,43 @@ struct MeterDeviationView: View {
                                         .font(.headline)
                                         .foregroundStyle(theme.eventTypeColor)
 
-                                    HStack(spacing: 24) {
-                                        VStack(alignment: .leading) {
-                                            Text("Avg Deviation")
-                                                .font(.caption2)
-                                                .foregroundStyle(theme.secondaryTextColor)
-                                            Text(String(format: "%+.1f mg/dL", result.averageDeviation))
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(deviationColor(result.averageDeviation))
-                                        }
+                                    if result.pairs.isEmpty {
+                                        Text(result.totalReadings > 0
+                                             ? "\(result.totalReadings) reading\(result.totalReadings == 1 ? "" : "s") — no \(referenceMeter) readings within 5 minutes for comparison."
+                                             : "No readings yet. Take a BG measurement with this meter to begin tracking.")
+                                            .font(.caption)
+                                            .foregroundStyle(theme.secondaryTextColor)
+                                    } else {
+                                        HStack(spacing: 24) {
+                                            VStack(alignment: .leading) {
+                                                Text("Avg Deviation")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(theme.secondaryTextColor)
+                                                Text(String(format: "%+.1f mg/dL", result.averageDeviation))
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundStyle(deviationColor(result.averageDeviation))
+                                            }
 
-                                        VStack(alignment: .leading) {
-                                            Text("Avg % Deviation")
-                                                .font(.caption2)
-                                                .foregroundStyle(theme.secondaryTextColor)
-                                            Text(String(format: "%+.1f%%", result.averagePercentDeviation))
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(deviationColor(result.averagePercentDeviation))
-                                        }
+                                            VStack(alignment: .leading) {
+                                                Text("Avg % Deviation")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(theme.secondaryTextColor)
+                                                Text(String(format: "%+.1f%%", result.averagePercentDeviation))
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundStyle(deviationColor(result.averagePercentDeviation))
+                                            }
 
-                                        VStack(alignment: .leading) {
-                                            Text("Pairs")
-                                                .font(.caption2)
-                                                .foregroundStyle(theme.secondaryTextColor)
-                                            Text("\(result.pairs.count)")
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(theme.eventTypeColor)
+                                            VStack(alignment: .leading) {
+                                                Text("Pairs")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(theme.secondaryTextColor)
+                                                Text("\(result.pairs.count)")
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundStyle(theme.eventTypeColor)
+                                            }
                                         }
                                     }
                                 }
