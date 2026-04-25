@@ -52,7 +52,7 @@ Each event captures:
 
 Access from the chart icon in the toolbar:
 
-- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
+- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table. Day view includes the last BG reading from the previous night as a purple diamond marker at midnight, providing a starting reference point. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
 - **Fasting BG Chart** — First BG reading after 5:00 AM each day with average dotted line, summary stats, and reading table.
 - **Bedtime BG Chart** — Last BG reading before 5:00 AM each day with average dotted line, multi-meter estimate, summary stats, and reading table.
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
@@ -204,5 +204,8 @@ edt-glucose/
 ├── AverageBGChartView.swift     # Daily average BG chart
 ├── ExperimentComparisonChartView.swift  # Before vs during experiment comparison
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
-└── Assets.xcassets/              # App icon and colors
+├── Assets.xcassets/              # App icon and colors
+├── COMMIT_WORKFLOW.md            # Commit workflow procedure
+└── scripts/
+    └── commit-workflow.sh        # Automated commit helper script
 ```

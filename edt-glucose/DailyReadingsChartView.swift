@@ -76,13 +76,41 @@ struct DailyReadingsChartView: View {
         readingsForDayNormalized(offset: 0)
     }
 
+    // Last BG reading from the previous night (before the selected day's start)
+    private func previousNightReading(for offset: Int) -> FastingDataPoint? {
+        let calendar = Calendar.current
+        let targetDay = calendar.date(byAdding: .day, value: -offset, to: selectedDate)!
+        let dayStart = calendar.startOfDay(for: targetDay)
+
+        // Find the last BG reading before this day started
+        guard let lastNightEvent = events
+            .filter({
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp < dayStart
+            })
+            .max(by: { $0.timestamp < $1.timestamp })
+        else { return nil }
+
+        // Normalize to midnight of the selected date (left edge of chart)
+        let normalizedDate = calendar.startOfDay(for: selectedDate)
+        return FastingDataPoint(date: normalizedDate, glucose: lastNightEvent.bloodGlucose!)
+    }
+
     private func readingsForDayNormalized(offset: Int) -> [FastingDataPoint] {
         let calendar = Calendar.current
         let targetDay = calendar.date(byAdding: .day, value: -offset, to: selectedDate)!
         let dayStart = calendar.startOfDay(for: targetDay)
         let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
 
-        return events
+        var results: [FastingDataPoint] = []
+
+        // Include previous night's last reading as starting point
+        if let prevNight = previousNightReading(for: offset) {
+            results.append(prevNight)
+        }
+
+        let dayReadings = events
             .filter {
                 $0.eventType == "Blood Glucose Measurement"
                 && $0.bloodGlucose != nil
@@ -95,6 +123,9 @@ struct DailyReadingsChartView: View {
                 let normalizedDate = calendar.date(bySettingHour: components.hour!, minute: components.minute!, second: components.second!, of: selectedDate)!
                 return FastingDataPoint(date: normalizedDate, glucose: event.bloodGlucose!)
             }
+
+        results.append(contentsOf: dayReadings)
+        return results
     }
 
     // For week mode: readings normalized to offset from current week's Monday start
@@ -296,12 +327,18 @@ struct DailyReadingsChartView: View {
                                     .foregroundStyle(theme.eventTypeColor)
                                     .padding(.horizontal)
 
-                                ForEach(currentReadings) { point in
+                                ForEach(Array(currentReadings.enumerated()), id: \.element.id) { index, point in
                                     HStack {
                                         if navigationStep == .day {
-                                            Text(point.date, format: .dateTime.hour().minute())
-                                                .font(.caption)
-                                                .foregroundStyle(theme.secondaryTextColor)
+                                            if index == 0 && previousNightReading(for: 0) != nil {
+                                                Text("Prev Night")
+                                                    .font(.caption)
+                                                    .foregroundStyle(.purple)
+                                            } else {
+                                                Text(point.date, format: .dateTime.hour().minute())
+                                                    .font(.caption)
+                                                    .foregroundStyle(theme.secondaryTextColor)
+                                            }
                                         } else {
                                             Text(point.date, format: .dateTime.month().day().hour().minute())
                                                 .font(.caption)
@@ -396,6 +433,22 @@ struct DailyReadingsChartView: View {
                 )
                 .foregroundStyle(glucoseColor(for: point.glucose))
                 .symbolSize(40)
+            }
+
+            // Previous night marker (purple diamond at midnight)
+            if let prevNight = previousNightReading(for: 0) {
+                PointMark(
+                    x: .value("Time", prevNight.date),
+                    y: .value("mg/dL", prevNight.glucose)
+                )
+                .foregroundStyle(.purple)
+                .symbolSize(60)
+                .symbol(.diamond)
+                .annotation(position: .top) {
+                    Text("Prev: \(prevNight.glucose)")
+                        .font(.caption2)
+                        .foregroundStyle(.purple)
+                }
             }
 
             RuleMark(y: .value("Average", averageGlucose))

@@ -37,7 +37,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `DataExporter.swift` | JSON import/export, `Codable` DTO, `FileDocument` |
 | `FastingChartView.swift` | Fasting BG chart with average line |
 | `BedtimeChartView.swift` | Bedtime BG chart (last reading before 5 AM) |
-| `DailyReadingsChartView.swift` | Day's BG readings chart with day picker |
+| `DailyReadingsChartView.swift` | Day/Week/Month BG readings with historical overlays and previous night reading |
 | `PeakReadingsChartView.swift` | Peak (max) BG per day chart |
 | `WeeklyCurveChartView.swift` | Historical smoothed vs current week comparison |
 | `A1CEstimateChartView.swift` | Rolling 90-day estimated A1C chart |
@@ -97,3 +97,14 @@ JSON via `DataExporter`. Structure: `{ exportDate, events: [GlucoseEventData] }`
 ## iCloud
 
 Export saves to `iCloud Drive/Documents/edt-glucose/` when available, falls back to file picker.
+
+## Commit Workflow
+
+See `COMMIT_WORKFLOW.md` for the full procedure. Quick version:
+1. `git status` + `git diff --stat` to assess state
+2. Stage new files (check `.gitignore` first)
+3. Update MEMORY.md, CLAUDE.md, README.md as needed
+4. Commit with descriptive message + `Co-Authored-By` trailer
+5. Push to remote
+
+Shell script: `./scripts/commit-workflow.sh "message"`
