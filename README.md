@@ -13,7 +13,7 @@ edt-glucose lets you log blood glucose measurements and related daily events —
 ### Live Summary
 
 At the top of the event list, the app displays:
-- **Time since last BG measurement** — updates every minute
+- **Time since last BG measurement** — updates every minute. Shows the last BG value and a colored trend arrow: green (within 5% of prior reading), yellow (5–20% change), or red (>20% change). Arrow points up/down to indicate direction of change.
 - **Time since last meal** — updates every minute
 - **Estimated A1C** — calculated from all BG readings using the ADAG formula: `eA1C = (avgBG + 46.7) / 28.7`
 
@@ -43,7 +43,6 @@ Each event captures:
 - Events are displayed in a scrollable list, grouped by day with the most recent day first.
 - Each row shows the event type, time, glucose reading, multi-meter estimate, meter, test strip info, meal type, medicine, walk distance, food details, nutrition estimates, location, A1C, activity, and notes.
 - **Time since last meal** is displayed on each event.
-- **Time to 95 mg/dL** is shown on End of Meal events when a subsequent reading reaches 95 or below.
 - **BG Guess accuracy** shows how close your guess was to the actual reading.
 - **Tap** an event to edit it.
 - **Swipe left** on an event to delete it.
@@ -112,7 +111,7 @@ When enabled in Settings, saving an "End of Meal" event automatically schedules 
 
 ### Data Import & Export
 
-- **Export** — Saves all events as JSON to iCloud Drive (`iCloud Drive/Documents/edt-glucose/`), or falls back to a file picker if iCloud is unavailable.
+- **Export** — Saves all events as JSON to the app's iCloud Drive container (`iCloud Drive/edt-glucose/`), creating the directory if needed. Falls back to a file picker if iCloud is unavailable.
 - **Import** — Import events from a JSON file. Shows a confirmation dialog with the event count before importing.
 - **Load Bundled Test Data** — Import sample data bundled with the app.
 

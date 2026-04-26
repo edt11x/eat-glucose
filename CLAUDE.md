@@ -96,7 +96,7 @@ JSON via `DataExporter`. Structure: `{ exportDate, events: [GlucoseEventData] }`
 
 ## iCloud
 
-Export saves to `iCloud Drive/Documents/edt-glucose/` when available, falls back to file picker.
+Export saves to the app's iCloud Drive container (`iCloud Drive/edt-glucose/`) when available, falls back to file picker.
 
 ## Commit Workflow
 

@@ -207,18 +207,15 @@ struct SettingsView: View {
         do {
             let data = try DataExporter.exportJSON(events: events)
 
-            // Try to save to iCloud Drive edt-glucose folder
-            if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?
-                .appendingPathComponent("Documents")
-                .appendingPathComponent("edt-glucose") {
-                try FileManager.default.createDirectory(at: iCloudURL, withIntermediateDirectories: true)
+            if let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
+                let docsURL = containerURL.appendingPathComponent("Documents")
+                try FileManager.default.createDirectory(at: docsURL, withIntermediateDirectories: true)
                 let filename = exportFilename
-                let fileURL = iCloudURL.appendingPathComponent(filename)
+                let fileURL = docsURL.appendingPathComponent(filename)
                 try data.write(to: fileURL, options: .withoutOverwriting)
                 importMessage = "Exported \(events.count) events to iCloud Drive/edt-glucose/\(filename)"
                 showingImportAlert = true
             } else {
-                // Fallback to file exporter if iCloud is not available
                 exportDocument = JSONDocument(data: data)
                 showingExporter = true
             }

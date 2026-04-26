@@ -49,12 +49,24 @@ struct ContentView: View {
                             let totalMinutes = Int(bgInterval) / 60
                             let hours = totalMinutes / 60
                             let minutes = totalMinutes % 60
-                            Label(
-                                hours > 0 ? "\(hours)h \(minutes)m since last BG" : "\(minutes)m since last BG",
-                                systemImage: "drop.fill"
-                            )
-                            .font(.subheadline)
-                            .foregroundStyle(theme.secondaryTextColor)
+                            let timeText = hours > 0 ? "\(hours)h \(minutes)m since last BG" : "\(minutes)m since last BG"
+
+                            if let pair = lastTwoBGReadings {
+                                let trend = bgTrendArrow(current: pair.current, previous: pair.previous)
+                                HStack(spacing: 4) {
+                                    Label("\(timeText), \(pair.current) mg/dL", systemImage: "drop.fill")
+                                        .font(.subheadline)
+                                        .foregroundStyle(theme.secondaryTextColor)
+                                    Image(systemName: trend.symbol)
+                                        .font(.subheadline)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(trend.color)
+                                }
+                            } else {
+                                Label(timeText, systemImage: "drop.fill")
+                                    .font(.subheadline)
+                                    .foregroundStyle(theme.secondaryTextColor)
+                            }
                         }
                         if let mealInterval = timeSinceLastMealEnd(now: context.date) {
                             let totalMinutes = Int(mealInterval) / 60
@@ -297,6 +309,24 @@ struct ContentView: View {
             $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
         }) else { return nil }
         return now.timeIntervalSince(last.timestamp)
+    }
+
+    // Last two BG readings (most recent first) for trend arrow
+    private var lastTwoBGReadings: (current: Int, previous: Int)? {
+        let bgEvents = events.filter {
+            $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
+        }
+        guard bgEvents.count >= 2,
+              let current = bgEvents[0].bloodGlucose,
+              let previous = bgEvents[1].bloodGlucose else { return nil }
+        return (current, previous)
+    }
+
+    private func bgTrendArrow(current: Int, previous: Int) -> (symbol: String, color: Color) {
+        let pctChange = abs(Double(current - previous) / Double(previous))
+        let color: Color = pctChange <= 0.05 ? .green : pctChange <= 0.20 ? .yellow : .red
+        let symbol = current >= previous ? "arrow.up" : "arrow.down"
+        return (symbol, color)
     }
 
     // Time since the most recent "End of Meal" event
