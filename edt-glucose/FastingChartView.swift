@@ -180,6 +180,20 @@ struct FastingChartView: View {
                                     StatBox(label: "Max", value: "\(maxVal)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Days", value: "\(values.count)", unit: "", theme: theme)
                                 }
+
+                                if !fastingMultiMeterReadings.isEmpty {
+                                    let mmValues = fastingMultiMeterReadings.map(\.glucose)
+                                    let mmAvg = mmValues.reduce(0, +) / max(mmValues.count, 1)
+                                    let mmMin = mmValues.min() ?? 0
+                                    let mmMax = mmValues.max() ?? 0
+
+                                    HStack(spacing: 24) {
+                                        StatBox(label: "Avg (MM)", value: "\(mmAvg)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Min (MM)", value: "\(mmMin)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Max (MM)", value: "\(mmMax)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Days", value: "\(mmValues.count)", unit: "", theme: theme, valueColor: .orange)
+                                    }
+                                }
                             }
                             .padding()
 
@@ -249,13 +263,14 @@ struct StatBox: View {
     let value: String
     let unit: String
     var theme: AppTheme = .dark
+    var valueColor: Color? = nil
 
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
-                .foregroundStyle(theme.eventTypeColor)
+                .foregroundStyle(valueColor ?? theme.eventTypeColor)
             if !unit.isEmpty {
                 Text(unit)
                     .font(.caption2)

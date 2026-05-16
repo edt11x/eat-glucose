@@ -71,6 +71,30 @@ struct DailyReadingsChartView: View {
             .map { FastingDataPoint(date: $0.timestamp, glucose: $0.bloodGlucose!) }
     }
 
+    private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
+        MultiMeterEstimator.computeDeviations(from: events)
+    }
+
+    // Multi-meter estimates for every BG event in the current range
+    private var rangeMultiMeterValues: [Int] {
+        let range = dateRange
+        let deviations = meterDeviations
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= range.start
+                && $0.timestamp < range.end
+            }
+            .compactMap { event in
+                guard let bg = event.bloodGlucose, let meter = event.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: bg, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                return Int(estimate.rounded())
+            }
+    }
+
     // For day mode: readings normalized to time-of-day for overlay
     private var dailyReadings: [FastingDataPoint] {
         readingsForDayNormalized(offset: 0)
@@ -317,20 +341,36 @@ struct DailyReadingsChartView: View {
                                     StatBox(label: "Max", value: "\(maxVal)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Readings", value: "\(values.count)", unit: "", theme: theme)
                                 }
+
+                                let mmValues = rangeMultiMeterValues
+                                if !mmValues.isEmpty {
+                                    let mmAvg = mmValues.reduce(0, +) / max(mmValues.count, 1)
+                                    let mmMin = mmValues.min() ?? 0
+                                    let mmMax = mmValues.max() ?? 0
+
+                                    HStack(spacing: 24) {
+                                        StatBox(label: "Avg (MM)", value: "\(mmAvg)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Min (MM)", value: "\(mmMin)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Max (MM)", value: "\(mmMax)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Readings", value: "\(mmValues.count)", unit: "", theme: theme, valueColor: .orange)
+                                    }
+                                }
                             }
                             .padding()
 
-                            // Readings table
+                            // Readings table (most recent first)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Readings")
                                     .font(.headline)
                                     .foregroundStyle(theme.eventTypeColor)
                                     .padding(.horizontal)
 
-                                ForEach(Array(currentReadings.enumerated()), id: \.element.id) { index, point in
+                                let reversedReadings = Array(currentReadings.reversed())
+                                let prevNightExists = (navigationStep == .day) && previousNightReading(for: 0) != nil
+                                ForEach(Array(reversedReadings.enumerated()), id: \.element.id) { index, point in
                                     HStack {
                                         if navigationStep == .day {
-                                            if index == 0 && previousNightReading(for: 0) != nil {
+                                            if prevNightExists && index == reversedReadings.count - 1 {
                                                 Text("Prev Night")
                                                     .font(.caption)
                                                     .foregroundStyle(.purple)

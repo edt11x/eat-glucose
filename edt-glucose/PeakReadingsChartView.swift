@@ -168,6 +168,20 @@ struct PeakReadingsChartView: View {
                                     StatBox(label: "Max Peak", value: "\(maxVal)", unit: "mg/dL", theme: theme)
                                     StatBox(label: "Days", value: "\(values.count)", unit: "", theme: theme)
                                 }
+
+                                if !peakMultiMeterReadings.isEmpty {
+                                    let mmValues = peakMultiMeterReadings.map(\.glucose)
+                                    let mmAvg = mmValues.reduce(0, +) / max(mmValues.count, 1)
+                                    let mmMin = mmValues.min() ?? 0
+                                    let mmMax = mmValues.max() ?? 0
+
+                                    HStack(spacing: 24) {
+                                        StatBox(label: "Avg Peak (MM)", value: "\(mmAvg)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Min Peak (MM)", value: "\(mmMin)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Max Peak (MM)", value: "\(mmMax)", unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Days", value: "\(mmValues.count)", unit: "", theme: theme, valueColor: .orange)
+                                    }
+                                }
                             }
                             .padding()
 

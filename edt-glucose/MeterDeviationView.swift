@@ -173,8 +173,8 @@ struct MeterDeviationView: View {
                                 }
                                 .padding(.vertical, 4)
 
-                                // Individual readings
-                                ForEach(Array(result.pairs.enumerated()), id: \.offset) { _, pair in
+                                // Individual readings (most recent first)
+                                ForEach(Array(result.pairs.reversed().enumerated()), id: \.offset) { _, pair in
                                     HStack {
                                         Text(pair.timestamp, format: .dateTime.month().day().hour().minute())
                                             .font(.caption2)

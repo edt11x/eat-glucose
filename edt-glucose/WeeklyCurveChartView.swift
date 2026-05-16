@@ -120,6 +120,25 @@ struct WeeklyCurveChartView: View {
         return values.reduce(0, +) / Double(values.count)
     }
 
+    // Historical multi-meter estimates for all BG readings before current week
+    private var historicalMultiMeterValues: [Double] {
+        let deviations = meterDeviations
+        let historical = bgEvents.filter { $0.timestamp < currentWeekStart }
+        return historical.compactMap { event -> Double? in
+            guard let meter = event.meterType,
+                  let estimate = MultiMeterEstimator.estimate(
+                      reading: event.bloodGlucose!, meterType: meter, deviations: deviations
+                  ) else { return nil }
+            return estimate
+        }
+    }
+
+    private var historicalMultiMeterAverage: Double {
+        let values = historicalMultiMeterValues
+        guard !values.isEmpty else { return 0 }
+        return values.reduce(0, +) / Double(values.count)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -235,6 +254,19 @@ struct WeeklyCurveChartView: View {
                                     StatBox(label: "This Week", value: String(format: "%.0f", currentAvg), unit: "mg/dL", theme: theme)
                                     StatBox(label: "Hist Weeks", value: "\(historicalWeeks)", unit: "", theme: theme)
                                     StatBox(label: "This Week", value: "\(currentValues.count)", unit: "readings", theme: theme)
+                                }
+
+                                let mmCurrentValues = currentWeekMultiMeter.map(\.glucose)
+                                let mmHistAvg = historicalMultiMeterAverage
+                                if mmHistAvg > 0 || !mmCurrentValues.isEmpty {
+                                    let mmCurrentAvg = mmCurrentValues.isEmpty ? 0.0 : mmCurrentValues.reduce(0, +) / Double(mmCurrentValues.count)
+
+                                    HStack(spacing: 24) {
+                                        StatBox(label: "Hist Avg (MM)", value: String(format: "%.0f", mmHistAvg), unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "This Week (MM)", value: String(format: "%.0f", mmCurrentAvg), unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Hist Pts", value: "\(historicalMultiMeterValues.count)", unit: "", theme: theme, valueColor: .orange)
+                                        StatBox(label: "This Week", value: "\(mmCurrentValues.count)", unit: "readings", theme: theme, valueColor: .orange)
+                                    }
                                 }
                             }
                             .padding()

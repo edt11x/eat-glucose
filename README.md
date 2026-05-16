@@ -51,12 +51,12 @@ Each event captures:
 
 Access from the chart icon in the toolbar:
 
-- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table. Day view includes the last BG reading from the previous night as a purple diamond marker at midnight, providing a starting reference point. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
+- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table (most recent first). Day view includes the last BG reading from the previous night as a purple diamond marker at midnight, providing a starting reference point. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
 - **Fasting BG Chart** — First BG reading after 5:00 AM each day with average dotted line, summary stats, and reading table.
 - **Bedtime BG Chart** — Last BG reading before 5:00 AM each day with average dotted line, multi-meter estimate, summary stats, and reading table.
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
-- **A1C Estimate** — Rolling 90-day estimated A1C over time using multi-meter average BG values. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
+- **A1C Estimate** — Rolling 90-day estimated A1C over time. Draws a solid purple line for raw average BG and a dotted orange line for multi-meter average BG. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
 - **Meter Comparison** — Shows all meters (from events and Settings) compared against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs. Meters without comparison pairs display a status message with their reading count.
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
@@ -70,6 +70,12 @@ Track named experiments (e.g., supplements like Inositol, dietary changes) to me
 - **Define experiments** in Settings under "Experiments" (e.g., "Inositol", "Low Carb Week").
 - **Log experiment events** — each experiment appears as a selectable event type with quantity, unit of measure, and notes.
 - **Compare results** — the Experiment Comparison chart overlays BG data from before and during the experiment to visualize changes.
+
+### Summary Rows
+
+The Daily Readings, Fasting BG, Bedtime BG, Average BG, Peak Readings, Weekly Curve, and A1C Estimate charts each show a Summary block beneath the chart. When meter-deviation data is available, a second row of stats appears in orange representing the multi-meter-adjusted equivalents (labeled `(MM)`), letting you compare raw vs cross-meter-averaged numbers at a glance.
+
+All time/date-ordered lists in the app (event list, chart readings tables, meter comparison pairs) display the most recent entry first.
 
 ### Multi-Meter Average Formula
 
@@ -205,6 +211,7 @@ edt-glucose/
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
 ├── Assets.xcassets/              # App icon and colors
 ├── COMMIT_WORKFLOW.md            # Commit workflow procedure
+├── prompts/                     # Per-session prompt/answer logs
 └── scripts/
     └── commit-workflow.sh        # Automated commit helper script
 ```

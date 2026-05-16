@@ -26,28 +26,33 @@ struct A1CEstimateChartView: View {
         MultiMeterEstimator.computeDeviations(from: events)
     }
 
-    // Compute rolling 90-day eA1C for each day that has BG data
-    private var a1cDataPoints: [A1CDataPoint] {
+    // Compute rolling 90-day eA1C for each day that has BG data.
+    // When useMultiMeter is true, BG readings are first converted to a multi-meter
+    // estimate using each event's meter type.
+    private func computeA1CPoints(useMultiMeter: Bool) -> [A1CDataPoint] {
         let calendar = Calendar.current
         let bgEvents = events.filter {
             $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
         }
         guard !bgEvents.isEmpty else { return [] }
 
-        // Build array of (date, multi-meter estimate) for all BG readings
         let deviations = meterDeviations
+
         let allEstimates: [(Date, Double)] = bgEvents.compactMap { event in
             let reading = event.bloodGlucose!
-            if let meter = event.meterType,
-               let estimate = MultiMeterEstimator.estimate(
-                   reading: reading, meterType: meter, deviations: deviations
-               ) {
+            if useMultiMeter {
+                guard let meter = event.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: reading, meterType: meter, deviations: deviations
+                      ) else { return nil }
                 return (event.timestamp, estimate)
+            } else {
+                return (event.timestamp, Double(reading))
             }
-            return (event.timestamp, Double(reading))
         }
 
-        // Find all unique days with data
+        guard !allEstimates.isEmpty else { return [] }
+
         let daySet = Set(allEstimates.map { calendar.startOfDay(for: $0.0) })
         let sortedDays = daySet.sorted()
 
@@ -74,8 +79,17 @@ struct A1CEstimateChartView: View {
         return results
     }
 
+    private var a1cDataPoints: [A1CDataPoint] { computeA1CPoints(useMultiMeter: false) }
+    private var a1cMultiMeterPoints: [A1CDataPoint] { computeA1CPoints(useMultiMeter: true) }
+
     private var averageA1C: Double {
         let values = a1cDataPoints.map(\.eA1C)
+        guard !values.isEmpty else { return 0 }
+        return values.reduce(0, +) / Double(values.count)
+    }
+
+    private var averageMultiMeterA1C: Double {
+        let values = a1cMultiMeterPoints.map(\.eA1C)
         guard !values.isEmpty else { return 0 }
         return values.reduce(0, +) / Double(values.count)
     }
@@ -92,7 +106,7 @@ struct A1CEstimateChartView: View {
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Rolling 90-day estimated A1C from multi-meter average BG")
+                            Text("Rolling 90-day estimated A1C from average BG")
                                 .font(.caption)
                                 .foregroundStyle(theme.secondaryTextColor)
                                 .padding(.horizontal)
@@ -117,11 +131,12 @@ struct A1CEstimateChartView: View {
                                 )
                                 .foregroundStyle(.red.opacity(0.08))
 
-                                // A1C line
+                                // A1C line (raw)
                                 ForEach(a1cDataPoints) { point in
                                     LineMark(
                                         x: .value("Date", point.date, unit: .day),
-                                        y: .value("eA1C %", point.eA1C)
+                                        y: .value("eA1C %", point.eA1C),
+                                        series: .value("Series", "Raw")
                                     )
                                     .foregroundStyle(.purple)
                                     .interpolationMethod(.catmullRom)
@@ -132,6 +147,20 @@ struct A1CEstimateChartView: View {
                                     )
                                     .foregroundStyle(a1cColor(for: point.eA1C))
                                     .symbolSize(20)
+                                }
+
+                                // Multi-meter A1C line
+                                if !a1cMultiMeterPoints.isEmpty {
+                                    ForEach(a1cMultiMeterPoints) { point in
+                                        LineMark(
+                                            x: .value("Date", point.date, unit: .day),
+                                            y: .value("eA1C %", point.eA1C),
+                                            series: .value("Series", "Multi-Meter")
+                                        )
+                                        .foregroundStyle(.orange)
+                                        .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 2]))
+                                        .interpolationMethod(.catmullRom)
+                                    }
                                 }
 
                                 // Average line
@@ -149,6 +178,27 @@ struct A1CEstimateChartView: View {
                             .frame(height: 300)
                             .padding()
 
+                            // Legend
+                            if !a1cMultiMeterPoints.isEmpty {
+                                HStack(spacing: 16) {
+                                    HStack(spacing: 4) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.purple)
+                                            .frame(width: 16, height: 3)
+                                        Text("Raw eA1C")
+                                    }
+                                    HStack(spacing: 4) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.orange)
+                                            .frame(width: 16, height: 3)
+                                        Text("Multi-Meter eA1C")
+                                    }
+                                }
+                                .font(.caption2)
+                                .foregroundStyle(theme.secondaryTextColor)
+                                .padding(.horizontal)
+                            }
+
                             // Summary stats
                             VStack(alignment: .leading, spacing: 8) {
                                 let values = a1cDataPoints.map(\.eA1C)
@@ -165,6 +215,20 @@ struct A1CEstimateChartView: View {
                                     StatBox(label: "Average", value: String(format: "%.1f%%", averageA1C), unit: "", theme: theme)
                                     StatBox(label: "Min", value: String(format: "%.1f%%", minVal), unit: "", theme: theme)
                                     StatBox(label: "Max", value: String(format: "%.1f%%", maxVal), unit: "", theme: theme)
+                                }
+
+                                if !a1cMultiMeterPoints.isEmpty {
+                                    let mmValues = a1cMultiMeterPoints.map(\.eA1C)
+                                    let mmCurrent = mmValues.last ?? 0
+                                    let mmMin = mmValues.min() ?? 0
+                                    let mmMax = mmValues.max() ?? 0
+
+                                    HStack(spacing: 24) {
+                                        StatBox(label: "Current (MM)", value: String(format: "%.1f%%", mmCurrent), unit: "", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Avg (MM)", value: String(format: "%.1f%%", averageMultiMeterA1C), unit: "", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Min (MM)", value: String(format: "%.1f%%", mmMin), unit: "", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Max (MM)", value: String(format: "%.1f%%", mmMax), unit: "", theme: theme, valueColor: .orange)
+                                    }
                                 }
                             }
                             .padding()
@@ -190,7 +254,7 @@ struct A1CEstimateChartView: View {
                                 Text("eA1C = (avgBG + 46.7) / 28.7")
                                     .font(.caption)
                                     .foregroundStyle(theme.secondaryTextColor)
-                                Text("Using multi-meter average BG over 90-day rolling window")
+                                Text("Raw average BG over a 90-day rolling window; multi-meter line uses meter-deviation-adjusted readings")
                                     .font(.caption2)
                                     .foregroundStyle(theme.tertiaryTextColor)
                             }
@@ -210,7 +274,7 @@ struct A1CEstimateChartView: View {
     }
 
     private var yDomain: ClosedRange<Double> {
-        let values = a1cDataPoints.map(\.eA1C)
+        let values = a1cDataPoints.map(\.eA1C) + a1cMultiMeterPoints.map(\.eA1C)
         let minVal = max((values.min() ?? 4.0) - 0.5, 0)
         let maxVal = (values.max() ?? 8.0) + 0.5
         return minVal...maxVal

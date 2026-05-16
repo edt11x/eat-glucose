@@ -19,7 +19,17 @@ Review what has changed since the last commit.
 - Do NOT add files covered by `.gitignore` (build artifacts, DerivedData, .DS_Store, etc.).
 - If `.gitignore` is missing entries, update it first.
 
-## 3. Update Project Documentation
+## 3. Log Session Prompts
+
+Capture the prompts that drove this session and a short summary of the response,
+so the work can be referenced later.
+
+- Write a new file in `prompts/` named `YYYY-MM-DD-short-topic.md`.
+- Include each user prompt verbatim and a concise summary of what was done.
+- Note key decisions, gotchas, and files touched.
+- If the session spans multiple topics, one file per cohesive topic is fine.
+
+## 4. Update Project Documentation
 
 ### MEMORY.md (`memory/MEMORY.md` in Claude Agent config)
 - Record what was accomplished this session.
@@ -40,7 +50,7 @@ Review what has changed since the last commit.
 - Update Project Structure tree for new files.
 - Ensure "Vibe Coded with Anthropic Claude" attribution remains.
 
-## 4. Commit
+## 5. Commit
 
 Write a clear commit message following these conventions:
 - **Subject line**: Short imperative (<=72 chars) summarizing the change.
@@ -59,7 +69,7 @@ EOF
 )"
 ```
 
-## 5. Push
+## 6. Push
 
 ```bash
 git push
@@ -67,7 +77,7 @@ git push
 
 If no upstream is set: `git push --set-upstream origin main`
 
-## 6. Verify
+## 7. Verify
 
 ```bash
 git status

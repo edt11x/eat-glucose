@@ -103,8 +103,14 @@ Export saves to the app's iCloud Drive container (`iCloud Drive/edt-glucose/`) w
 See `COMMIT_WORKFLOW.md` for the full procedure. Quick version:
 1. `git status` + `git diff --stat` to assess state
 2. Stage new files (check `.gitignore` first)
-3. Update MEMORY.md, CLAUDE.md, README.md as needed
-4. Commit with descriptive message + `Co-Authored-By` trailer
-5. Push to remote
+3. Log the session's prompts + responses to `prompts/YYYY-MM-DD-topic.md`
+4. Update MEMORY.md, CLAUDE.md, README.md as needed
+5. Commit with descriptive message + `Co-Authored-By` trailer
+6. Push to remote
 
 Shell script: `./scripts/commit-workflow.sh "message"`
+
+## Conventions
+
+- **Most-recent-first** — every list/table keyed on date or time (event list, chart readings tables, meter comparison pairs, etc.) displays newest entries at the top.
+- **Orange multi-meter summary rows** — Daily Readings, Fasting, Bedtime, Average BG, Peak, Weekly Curve, and A1C Estimate render a secondary `HStack` of `StatBox(... valueColor: .orange)` under the primary summary when meter deviations exist. Labels are suffixed with `(MM)`. `StatBox` accepts an optional `valueColor: Color?` that overrides `theme.eventTypeColor`.
