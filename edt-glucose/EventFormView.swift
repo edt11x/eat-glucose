@@ -29,6 +29,10 @@ struct EventFormView: View {
     @State private var medicineName: String
     @State private var medicineDoseText: String
     @State private var medicineDoseUnit: String
+    @State private var injectionSite: String
+    @State private var injectionAngleText: String
+    @State private var injectionDistanceText: String
+    @State private var injectionDistanceUnit: String
 
     // Blood Glucose Guess
     @State private var bloodGlucoseGuessText: String
@@ -41,6 +45,8 @@ struct EventFormView: View {
     @State private var calorieGuessText: String
     @State private var carbGuessText: String
     @State private var locationName: String
+    @State private var streetAddress: String
+    @State private var gpsCoordinates: String
 
     // A1C
     @State private var a1cValueText: String
@@ -53,6 +59,10 @@ struct EventFormView: View {
     @State private var testStripLot: String
     @State private var testStripExpiration: Date?
     @State private var hasTestStripExpiration: Bool
+
+    // Finger used for BG measurement
+    @State private var fingerUsed: String
+    @State private var fingerSide: String
 
     // Experiment
     @State private var experimentQuantityText: String
@@ -82,6 +92,24 @@ struct EventFormView: View {
             return ""
         }())
         _medicineDoseUnit = State(initialValue: event?.medicineDoseUnit ?? "units")
+        _injectionSite = State(initialValue: event?.injectionSite ?? "")
+        _injectionAngleText = State(initialValue: {
+            if let angle = event?.injectionAngleDegrees {
+                return angle.truncatingRemainder(dividingBy: 1) == 0
+                    ? String(format: "%.0f", angle)
+                    : String(format: "%.1f", angle)
+            }
+            return ""
+        }())
+        _injectionDistanceText = State(initialValue: {
+            if let dist = event?.injectionDistanceValue {
+                return dist.truncatingRemainder(dividingBy: 1) == 0
+                    ? String(format: "%.0f", dist)
+                    : String(format: "%.1f", dist)
+            }
+            return ""
+        }())
+        _injectionDistanceUnit = State(initialValue: event?.injectionDistanceUnit ?? "in")
 
         // BG Guess
         _bloodGlucoseGuessText = State(initialValue:
@@ -98,6 +126,8 @@ struct EventFormView: View {
         _carbGuessText = State(initialValue:
             event?.carbGuess != nil ? "\(event!.carbGuess!)" : "")
         _locationName = State(initialValue: event?.locationName ?? "")
+        _streetAddress = State(initialValue: event?.streetAddress ?? "")
+        _gpsCoordinates = State(initialValue: event?.gpsCoordinates ?? "")
 
         // A1C
         _a1cValueText = State(initialValue:
@@ -132,6 +162,9 @@ struct EventFormView: View {
             _testStripExpiration = State(initialValue: defaults?.expiration)
             _hasTestStripExpiration = State(initialValue: defaults?.expiration != nil)
         }
+
+        _fingerUsed = State(initialValue: event?.fingerUsed ?? "")
+        _fingerSide = State(initialValue: event?.fingerSide ?? "")
     }
 
     private var showMealType: Bool {
@@ -258,6 +291,20 @@ struct EventFormView: View {
                                 set: { testStripExpiration = $0 }
                             ), displayedComponents: .date)
                         }
+
+                        Picker("Finger Used", selection: $fingerUsed) {
+                            Text("None").tag("")
+                            ForEach(SettingsManager.fingerOptions, id: \.self) { finger in
+                                Text(finger).tag(finger)
+                            }
+                        }
+
+                        Picker("Finger Side", selection: $fingerSide) {
+                            Text("None").tag("")
+                            ForEach(SettingsManager.fingerSideOptions, id: \.self) { side in
+                                Text(side).tag(side)
+                            }
+                        }
                     }
                 }
 
@@ -289,6 +336,46 @@ struct EventFormView: View {
                                     }
                                 }
                                 .labelsHidden()
+                            }
+
+                            HStack {
+                                TextField("Injection Site", text: $injectionSite)
+                                if !settings.injectionSites.isEmpty {
+                                    Picker("", selection: $injectionSite) {
+                                        Text("Custom").tag("")
+                                        ForEach(settings.injectionSites, id: \.self) { site in
+                                            Text(site).tag(site)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                }
+                            }
+
+                            HStack {
+                                TextField("Angle", text: $injectionAngleText)
+                                    .keyboardType(.decimalPad)
+                                    .onChange(of: injectionAngleText) { _, newValue in
+                                        let filtered = newValue.filter { "0123456789.".contains($0) }
+                                        if let v = Double(filtered), v > 360 {
+                                            injectionAngleText = "360"
+                                        } else {
+                                            injectionAngleText = filtered
+                                        }
+                                    }
+                                Text("° from navel (R=0°, L=180°)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            HStack {
+                                TextField("Distance", text: $injectionDistanceText)
+                                    .keyboardType(.decimalPad)
+                                Picker("Unit", selection: $injectionDistanceUnit) {
+                                    Text("in").tag("in")
+                                    Text("cm").tag("cm")
+                                }
+                                .pickerStyle(.segmented)
+                                .frame(width: 110)
                             }
                         }
                     }
@@ -395,20 +482,40 @@ struct EventFormView: View {
                 Section("Location") {
                     HStack {
                         TextField("Location", text: $locationName)
-                        if !settings.locations.isEmpty {
+                        if !settings.namedLocations.isEmpty {
                             Picker("", selection: $locationName) {
                                 Text("Custom").tag("")
-                                ForEach(settings.locations, id: \.self) { loc in
-                                    Text(loc).tag(loc)
+                                ForEach(settings.namedLocations) { loc in
+                                    Text(loc.name).tag(loc.name)
                                 }
                             }
                             .labelsHidden()
                         }
                     }
+                    .onChange(of: locationName) { _, newName in
+                        // When the user picks a saved location, copy its stored
+                        // address and GPS coords into the corresponding fields
+                        // so the event carries them in the text display.
+                        if let saved = settings.namedLocation(named: newName) {
+                            if let addr = saved.streetAddress { streetAddress = addr }
+                            if let coords = saved.gpsCoordinates { gpsCoordinates = coords }
+                        }
+                    }
+
+                    TextField("Street Address", text: $streetAddress, axis: .vertical)
+                        .lineLimit(1...3)
+
+                    TextField("GPS Coordinates (lat,lon)", text: $gpsCoordinates)
+                        .keyboardType(.numbersAndPunctuation)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+
                     Button {
                         Task {
-                            if let name = await LocationManager.shared.requestLocationName() {
-                                locationName = name
+                            if let details = await LocationManager.shared.requestLocationDetails() {
+                                if let name = details.displayName { locationName = name }
+                                if let addr = details.streetAddress { streetAddress = addr }
+                                if let coords = details.gpsCoordinates { gpsCoordinates = coords }
                             }
                         }
                     } label: {
@@ -492,6 +599,19 @@ struct EventFormView: View {
         let effectiveMedicineName = (showMedicine && medicineName != "None") ? medicineName : nil
         let effectiveMedicineDose = effectiveMedicineName != nil ? medicineDose : nil
         let effectiveMedicineDoseUnit = effectiveMedicineName != nil ? medicineDoseUnit : nil
+        let trimmedSite = injectionSite.trimmingCharacters(in: .whitespaces)
+        let effectiveInjectionSite = effectiveMedicineName != nil && !trimmedSite.isEmpty ? trimmedSite : nil
+        let effectiveInjectionAngle = effectiveMedicineName != nil
+            ? Double(injectionAngleText).map { min(max($0, 0), 360) }
+            : nil
+        let effectiveInjectionDistance = effectiveMedicineName != nil ? Double(injectionDistanceText) : nil
+        let effectiveInjectionDistanceUnit = effectiveInjectionDistance != nil ? injectionDistanceUnit : nil
+        let trimmedAddress = streetAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        let effectiveStreetAddress = trimmedAddress.isEmpty ? nil : trimmedAddress
+        let trimmedCoords = gpsCoordinates.trimmingCharacters(in: .whitespaces)
+        let effectiveGPSCoordinates = trimmedCoords.isEmpty ? nil : trimmedCoords
+        let effectiveFingerUsed = showBloodGlucose && !fingerUsed.isEmpty ? fingerUsed : nil
+        let effectiveFingerSide = showBloodGlucose && !fingerSide.isEmpty ? fingerSide : nil
         let effectiveGlucoseGuess = showBloodGlucose ? glucoseGuess : nil
         let effectiveWalkDistance = showWalkDistance ? walkDistance : nil
         let effectiveFoodDescription = showMealDetails && !foodDescription.isEmpty ? foodDescription : nil
@@ -507,9 +627,19 @@ struct EventFormView: View {
         let effectiveExperimentQuantity = showExperiment ? experimentQuantity : nil
         let effectiveExperimentQuantityUnit = showExperiment && experimentQuantity != nil ? experimentQuantityUnit : nil
 
-        // Auto-save new location
+        // Auto-save (or update) the named location with the captured address
+        // and GPS coords so the next time it's selected, those fields fill in.
         if let loc = effectiveLocationName {
-            settings.addLocationIfNew(loc)
+            settings.addOrUpdateNamedLocation(
+                name: loc,
+                streetAddress: effectiveStreetAddress,
+                gpsCoordinates: effectiveGPSCoordinates
+            )
+        }
+
+        // Auto-save new injection site
+        if let site = effectiveInjectionSite {
+            settings.addInjectionSiteIfNew(site)
         }
 
         // Auto-save test strip defaults for this meter type
@@ -559,6 +689,14 @@ struct EventFormView: View {
             event.testStripExpiration = effectiveTestStripExpiration
             event.experimentQuantity = effectiveExperimentQuantity
             event.experimentQuantityUnit = effectiveExperimentQuantityUnit
+            event.injectionSite = effectiveInjectionSite
+            event.injectionAngleDegrees = effectiveInjectionAngle
+            event.injectionDistanceValue = effectiveInjectionDistance
+            event.injectionDistanceUnit = effectiveInjectionDistanceUnit
+            event.streetAddress = effectiveStreetAddress
+            event.gpsCoordinates = effectiveGPSCoordinates
+            event.fingerUsed = effectiveFingerUsed
+            event.fingerSide = effectiveFingerSide
         } else {
             let newEvent = GlucoseEvent(
                 timestamp: timestamp,
@@ -583,7 +721,15 @@ struct EventFormView: View {
                 testStripLot: effectiveTestStripLot,
                 testStripExpiration: effectiveTestStripExpiration,
                 experimentQuantity: effectiveExperimentQuantity,
-                experimentQuantityUnit: effectiveExperimentQuantityUnit
+                experimentQuantityUnit: effectiveExperimentQuantityUnit,
+                injectionSite: effectiveInjectionSite,
+                injectionAngleDegrees: effectiveInjectionAngle,
+                injectionDistanceValue: effectiveInjectionDistance,
+                injectionDistanceUnit: effectiveInjectionDistanceUnit,
+                streetAddress: effectiveStreetAddress,
+                gpsCoordinates: effectiveGPSCoordinates,
+                fingerUsed: effectiveFingerUsed,
+                fingerSide: effectiveFingerSide
             )
             modelContext.insert(newEvent)
         }

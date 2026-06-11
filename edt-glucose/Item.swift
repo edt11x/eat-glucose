@@ -22,6 +22,12 @@ final class GlucoseEvent {
     var medicineName: String?
     var medicineDose: Double?
     var medicineDoseUnit: String?
+    var injectionSite: String?
+    /// Angle from navel: right=0°, left=180° (0–360°)
+    var injectionAngleDegrees: Double?
+    var injectionDistanceValue: Double?
+    /// "in" or "cm"
+    var injectionDistanceUnit: String?
 
     // Blood Glucose Guess
     var bloodGlucoseGuess: Int?
@@ -34,6 +40,10 @@ final class GlucoseEvent {
     var calorieGuess: Int?
     var carbGuess: Int?
     var locationName: String?
+    /// Street address captured from reverse geocoding (separate from locationName label)
+    var streetAddress: String?
+    /// "lat,lon" formatted GPS coordinates from Use Current Location
+    var gpsCoordinates: String?
 
     // A1C
     var a1cValue: Double?
@@ -45,6 +55,11 @@ final class GlucoseEvent {
     // Test strip tracking
     var testStripLot: String?
     var testStripExpiration: Date?
+
+    // Lance site for BG measurement (e.g., "Left Index Finger")
+    var fingerUsed: String?
+    /// "Thumb Side" or "Little Finger Side"
+    var fingerSide: String?
 
     // Experiment tracking
     var experimentQuantity: Double?
@@ -73,7 +88,15 @@ final class GlucoseEvent {
         testStripLot: String? = nil,
         testStripExpiration: Date? = nil,
         experimentQuantity: Double? = nil,
-        experimentQuantityUnit: String? = nil
+        experimentQuantityUnit: String? = nil,
+        injectionSite: String? = nil,
+        injectionAngleDegrees: Double? = nil,
+        injectionDistanceValue: Double? = nil,
+        injectionDistanceUnit: String? = nil,
+        streetAddress: String? = nil,
+        gpsCoordinates: String? = nil,
+        fingerUsed: String? = nil,
+        fingerSide: String? = nil
     ) {
         self.timestamp = timestamp
         self.eventType = eventType
@@ -98,5 +121,13 @@ final class GlucoseEvent {
         self.testStripExpiration = testStripExpiration
         self.experimentQuantity = experimentQuantity
         self.experimentQuantityUnit = experimentQuantityUnit
+        self.injectionSite = injectionSite
+        self.injectionAngleDegrees = injectionAngleDegrees
+        self.injectionDistanceValue = injectionDistanceValue
+        self.injectionDistanceUnit = injectionDistanceUnit
+        self.streetAddress = streetAddress
+        self.gpsCoordinates = gpsCoordinates
+        self.fingerUsed = fingerUsed
+        self.fingerSide = fingerSide
     }
 }

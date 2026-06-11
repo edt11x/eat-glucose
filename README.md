@@ -15,7 +15,11 @@ edt-glucose lets you log blood glucose measurements and related daily events —
 At the top of the event list, the app displays:
 - **Time since last BG measurement** — updates every minute. Shows the last BG value and a colored trend arrow: green (within 5% of prior reading), yellow (5–20% change), or red (>20% change). Arrow points up/down to indicate direction of change.
 - **Time since last meal** — updates every minute
-- **Estimated A1C** — calculated from all BG readings using the ADAG formula: `eA1C = (avgBG + 46.7) / 28.7`
+- **Estimated A1C** — calculated from all BG readings using the ADAG formula: `eA1C = (avgBG + 46.7) / 28.7`. When meter-deviation data is available, a second line shows the multi-meter-adjusted eA1C in orange.
+
+### Month Navigation
+
+The event list is scoped to a single month at a time, defaulting to the current month on launch. A header row at the top of the list shows the month and year with arrows to step backward / forward by one month (single chevron) or one year (double chevron). Charts continue to use the full event history regardless of which month is in view.
 
 ### Event Logging
 
@@ -28,13 +32,16 @@ Each event captures:
 - **Meter Type** — Select which glucose meter was used for the reading.
 - **Test Strip Lot & Expiration** — Track lot numbers and expiration dates per meter type. Auto-fills from last-used values.
 - **Multi-Meter Average** — Automatically displays estimated reading averaged across all meters using historical deviation data.
+- **Finger Used** — Optional picker recording which finger was lanced (Left/Right × Thumb, Index, Middle, Ring, Little).
+- **Finger Side** — Optional picker for which side of the finger was used (Thumb Side or Little Finger Side).
 - **Medicine** — Track medicine name, dose, and unit (e.g., 3 units Lispro, 600 mg Berberine).
+- **Injection Site / Angle / Distance** — When a medicine is set, record the injection site (e.g., Left Abdomen), angle from navel (Right = 0°, Left = 180°), and distance with selectable in / cm unit. Site names auto-add to the saved list.
 - **Meal Type** — Shown for meal events. Choose from Breakfast, Lunch, Dinner, or Snack.
 - **Meal Details** — Food description, estimated calories, carbs, protein, and glycemic index.
 - **Walk Distance** — Distance in miles for Walk events.
 - **A1C** — A1C percentage for A1C events.
 - **Experiment Details** — Quantity and unit of measure for experiment events (e.g., 2000 mg Inositol).
-- **Location** — Available for all event types. Enter manually, select from history, or use GPS with reverse geocoding.
+- **Location** — Available for all event types. Enter manually, select from history, or use GPS with reverse geocoding. Saved locations remember their street address and GPS coordinates so picking an existing name auto-fills both fields.
 - **Activity Description** — Optional free-text field.
 - **Notes** — Optional free-text field.
 
@@ -57,6 +64,7 @@ Access from the chart icon in the toolbar:
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time. Draws a solid purple line for raw average BG and a dotted orange line for multi-meter average BG. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
+- **Rolling Averages** — Trailing 7, 14, 30, and 90-day average BG, one line per window with distinct colors (green / yellow / blue / purple). When meter-deviation data is available, an orange dashed line per window shows the multi-meter equivalent, and a `(MM)` row of orange Latest stats appears under the raw row. Days with fewer than 3 readings in the window are skipped.
 - **Meter Comparison** — Shows all meters (from events and Settings) compared against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs. Meters without comparison pairs display a status message with their reading count.
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
@@ -71,11 +79,27 @@ Track named experiments (e.g., supplements like Inositol, dietary changes) to me
 - **Log experiment events** — each experiment appears as a selectable event type with quantity, unit of measure, and notes.
 - **Compare results** — the Experiment Comparison chart overlays BG data from before and during the experiment to visualize changes.
 
+### Chart Time Range Picker
+
+Charts without a built-in day/week/month nav show a Week / Month / Year / All segmented picker at the top. Default is the last month. Daily aggregates filter their underlying events to the selected range; A1C Estimate and Rolling Averages filter only the displayed days so each point's 90-day (or N-day) rolling window still uses the full event history.
+
 ### Summary Rows
 
-The Daily Readings, Fasting BG, Bedtime BG, Average BG, Peak Readings, Weekly Curve, and A1C Estimate charts each show a Summary block beneath the chart. When meter-deviation data is available, a second row of stats appears in orange representing the multi-meter-adjusted equivalents (labeled `(MM)`), letting you compare raw vs cross-meter-averaged numbers at a glance.
+The Daily Readings, Fasting BG, Bedtime BG, Average BG, Peak Readings, Weekly Curve, A1C Estimate, Rolling Averages, Pre-Meal BG Scatter, and Best Meal Spacing charts each show a Summary block beneath the chart. When meter-deviation data is available, a second row of stats appears in orange representing the multi-meter-adjusted equivalents (labeled `(MM)`), and chart views with time series also draw an orange dashed line tracing the MM-adjusted values, letting you compare raw vs cross-meter-averaged numbers at a glance.
 
 All time/date-ordered lists in the app (event list, chart readings tables, meter comparison pairs) display the most recent entry first.
+
+### Data Integrity
+
+Settings → **Data Integrity** scans the entire event history for likely problems and lets you tap any issue to open the offending event in the form editor. Checks include:
+
+- Start of Meal events with no matching End of Meal within 6 hours (and the reverse).
+- Blood Glucose readings outside the plausible 20–600 mg/dL range.
+- BG readings with no meter selected.
+- Events dated in the future.
+- Possible duplicates (same BG + meter within 60 seconds).
+- Medicine entries with no recorded dose.
+- Blood Glucose Measurement events missing a value.
 
 ### Multi-Meter Average Formula
 
@@ -131,8 +155,10 @@ Access settings by tapping the gear icon in the top-left corner:
 - **Meal Types** — Add, delete, or reorder. Reset to defaults.
 - **Meter Types** — Add, delete, or reorder. Reset to defaults.
 - **Medicine Types** — Add with default dose and unit. Reset to defaults.
-- **Locations** — Auto-saved from events and GPS, manually editable. Reset to defaults.
+- **Locations** — Auto-saved from events and GPS as **named locations** that carry their name, optional street address, and optional GPS coordinates. Tap a row to edit; swipe to delete. Reset to defaults.
 - **Experiments** — Add named experiments to track (e.g., supplements, dietary changes). Reset to defaults.
+- **Injection Sites** — Add, delete, or reorder. Reset to defaults (Left/Right Abdomen, Thigh, Arm). New sites auto-add when typed into the event form.
+- **Data Integrity** — Opens a scan of every event for orphan meal halves, out-of-range BG, missing meters, future timestamps, possible duplicates, and missing medicine doses.
 - **Units of Measure** — Customize available dose units. Reset to defaults.
 
 ### Themes
@@ -148,11 +174,17 @@ Access settings by tapping the gear icon in the top-left corner:
 
 **Event Types:** Blood Glucose Measurement, Start of Meal, End of Meal, Walk, A1C, Bedtime
 
-**Meal Types:** Breakfast, Lunch, Dinner, Snack
+**Meal Types:** Breakfast, Lunch, Dinner, Snack, Energy Drink
 
 **Meter Types:** Precision Neo, Contour Next, Keto Mojo, N/A
 
 **Medicine Types:** None, Lispro (3 units), Lantis (10 units), Toujeo (10 units), Berberine (600 mg)
+
+**Injection Sites:** Left/Right Abdomen, Left/Right Thigh, Left/Right Arm
+
+**Fingers:** Left/Right × Thumb, Index Finger, Middle Finger, Ring Finger, Little Finger (fixed list)
+
+**Finger Sides:** Thumb Side, Little Finger Side (fixed list)
 
 ## Usage
 
@@ -207,7 +239,10 @@ edt-glucose/
 ├── BestMealSpacingView.swift     # Meal spacing vs BG scatter plot
 ├── PreMealBGScatterView.swift    # Pre-meal BG vs time since last meal
 ├── AverageBGChartView.swift     # Daily average BG chart
+├── RollingAveragesChartView.swift # Trailing 7/14/30/90-day average BG chart
 ├── ExperimentComparisonChartView.swift  # Before vs during experiment comparison
+├── DataIntegrityView.swift      # Whole-history data sanity checks
+├── ChartTimeRange.swift         # Shared Week/Month/Year/All picker
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
 ├── Assets.xcassets/              # App icon and colors
 ├── COMMIT_WORKFLOW.md            # Commit workflow procedure

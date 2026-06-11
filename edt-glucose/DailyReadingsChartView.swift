@@ -100,6 +100,94 @@ struct DailyReadingsChartView: View {
         readingsForDayNormalized(offset: 0)
     }
 
+    // Multi-meter-adjusted readings for the same normalized date axis (Day/Week/Month)
+    private func mmReadingsForDayNormalized(offset: Int) -> [FastingDataPoint] {
+        let calendar = Calendar.current
+        let deviations = meterDeviations
+        let targetDay = calendar.date(byAdding: .day, value: -offset, to: selectedDate)!
+        let dayStart = calendar.startOfDay(for: targetDay)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= dayStart
+                && $0.timestamp < dayEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .compactMap { event -> FastingDataPoint? in
+                guard let bg = event.bloodGlucose, let meter = event.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: bg, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                let components = calendar.dateComponents([.hour, .minute, .second], from: event.timestamp)
+                let normalizedDate = calendar.date(bySettingHour: components.hour!, minute: components.minute!, second: components.second!, of: selectedDate)!
+                return FastingDataPoint(date: normalizedDate, glucose: Int(estimate.rounded()))
+            }
+    }
+
+    private func mmReadingsForWeekNormalized(weeksBack: Int) -> [FastingDataPoint] {
+        var cal = Calendar.current
+        cal.firstWeekday = 2
+        let deviations = meterDeviations
+        let currentWeekStart = cal.dateInterval(of: .weekOfYear, for: selectedDate)!.start
+        let targetWeekStart = cal.date(byAdding: .day, value: -7 * weeksBack, to: currentWeekStart)!
+        let targetWeekEnd = cal.date(byAdding: .day, value: 7, to: targetWeekStart)!
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= targetWeekStart
+                && $0.timestamp < targetWeekEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .compactMap { event -> FastingDataPoint? in
+                guard let bg = event.bloodGlucose, let meter = event.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: bg, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                let offset = event.timestamp.timeIntervalSince(targetWeekStart)
+                let normalizedDate = currentWeekStart.addingTimeInterval(offset)
+                return FastingDataPoint(date: normalizedDate, glucose: Int(estimate.rounded()))
+            }
+    }
+
+    private func mmReadingsForMonthNormalized(monthsBack: Int) -> [FastingDataPoint] {
+        let calendar = Calendar.current
+        let deviations = meterDeviations
+        let currentMonthStart = calendar.dateInterval(of: .month, for: selectedDate)!.start
+        let targetMonthStart = calendar.date(byAdding: .month, value: -monthsBack, to: currentMonthStart)!
+        let targetMonthEnd = calendar.date(byAdding: .month, value: 1, to: targetMonthStart)!
+        let currentMonthDays = Double(calendar.range(of: .day, in: .month, for: currentMonthStart)!.count)
+        let targetMonthDays = Double(calendar.range(of: .day, in: .month, for: targetMonthStart)!.count)
+
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= targetMonthStart
+                && $0.timestamp < targetMonthEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .compactMap { event -> FastingDataPoint? in
+                guard let bg = event.bloodGlucose, let meter = event.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: bg, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                let offset = event.timestamp.timeIntervalSince(targetMonthStart)
+                let fraction = offset / (targetMonthDays * 86400)
+                let normalizedOffset = fraction * (currentMonthDays * 86400)
+                let normalizedDate = currentMonthStart.addingTimeInterval(normalizedOffset)
+                return FastingDataPoint(date: normalizedDate, glucose: Int(estimate.rounded()))
+            }
+    }
+
+    private var dailyMMReadings: [FastingDataPoint]   { mmReadingsForDayNormalized(offset: 0) }
+    private var weeklyMMReadings: [FastingDataPoint]  { mmReadingsForWeekNormalized(weeksBack: 0) }
+    private var monthlyMMReadings: [FastingDataPoint] { mmReadingsForMonthNormalized(monthsBack: 0) }
+
     // Last BG reading from the previous night (before the selected day's start)
     private func previousNightReading(for offset: Int) -> FastingDataPoint? {
         let calendar = Calendar.current
@@ -475,6 +563,20 @@ struct DailyReadingsChartView: View {
                 .symbolSize(40)
             }
 
+            // Multi-meter-adjusted line (orange dashed)
+            if !dailyMMReadings.isEmpty {
+                ForEach(dailyMMReadings) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("mg/dL", point.glucose),
+                        series: .value("Series", "Multi-Meter")
+                    )
+                    .foregroundStyle(.orange)
+                    .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 2]))
+                    .interpolationMethod(.catmullRom)
+                }
+            }
+
             // Previous night marker (purple diamond at midnight)
             if let prevNight = previousNightReading(for: 0) {
                 PointMark(
@@ -544,6 +646,20 @@ struct DailyReadingsChartView: View {
                 .symbolSize(30)
             }
 
+            // Multi-meter-adjusted line (orange dashed)
+            if !weeklyMMReadings.isEmpty {
+                ForEach(weeklyMMReadings) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("mg/dL", point.glucose),
+                        series: .value("Series", "Multi-Meter")
+                    )
+                    .foregroundStyle(.orange)
+                    .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 2]))
+                    .interpolationMethod(.catmullRom)
+                }
+            }
+
             RuleMark(y: .value("Average", averageGlucose))
                 .foregroundStyle(.orange.opacity(0.7))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
@@ -595,6 +711,20 @@ struct DailyReadingsChartView: View {
                 )
                 .foregroundStyle(glucoseColor(for: point.glucose))
                 .symbolSize(30)
+            }
+
+            // Multi-meter-adjusted line (orange dashed)
+            if !monthlyMMReadings.isEmpty {
+                ForEach(monthlyMMReadings) { point in
+                    LineMark(
+                        x: .value("Time", point.date),
+                        y: .value("mg/dL", point.glucose),
+                        series: .value("Series", "Multi-Meter")
+                    )
+                    .foregroundStyle(.orange)
+                    .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 2]))
+                    .interpolationMethod(.catmullRom)
+                }
             }
 
             RuleMark(y: .value("Average", averageGlucose))

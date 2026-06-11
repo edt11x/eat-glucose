@@ -29,6 +29,15 @@ struct MealPreset: Codable, Equatable, Identifiable {
     var glycemicIndexGuess: Int?
 }
 
+/// A saved location remembers a friendly name plus the street address and GPS
+/// coordinates that were captured when the location was added.
+struct NamedLocation: Codable, Equatable, Identifiable {
+    var id: String { name }
+    var name: String
+    var streetAddress: String?
+    var gpsCoordinates: String?
+}
+
 @Observable
 final class SettingsManager {
     static let shared = SettingsManager()
@@ -40,12 +49,14 @@ final class SettingsManager {
     private let medicineTypesKey = "customMedicineTypes"
     private let unitsOfMeasureKey = "customUnitsOfMeasure"
     private let locationsKey = "customLocations"
+    private let namedLocationsKey = "customNamedLocations"
     private let timerValuesKey = "postMealTimerValues"
     private let timerEnabledKey = "postMealTimerEnabled"
     private let testStripDefaultsKey = "testStripDefaults"
     private let activitiesKey = "customActivities"
     private let mealPresetsKey = "savedMealPresets"
     private let experimentsKey = "customExperiments"
+    private let injectionSitesKey = "customInjectionSites"
 
     var appearanceMode: Int {
         didSet { UserDefaults.standard.set(appearanceMode, forKey: appearanceModeKey) }
@@ -72,7 +83,8 @@ final class SettingsManager {
         "Breakfast",
         "Lunch",
         "Dinner",
-        "Snack"
+        "Snack",
+        "Energy Drink"
     ]
 
     private let defaultMeterTypes = [
@@ -97,6 +109,14 @@ final class SettingsManager {
     private let defaultLocations: [String] = []
     private let defaultActivities: [String] = []
     private let defaultExperiments: [String] = []
+    private let defaultInjectionSites: [String] = [
+        "Left Abdomen",
+        "Right Abdomen",
+        "Left Thigh",
+        "Right Thigh",
+        "Left Arm",
+        "Right Arm"
+    ]
 
     private let defaultTimerValues = [0, 30, 45, 60, 90, 120, 240]
 
@@ -124,9 +144,18 @@ final class SettingsManager {
         didSet { UserDefaults.standard.set(unitsOfMeasure, forKey: unitsOfMeasureKey) }
     }
 
-    var locations: [String] {
-        didSet { UserDefaults.standard.set(locations, forKey: locationsKey) }
+    var namedLocations: [NamedLocation] {
+        didSet {
+            if let data = try? JSONEncoder().encode(namedLocations) {
+                UserDefaults.standard.set(data, forKey: namedLocationsKey)
+            }
+        }
     }
+
+    /// Derived list of just the location names — for use in pickers that need a
+    /// `[String]` collection. Edits to the underlying list happen through
+    /// `namedLocations` and the helper methods below.
+    var locations: [String] { namedLocations.map(\.name) }
 
     var postMealTimerValues: [Int] {
         didSet { UserDefaults.standard.set(postMealTimerValues, forKey: timerValuesKey) }
@@ -158,6 +187,10 @@ final class SettingsManager {
 
     var experiments: [String] {
         didSet { UserDefaults.standard.set(experiments, forKey: experimentsKey) }
+    }
+
+    var injectionSites: [String] {
+        didSet { UserDefaults.standard.set(injectionSites, forKey: injectionSitesKey) }
     }
 
     private init() {
@@ -198,10 +231,15 @@ final class SettingsManager {
             self.unitsOfMeasure = defaultUnitsOfMeasure
         }
 
-        if let saved = UserDefaults.standard.stringArray(forKey: locationsKey) {
-            self.locations = saved
+        if let data = UserDefaults.standard.data(forKey: namedLocationsKey),
+           let saved = try? JSONDecoder().decode([NamedLocation].self, from: data) {
+            self.namedLocations = saved
+        } else if let oldSaved = UserDefaults.standard.stringArray(forKey: locationsKey) {
+            // Migrate legacy plain-string locations: keep the names, leave
+            // street address / GPS coordinates empty until the user fills them in.
+            self.namedLocations = oldSaved.map { NamedLocation(name: $0) }
         } else {
-            self.locations = defaultLocations
+            self.namedLocations = defaultLocations.map { NamedLocation(name: $0) }
         }
 
         if let saved = UserDefaults.standard.array(forKey: timerValuesKey) as? [Int] {
@@ -237,6 +275,12 @@ final class SettingsManager {
         } else {
             self.experiments = defaultExperiments
         }
+
+        if let saved = UserDefaults.standard.stringArray(forKey: injectionSitesKey) {
+            self.injectionSites = saved
+        } else {
+            self.injectionSites = defaultInjectionSites
+        }
     }
 
     func resetEventTypes() { eventTypes = defaultEventTypes }
@@ -244,7 +288,9 @@ final class SettingsManager {
     func resetMeterTypes() { meterTypes = defaultMeterTypes }
     func resetMedicineTypes() { medicineTypes = defaultMedicineTypes }
     func resetUnitsOfMeasure() { unitsOfMeasure = defaultUnitsOfMeasure }
-    func resetLocations() { locations = defaultLocations }
+    func resetLocations() {
+        namedLocations = defaultLocations.map { NamedLocation(name: $0) }
+    }
     func resetTimerValues() { postMealTimerValues = defaultTimerValues }
 
     func updateTestStripDefault(for meterType: String, lot: String, expiration: Date?) {
@@ -252,10 +298,35 @@ final class SettingsManager {
     }
 
     func addLocationIfNew(_ name: String) {
+        addOrUpdateNamedLocation(name: name)
+    }
+
+    /// Add or update a saved location with optional street address / GPS
+    /// coordinates. If the location already exists, non-empty new values
+    /// replace whatever was stored before (so the most-recent capture wins).
+    func addOrUpdateNamedLocation(name: String,
+                                  streetAddress: String? = nil,
+                                  gpsCoordinates: String? = nil) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        if !trimmed.isEmpty && !locations.contains(trimmed) {
-            locations.append(trimmed)
+        guard !trimmed.isEmpty else { return }
+        let address = streetAddress?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let coords = gpsCoordinates?.trimmingCharacters(in: .whitespaces)
+        if let idx = namedLocations.firstIndex(where: { $0.name == trimmed }) {
+            var entry = namedLocations[idx]
+            if let address, !address.isEmpty { entry.streetAddress = address }
+            if let coords, !coords.isEmpty { entry.gpsCoordinates = coords }
+            namedLocations[idx] = entry
+        } else {
+            namedLocations.append(NamedLocation(
+                name: trimmed,
+                streetAddress: (address?.isEmpty ?? true) ? nil : address,
+                gpsCoordinates: (coords?.isEmpty ?? true) ? nil : coords
+            ))
         }
+    }
+
+    func namedLocation(named name: String) -> NamedLocation? {
+        namedLocations.first(where: { $0.name == name })
     }
 
     func resetActivities() { activities = defaultActivities }
@@ -285,4 +356,33 @@ final class SettingsManager {
             experiments.append(trimmed)
         }
     }
+
+    func resetInjectionSites() { injectionSites = defaultInjectionSites }
+
+    func addInjectionSiteIfNew(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty && !injectionSites.contains(trimmed) {
+            injectionSites.append(trimmed)
+        }
+    }
+
+    /// Fixed list of valid fingers for the BG-measurement "Finger Used" picker.
+    static let fingerOptions: [String] = [
+        "Left Thumb",
+        "Left Index Finger",
+        "Left Middle Finger",
+        "Left Ring Finger",
+        "Left Little Finger",
+        "Right Thumb",
+        "Right Index Finger",
+        "Right Middle Finger",
+        "Right Ring Finger",
+        "Right Little Finger"
+    ]
+
+    /// Side-of-finger options for BG measurement.
+    static let fingerSideOptions: [String] = [
+        "Thumb Side",
+        "Little Finger Side"
+    ]
 }

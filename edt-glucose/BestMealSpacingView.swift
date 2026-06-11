@@ -13,15 +13,26 @@ struct DailyMealSpacingPoint: Identifiable {
     let id = UUID()
     let date: Date
     let avgDailyBG: Double
+    let avgDailyBGMultiMeter: Double?
     let avgTimeBetweenMeals: Double // hours
 }
 
 struct BestMealSpacingView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @Query(sort: \GlucoseEvent.timestamp) private var allEvents: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
+
+    private var events: [GlucoseEvent] {
+        let cutoff = timeRange.startDate()
+        return allEvents.filter { $0.timestamp >= cutoff }
+    }
+
+    private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
+        MultiMeterEstimator.computeDeviations(from: allEvents)
+    }
 
     private var scatterPoints: [DailyMealSpacingPoint] {
         let calendar = Calendar.current
@@ -29,6 +40,7 @@ struct BestMealSpacingView: View {
             $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil
         }
         let mealEvents = events.filter { $0.eventType == "Start of Meal" }
+        let deviations = meterDeviations
 
         let bgByDay = Dictionary(grouping: bgEvents) { calendar.startOfDay(for: $0.timestamp) }
         let mealsByDay = Dictionary(grouping: mealEvents) { calendar.startOfDay(for: $0.timestamp) }
@@ -55,6 +67,18 @@ struct BestMealSpacingView: View {
             let totalBG = Double(dayBGValues.reduce(0, +) + nextDayBGValue)
             let avgBG = totalBG / Double(dayBGValues.count + 1)
 
+            // Multi-meter-adjusted equivalent for the same calculation
+            let mmEstimates: [Double] = (dayBGs + [firstBGNextDay]).compactMap { ev in
+                guard let bg = ev.bloodGlucose, let meter = ev.meterType,
+                      let est = MultiMeterEstimator.estimate(
+                          reading: bg, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                return est
+            }
+            let avgMM: Double? = mmEstimates.isEmpty
+                ? nil
+                : mmEstimates.reduce(0, +) / Double(mmEstimates.count)
+
             // Time gaps: between consecutive meals + last meal to first BG next day
             var gaps: [TimeInterval] = []
             for i in 1..<sortedMeals.count {
@@ -68,6 +92,7 @@ struct BestMealSpacingView: View {
             results.append(DailyMealSpacingPoint(
                 date: day,
                 avgDailyBG: avgBG,
+                avgDailyBGMultiMeter: avgMM,
                 avgTimeBetweenMeals: avgGapHours
             ))
         }
@@ -90,13 +115,16 @@ struct BestMealSpacingView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if scatterPoints.isEmpty {
                     ContentUnavailableView(
                         "Not Enough Data",
                         systemImage: "chart.dots.scatter",
                         description: Text("Need complete days with meals, BG data, and next-day BG data.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
@@ -147,6 +175,12 @@ struct BestMealSpacingView: View {
                                         StatBox(label: "Meal Spacing", value: String(format: "%.1f", best.avgTimeBetweenMeals), unit: "hours", theme: theme)
                                     }
 
+                                    if let mmAvg = best.avgDailyBGMultiMeter {
+                                        HStack(spacing: 24) {
+                                            StatBox(label: "Avg BG (MM)", value: String(format: "%.0f", mmAvg), unit: "mg/dL", theme: theme, valueColor: .orange)
+                                        }
+                                    }
+
                                     Text("Meals that day:")
                                         .font(.caption).fontWeight(.semibold)
                                         .foregroundStyle(theme.secondaryTextColor)
@@ -189,6 +223,11 @@ struct BestMealSpacingView: View {
                                         Text(String(format: "BG: %.0f", point.avgDailyBG))
                                             .font(.caption)
                                             .foregroundStyle(glucoseColor(for: Int(point.avgDailyBG)))
+                                        if let mm = point.avgDailyBGMultiMeter {
+                                            Text(String(format: "(MM %.0f)", mm))
+                                                .font(.caption2)
+                                                .foregroundStyle(.orange)
+                                        }
                                         Text(String(format: "%.1fh spacing", point.avgTimeBetweenMeals))
                                             .font(.caption)
                                             .foregroundStyle(theme.tertiaryTextColor)

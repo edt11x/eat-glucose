@@ -26,13 +26,19 @@ struct MeterDeviationResult: Identifiable {
 
 struct MeterDeviationView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @Query(sort: \GlucoseEvent.timestamp) private var allEvents: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
     private let referenceMeter = "Precision Neo"
     private let maxTimeDiff: TimeInterval = 5 * 60  // 5 minutes
+
+    private var events: [GlucoseEvent] {
+        let cutoff = timeRange.startDate()
+        return allEvents.filter { $0.timestamp >= cutoff }
+    }
 
     private var deviationResults: [MeterDeviationResult] {
         // Get all BG measurements with a meter and a glucose value
@@ -108,13 +114,16 @@ struct MeterDeviationView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if deviationResults.isEmpty {
                     ContentUnavailableView(
                         "No Other Meters",
                         systemImage: "arrow.left.arrow.right",
                         description: Text("Add a meter besides \(referenceMeter) in Settings to begin comparing meters.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     List {
                         Section {

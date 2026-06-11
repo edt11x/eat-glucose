@@ -29,6 +29,8 @@ struct ContentView: View {
     @State private var showingBedtimeChart = false
     @State private var showingAverageBGChart = false
     @State private var showingExperimentComparison = false
+    @State private var showingRollingAverages = false
+    @State private var displayedMonth: Date = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
 
     private var theme: AppTheme { settings.currentTheme }
 
@@ -36,11 +38,45 @@ struct ContentView: View {
         NavigationStack {
             TimelineView(.periodic(from: .now, by: 60)) { context in
             List {
+                // Month navigation header
+                Section {
+                    HStack {
+                        Button { stepYear(by: -1) } label: {
+                            Image(systemName: "chevron.left.2")
+                        }
+                        .buttonStyle(.borderless)
+                        Button { stepMonth(by: -1) } label: {
+                            Image(systemName: "chevron.left")
+                        }
+                        .buttonStyle(.borderless)
+                        Spacer()
+                        Text(displayedMonthLabel)
+                            .font(.headline)
+                            .foregroundStyle(theme.eventTypeColor)
+                        Spacer()
+                        Button { stepMonth(by: 1) } label: {
+                            Image(systemName: "chevron.right")
+                        }
+                        .buttonStyle(.borderless)
+                        Button { stepYear(by: 1) } label: {
+                            Image(systemName: "chevron.right.2")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+                .listRowBackground(theme.rowBackground)
+
                 if events.isEmpty {
                     ContentUnavailableView(
                         "No Events",
                         systemImage: "drop.fill",
                         description: Text("Tap + to log your first event.")
+                    )
+                } else if monthEvents.isEmpty {
+                    ContentUnavailableView(
+                        "No Events This Month",
+                        systemImage: "calendar",
+                        description: Text("Use the arrows above to browse another month.")
                     )
                 } else {
                     // Time summary at top
@@ -90,6 +126,18 @@ struct ContentView: View {
                                     Text(String(format: "(%.0f mg/dL)", equivalentBG))
                                         .font(.subheadline)
                                         .foregroundStyle(a1cColor(for: eA1C))
+                                }
+                                if let mmA1C = estimatedA1CMultiMeter {
+                                    let mmEquivBG = mmA1C * 28.7 - 46.7
+                                    HStack(spacing: 4) {
+                                        Label(String(format: "eA1C (MM): %.1f%%", mmA1C), systemImage: "percent")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.orange)
+                                        Text(String(format: "(%.0f mg/dL)", mmEquivBG))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.orange)
+                                    }
                                 }
                                 Text("eA1C = (avgBG + 46.7) / 28.7")
                                     .font(.caption2)
@@ -161,6 +209,11 @@ struct ContentView: View {
                                 showingPeakChart = true
                             } label: {
                                 Label("Peak Readings", systemImage: "chart.line.flattrend.xyaxis")
+                            }
+                            Button {
+                                showingRollingAverages = true
+                            } label: {
+                                Label("Rolling Averages", systemImage: "chart.line.uptrend.xyaxis.circle.fill")
                             }
                             Divider()
                             Button {
@@ -275,17 +328,46 @@ struct ContentView: View {
                 ExperimentComparisonChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
+            .sheet(isPresented: $showingRollingAverages) {
+                RollingAveragesChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
         }
         .preferredColorScheme(settings.preferredColorScheme)
     }
 
-    // Group events by calendar day
+    // Events within the displayed month only
+    private var monthEvents: [GlucoseEvent] {
+        let calendar = Calendar.current
+        guard let interval = calendar.dateInterval(of: .month, for: displayedMonth) else { return [] }
+        return events.filter { $0.timestamp >= interval.start && $0.timestamp < interval.end }
+    }
+
+    // Group displayed-month events by calendar day
     private var groupedByDay: [(Date, [GlucoseEvent])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: events) { event in
+        let grouped = Dictionary(grouping: monthEvents) { event in
             calendar.startOfDay(for: event.timestamp)
         }
         return grouped.sorted { $0.key > $1.key }
+    }
+
+    private var displayedMonthLabel: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: displayedMonth)
+    }
+
+    private func stepMonth(by months: Int) {
+        if let next = Calendar.current.date(byAdding: .month, value: months, to: displayedMonth) {
+            displayedMonth = next
+        }
+    }
+
+    private func stepYear(by years: Int) {
+        if let next = Calendar.current.date(byAdding: .year, value: years, to: displayedMonth) {
+            displayedMonth = next
+        }
     }
 
     // Find the time since the most recent meal event before this event
@@ -343,6 +425,23 @@ struct ContentView: View {
         }
         guard !bgValues.isEmpty else { return nil }
         let avgBG = Double(bgValues.reduce(0, +)) / Double(bgValues.count)
+        return (avgBG + 46.7) / 28.7
+    }
+
+    // Multi-meter equivalent of eA1C: converts each reading via MultiMeterEstimator before averaging
+    private var estimatedA1CMultiMeter: Double? {
+        let deviations = meterDeviations
+        let mmValues: [Double] = events.compactMap { event in
+            guard event.eventType == "Blood Glucose Measurement",
+                  let bg = event.bloodGlucose,
+                  let meter = event.meterType,
+                  let estimate = MultiMeterEstimator.estimate(
+                      reading: bg, meterType: meter, deviations: deviations
+                  ) else { return nil }
+            return estimate
+        }
+        guard !mmValues.isEmpty else { return nil }
+        let avgBG = mmValues.reduce(0, +) / Double(mmValues.count)
         return (avgBG + 46.7) / 28.7
     }
 
@@ -412,6 +511,14 @@ struct EventRow: View {
                 }
             }
 
+            // Finger used for the lance, plus side of finger
+            if event.fingerUsed != nil || event.fingerSide != nil {
+                let parts = [event.fingerUsed, event.fingerSide].compactMap { $0 }
+                Label(parts.joined(separator: ", "), systemImage: "hand.point.up.left.fill")
+                    .font(.caption2)
+                    .foregroundStyle(theme.tertiaryTextColor)
+            }
+
             // Multi-meter average estimate
             if let bg = event.bloodGlucose, let meter = event.meterType,
                let estimate = MultiMeterEstimator.estimate(
@@ -447,6 +554,40 @@ struct EventRow: View {
                         Text("(\(dose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", dose) : String(dose)) \(unit))")
                             .font(.caption)
                             .foregroundStyle(theme.tertiaryTextColor)
+                    }
+                }
+
+                if let site = event.injectionSite {
+                    HStack(spacing: 4) {
+                        Label(site, systemImage: "syringe")
+                            .font(.caption2)
+                            .foregroundStyle(theme.tertiaryTextColor)
+                        if let angle = event.injectionAngleDegrees,
+                           let dist = event.injectionDistanceValue,
+                           let unit = event.injectionDistanceUnit {
+                            let angleStr = angle.truncatingRemainder(dividingBy: 1) == 0
+                                ? String(format: "%.0f°", angle)
+                                : String(format: "%.1f°", angle)
+                            let distStr = dist.truncatingRemainder(dividingBy: 1) == 0
+                                ? String(format: "%.0f %@", dist, unit)
+                                : String(format: "%.1f %@", dist, unit)
+                            Text("\(angleStr), \(distStr)")
+                                .font(.caption2)
+                                .foregroundStyle(theme.tertiaryTextColor)
+                        } else if let angle = event.injectionAngleDegrees {
+                            Text(angle.truncatingRemainder(dividingBy: 1) == 0
+                                 ? String(format: "%.0f°", angle)
+                                 : String(format: "%.1f°", angle))
+                                .font(.caption2)
+                                .foregroundStyle(theme.tertiaryTextColor)
+                        } else if let dist = event.injectionDistanceValue,
+                                  let unit = event.injectionDistanceUnit {
+                            Text(dist.truncatingRemainder(dividingBy: 1) == 0
+                                 ? String(format: "%.0f %@", dist, unit)
+                                 : String(format: "%.1f %@", dist, unit))
+                                .font(.caption2)
+                                .foregroundStyle(theme.tertiaryTextColor)
+                        }
                     }
                 }
             }
@@ -523,6 +664,17 @@ struct EventRow: View {
             if let location = event.locationName {
                 Label(location, systemImage: "mappin.and.ellipse")
                     .font(.caption)
+                    .foregroundStyle(theme.tertiaryTextColor)
+            }
+            if let addr = event.streetAddress {
+                Label(addr, systemImage: "house")
+                    .font(.caption2)
+                    .foregroundStyle(theme.tertiaryTextColor)
+                    .lineLimit(2)
+            }
+            if let coords = event.gpsCoordinates {
+                Label(coords, systemImage: "location")
+                    .font(.caption2)
                     .foregroundStyle(theme.tertiaryTextColor)
             }
 

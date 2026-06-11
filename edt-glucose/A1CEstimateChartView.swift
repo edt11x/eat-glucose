@@ -18,6 +18,7 @@ struct A1CDataPoint: Identifiable {
 struct A1CEstimateChartView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
@@ -79,8 +80,14 @@ struct A1CEstimateChartView: View {
         return results
     }
 
-    private var a1cDataPoints: [A1CDataPoint] { computeA1CPoints(useMultiMeter: false) }
-    private var a1cMultiMeterPoints: [A1CDataPoint] { computeA1CPoints(useMultiMeter: true) }
+    private var a1cDataPoints: [A1CDataPoint] {
+        let cutoff = timeRange.startDate()
+        return computeA1CPoints(useMultiMeter: false).filter { $0.date >= cutoff }
+    }
+    private var a1cMultiMeterPoints: [A1CDataPoint] {
+        let cutoff = timeRange.startDate()
+        return computeA1CPoints(useMultiMeter: true).filter { $0.date >= cutoff }
+    }
 
     private var averageA1C: Double {
         let values = a1cDataPoints.map(\.eA1C)
@@ -96,13 +103,16 @@ struct A1CEstimateChartView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if a1cDataPoints.isEmpty {
                     ContentUnavailableView(
                         "Not Enough Data",
                         systemImage: "percent",
                         description: Text("Need at least 10 blood glucose readings within a 90-day window to estimate A1C.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {

@@ -48,7 +48,10 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `ExperimentComparisonChartView.swift` | Before vs during experiment BG comparison |
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
-| `LocationManager.swift` | GPS + reverse geocoding (`@MainActor @Observable`) |
+| `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors |
+| `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |
+| `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. |
+| `LocationManager.swift` | GPS + reverse geocoding, returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
 | `NotificationManager.swift` | Post-meal timer notifications (`actor`) |
 
 ## Code Conventions
@@ -69,13 +72,13 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 Core fields: `timestamp`, `eventType`, `mealType?`, `bloodGlucose?`, `meterType?`, `activityDescription`, `notes`
 
-Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `locationName?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `experimentQuantity?`, `experimentQuantityUnit?`
+Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `injectionSite?`, `injectionAngleDegrees?`, `injectionDistanceValue?`, `injectionDistanceUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `locationName?`, `streetAddress?`, `gpsCoordinates?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `fingerUsed?`, `fingerSide?`, `experimentQuantity?`, `experimentQuantityUnit?`
 
 ## Event Types & Conditional Logic
 
 | Event Type | Shows |
 |---|---|
-| Blood Glucose Measurement | BG input, meter picker, BG guess, medicine, test strip lot/expiration |
+| Blood Glucose Measurement | BG input, meter picker, BG guess, medicine + injection site/angle/distance, test strip lot/expiration, finger used + finger side |
 | Start of Meal / End of Meal | Meal type, food description, calorie/carb/protein guess, glycemic index |
 | Walk | Walk distance in miles |
 | A1C | A1C percentage input |
@@ -113,4 +116,8 @@ Shell script: `./scripts/commit-workflow.sh "message"`
 ## Conventions
 
 - **Most-recent-first** — every list/table keyed on date or time (event list, chart readings tables, meter comparison pairs, etc.) displays newest entries at the top.
-- **Orange multi-meter summary rows** — Daily Readings, Fasting, Bedtime, Average BG, Peak, Weekly Curve, and A1C Estimate render a secondary `HStack` of `StatBox(... valueColor: .orange)` under the primary summary when meter deviations exist. Labels are suffixed with `(MM)`. `StatBox` accepts an optional `valueColor: Color?` that overrides `theme.eventTypeColor`.
+- **Orange multi-meter summary rows** — Daily Readings, Fasting, Bedtime, Average BG, Peak, Weekly Curve, A1C Estimate, Rolling Averages, Pre-Meal BG Scatter, and Best Meal Spacing render a secondary `HStack` of `StatBox(... valueColor: .orange)` (or an inline orange caption for scatter views) under the primary summary when meter deviations exist. Labels are suffixed with `(MM)`. `StatBox` accepts an optional `valueColor: Color?` that overrides `theme.eventTypeColor`.
+- **MM deviations from full history** — chart views that filter by `ChartTimeRange` must compute `MultiMeterEstimator.computeDeviations(from: allEvents)` (the un-filtered `@Query`), not from the time-range-filtered `events`. Deviations are stable per-meter calibration; short windows often contain no Precision Neo pairs and would otherwise hide the MM line and stats.
+- **`ChartTimeRange` picker** — charts without their own day/week/month nav expose a `.week/.month/.year/.all` segmented picker at the top, default `.month`. Filter-input charts (Fasting, Bedtime, Average BG, Peak, AvgTimeBetweenMeals, PreMealScatter, BestMealSpacing, MeterDeviation) filter the underlying `events`. Filter-output charts (A1C Estimate, Rolling Averages) keep `events` full and filter only the displayed points so the rolling lookback windows stay intact.
+- **NamedLocation** — `SettingsManager.namedLocations: [NamedLocation]` is the source of truth for saved locations. Each entry carries optional `streetAddress` and `gpsCoordinates`. The location picker in `EventFormView` auto-fills those fields when an existing name is selected, and `saveEvent` calls `addOrUpdateNamedLocation(...)` so every save promotes the form's address/coords onto the saved entry.
+- **Finger options** — `SettingsManager.fingerOptions` (10 entries L/R × thumb / index / middle / ring / little) and `SettingsManager.fingerSideOptions` (Thumb Side / Little Finger Side) are static `[String]` arrays — not user-configurable since the list is closed.

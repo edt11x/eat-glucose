@@ -36,6 +36,14 @@ struct GlucoseEventData: Codable {
     var testStripExpiration: Date?
     var experimentQuantity: Double?
     var experimentQuantityUnit: String?
+    var injectionSite: String?
+    var injectionAngleDegrees: Double?
+    var injectionDistanceValue: Double?
+    var injectionDistanceUnit: String?
+    var streetAddress: String?
+    var gpsCoordinates: String?
+    var fingerUsed: String?
+    var fingerSide: String?
 
     // Backwards-compatible decoder: old JSON missing new keys will decode cleanly
     init(from decoder: Decoder) throws {
@@ -64,6 +72,14 @@ struct GlucoseEventData: Codable {
         testStripExpiration = try container.decodeIfPresent(Date.self, forKey: .testStripExpiration)
         experimentQuantity = try container.decodeIfPresent(Double.self, forKey: .experimentQuantity)
         experimentQuantityUnit = try container.decodeIfPresent(String.self, forKey: .experimentQuantityUnit)
+        injectionSite = try container.decodeIfPresent(String.self, forKey: .injectionSite)
+        injectionAngleDegrees = try container.decodeIfPresent(Double.self, forKey: .injectionAngleDegrees)
+        injectionDistanceValue = try container.decodeIfPresent(Double.self, forKey: .injectionDistanceValue)
+        injectionDistanceUnit = try container.decodeIfPresent(String.self, forKey: .injectionDistanceUnit)
+        streetAddress = try container.decodeIfPresent(String.self, forKey: .streetAddress)
+        gpsCoordinates = try container.decodeIfPresent(String.self, forKey: .gpsCoordinates)
+        fingerUsed = try container.decodeIfPresent(String.self, forKey: .fingerUsed)
+        fingerSide = try container.decodeIfPresent(String.self, forKey: .fingerSide)
     }
 
     init(from event: GlucoseEvent) {
@@ -90,6 +106,14 @@ struct GlucoseEventData: Codable {
         self.testStripExpiration = event.testStripExpiration
         self.experimentQuantity = event.experimentQuantity
         self.experimentQuantityUnit = event.experimentQuantityUnit
+        self.injectionSite = event.injectionSite
+        self.injectionAngleDegrees = event.injectionAngleDegrees
+        self.injectionDistanceValue = event.injectionDistanceValue
+        self.injectionDistanceUnit = event.injectionDistanceUnit
+        self.streetAddress = event.streetAddress
+        self.gpsCoordinates = event.gpsCoordinates
+        self.fingerUsed = event.fingerUsed
+        self.fingerSide = event.fingerSide
     }
 
     func toGlucoseEvent() -> GlucoseEvent {
@@ -116,7 +140,15 @@ struct GlucoseEventData: Codable {
             testStripLot: testStripLot,
             testStripExpiration: testStripExpiration,
             experimentQuantity: experimentQuantity,
-            experimentQuantityUnit: experimentQuantityUnit
+            experimentQuantityUnit: experimentQuantityUnit,
+            injectionSite: injectionSite,
+            injectionAngleDegrees: injectionAngleDegrees,
+            injectionDistanceValue: injectionDistanceValue,
+            injectionDistanceUnit: injectionDistanceUnit,
+            streetAddress: streetAddress,
+            gpsCoordinates: gpsCoordinates,
+            fingerUsed: fingerUsed,
+            fingerSide: fingerSide
         )
     }
 }

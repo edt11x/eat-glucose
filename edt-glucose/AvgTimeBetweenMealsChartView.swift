@@ -17,10 +17,16 @@ struct MealSpacingDataPoint: Identifiable {
 
 struct AvgTimeBetweenMealsChartView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @Query(sort: \GlucoseEvent.timestamp) private var allEvents: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
+
+    private var events: [GlucoseEvent] {
+        let cutoff = timeRange.startDate()
+        return allEvents.filter { $0.timestamp >= cutoff }
+    }
 
     private var dataPoints: [MealSpacingDataPoint] {
         let calendar = Calendar.current
@@ -54,13 +60,16 @@ struct AvgTimeBetweenMealsChartView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if dataPoints.isEmpty {
                     ContentUnavailableView(
                         "No Meal Data",
                         systemImage: "clock.arrow.2.circlepath",
                         description: Text("Need at least 2 meals in a day to calculate spacing.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {

@@ -17,13 +17,23 @@ struct BedtimeDataPoint: Identifiable {
 
 struct BedtimeChartView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @Query(sort: \GlucoseEvent.timestamp) private var allEvents: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
+    private var events: [GlucoseEvent] {
+        let cutoff = timeRange.startDate()
+        return allEvents.filter { $0.timestamp >= cutoff }
+    }
+
+    // Deviations are derived from the full event history, not the
+    // time-range-filtered subset — they're stable per-meter calibration data,
+    // and short windows often won't contain enough Precision-Neo pairs to
+    // produce any deviation at all.
     private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
-        MultiMeterEstimator.computeDeviations(from: events)
+        MultiMeterEstimator.computeDeviations(from: allEvents)
     }
 
     private var bedtimeMultiMeterReadings: [BedtimeDataPoint] {
@@ -104,13 +114,16 @@ struct BedtimeChartView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if bedtimeReadings.isEmpty {
                     ContentUnavailableView(
                         "No Bedtime Data",
                         systemImage: "chart.xyaxis.line",
                         description: Text("Bedtime readings are the last blood glucose measurement before 5:00 AM each day.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {

@@ -13,17 +13,28 @@ struct PreMealScatterPoint: Identifiable {
     let id = UUID()
     let mealType: String
     let preMealBG: Int
+    let preMealBGMultiMeter: Int?
     let hoursSinceLastMeal: Double
 }
 
 struct PreMealBGScatterView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+    @Query(sort: \GlucoseEvent.timestamp) private var allEvents: [GlucoseEvent]
+    @State private var timeRange: ChartTimeRange = .month
 
     private var settings = SettingsManager.shared
     private var theme: AppTheme { settings.currentTheme }
 
     @State private var selectedMealType: String = "All"
+
+    private var events: [GlucoseEvent] {
+        let cutoff = timeRange.startDate()
+        return allEvents.filter { $0.timestamp >= cutoff }
+    }
+
+    private var meterDeviations: [MultiMeterEstimator.MeterDeviation] {
+        MultiMeterEstimator.computeDeviations(from: allEvents)
+    }
 
     private var scatterPoints: [PreMealScatterPoint] {
         let mealStarts = events
@@ -32,6 +43,7 @@ struct PreMealBGScatterView: View {
         let bgEvents = events
             .filter { $0.eventType == "Blood Glucose Measurement" && $0.bloodGlucose != nil }
             .sorted { $0.timestamp < $1.timestamp }
+        let deviations = meterDeviations
 
         var results: [PreMealScatterPoint] = []
 
@@ -45,9 +57,18 @@ struct PreMealBGScatterView: View {
 
             let hoursSince = meal.timestamp.timeIntervalSince(prevMeal.timestamp) / 3600.0
 
+            let mmBG: Int? = {
+                guard let meter = precedingBG.meterType,
+                      let estimate = MultiMeterEstimator.estimate(
+                          reading: bgValue, meterType: meter, deviations: deviations
+                      ) else { return nil }
+                return Int(estimate.rounded())
+            }()
+
             results.append(PreMealScatterPoint(
                 mealType: meal.mealType!,
                 preMealBG: bgValue,
+                preMealBGMultiMeter: mmBG,
                 hoursSinceLastMeal: hoursSince
             ))
         }
@@ -69,13 +90,16 @@ struct PreMealBGScatterView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            VStack(spacing: 0) {
+                ChartTimeRangePicker(selection: $timeRange)
+                    .padding(.top, 8)
                 if scatterPoints.isEmpty {
                     ContentUnavailableView(
                         "Not Enough Data",
                         systemImage: "chart.dots.scatter",
                         description: Text("Need BG measurements before meals and at least 2 meals to plot.")
                     )
+                    .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
@@ -120,19 +144,32 @@ struct PreMealBGScatterView: View {
                                     if let points = grouped[type] {
                                         let avgBG = points.map(\.preMealBG).reduce(0, +) / max(points.count, 1)
                                         let avgHours = points.map(\.hoursSinceLastMeal).reduce(0, +) / Double(max(points.count, 1))
-                                        HStack {
-                                            Text(type)
-                                                .font(.caption)
-                                                .fontWeight(.medium)
-                                            Spacer()
-                                            Text("\(points.count) pts")
-                                                .font(.caption2)
-                                                .foregroundStyle(theme.tertiaryTextColor)
-                                            Text(String(format: "Avg BG: %d", avgBG))
-                                                .font(.caption)
-                                            Text(String(format: "Avg %.1fh gap", avgHours))
-                                                .font(.caption)
-                                                .foregroundStyle(theme.secondaryTextColor)
+                                        let mmValues = points.compactMap(\.preMealBGMultiMeter)
+                                        let mmAvg = mmValues.isEmpty ? nil
+                                            : mmValues.reduce(0, +) / max(mmValues.count, 1)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            HStack {
+                                                Text(type)
+                                                    .font(.caption)
+                                                    .fontWeight(.medium)
+                                                Spacer()
+                                                Text("\(points.count) pts")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(theme.tertiaryTextColor)
+                                                Text(String(format: "Avg BG: %d", avgBG))
+                                                    .font(.caption)
+                                                Text(String(format: "Avg %.1fh gap", avgHours))
+                                                    .font(.caption)
+                                                    .foregroundStyle(theme.secondaryTextColor)
+                                            }
+                                            if let mmAvg {
+                                                HStack {
+                                                    Spacer()
+                                                    Text(String(format: "Avg BG (MM): %d", mmAvg))
+                                                        .font(.caption)
+                                                        .foregroundStyle(.orange)
+                                                }
+                                            }
                                         }
                                     }
                                 }

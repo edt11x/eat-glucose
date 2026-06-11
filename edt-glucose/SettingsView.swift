@@ -25,6 +25,7 @@ struct SettingsView: View {
     @State private var pendingImportEvents: [GlucoseEvent] = []
     @State private var showingAddTimerAlert = false
     @State private var newTimerValue = ""
+    @State private var showingDataIntegrity = false
 
     var body: some View {
         NavigationStack {
@@ -55,6 +56,12 @@ struct SettingsView: View {
                         loadBundledTestData()
                     } label: {
                         Label("Load Bundled Test Data", systemImage: "doc.on.doc")
+                    }
+
+                    Button {
+                        showingDataIntegrity = true
+                    } label: {
+                        Label("Data Integrity", systemImage: "checkmark.shield")
                     }
                 }
 
@@ -109,9 +116,8 @@ struct SettingsView: View {
                     onReset: { settings.resetMedicineTypes() }
                 )
 
-                ConfigurableListSection(
-                    title: "Locations",
-                    items: $settings.locations,
+                NamedLocationListSection(
+                    items: $settings.namedLocations,
                     onReset: { settings.resetLocations() }
                 )
 
@@ -130,6 +136,12 @@ struct SettingsView: View {
                     title: "Experiments",
                     items: $settings.experiments,
                     onReset: { settings.resetExperiments() }
+                )
+
+                ConfigurableListSection(
+                    title: "Injection Sites",
+                    items: $settings.injectionSites,
+                    onReset: { settings.resetInjectionSites() }
                 )
 
                 ConfigurableListSection(
@@ -181,6 +193,10 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(importMessage)
+            }
+            .sheet(isPresented: $showingDataIntegrity) {
+                DataIntegrityView()
+                    .preferredColorScheme(settings.preferredColorScheme)
             }
             .alert("Add Timer Value", isPresented: $showingAddTimerAlert) {
                 TextField("Minutes", text: $newTimerValue)
@@ -404,6 +420,95 @@ struct MealPresetListSection: View {
                 Button("Reset") { onReset() }
                     .font(.caption)
                     .textCase(.none)
+            }
+        }
+    }
+}
+
+struct NamedLocationListSection: View {
+    @Binding var items: [NamedLocation]
+    let onReset: () -> Void
+
+    @State private var showingEditor = false
+    @State private var editingIndex: Int?
+    @State private var draftName = ""
+    @State private var draftAddress = ""
+    @State private var draftCoords = ""
+
+    private var isEditing: Bool { editingIndex != nil }
+
+    var body: some View {
+        Section {
+            ForEach(Array(items.enumerated()), id: \.element.id) { idx, loc in
+                Button {
+                    editingIndex = idx
+                    draftName = loc.name
+                    draftAddress = loc.streetAddress ?? ""
+                    draftCoords = loc.gpsCoordinates ?? ""
+                    showingEditor = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(loc.name)
+                            .foregroundStyle(.primary)
+                        if let addr = loc.streetAddress, !addr.isEmpty {
+                            Text(addr)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        if let coords = loc.gpsCoordinates, !coords.isEmpty {
+                            Text(coords)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .onDelete { offsets in items.remove(atOffsets: offsets) }
+            .onMove { from, to in items.move(fromOffsets: from, toOffset: to) }
+
+            Button {
+                editingIndex = nil
+                draftName = ""
+                draftAddress = ""
+                draftCoords = ""
+                showingEditor = true
+            } label: {
+                Label("Add Location", systemImage: "plus.circle")
+            }
+        } header: {
+            HStack {
+                Text("Locations")
+                Spacer()
+                Button("Reset") { onReset() }
+                    .font(.caption)
+                    .textCase(.none)
+            }
+        }
+        .alert(isEditing ? "Edit Location" : "Add Location", isPresented: $showingEditor) {
+            TextField("Name", text: $draftName)
+            TextField("Street Address", text: $draftAddress)
+            TextField("GPS (lat,lon)", text: $draftCoords)
+            Button(isEditing ? "Save" : "Add") {
+                let trimmedName = draftName.trimmingCharacters(in: .whitespaces)
+                guard !trimmedName.isEmpty else { return }
+                let trimmedAddress = draftAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+                let trimmedCoords = draftCoords.trimmingCharacters(in: .whitespaces)
+                let entry = NamedLocation(
+                    name: trimmedName,
+                    streetAddress: trimmedAddress.isEmpty ? nil : trimmedAddress,
+                    gpsCoordinates: trimmedCoords.isEmpty ? nil : trimmedCoords
+                )
+                if let idx = editingIndex {
+                    items[idx] = entry
+                } else if !items.contains(where: { $0.name == trimmedName }) {
+                    items.append(entry)
+                }
+                draftName = ""; draftAddress = ""; draftCoords = ""
+                editingIndex = nil
+            }
+            Button("Cancel", role: .cancel) {
+                draftName = ""; draftAddress = ""; draftCoords = ""
+                editingIndex = nil
             }
         }
     }

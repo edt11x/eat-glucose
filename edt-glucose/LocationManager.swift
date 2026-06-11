@@ -7,6 +7,15 @@
 
 import CoreLocation
 
+struct LocationDetails {
+    /// Short display name: "<place name>, <locality>" — same as the legacy `requestLocationName` result.
+    var displayName: String?
+    /// Full street address (number, street, locality, region, postal code, country).
+    var streetAddress: String?
+    /// "lat,lon" with 6-decimal precision.
+    var gpsCoordinates: String?
+}
+
 @MainActor @Observable
 final class LocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
@@ -18,7 +27,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     var isLocating = false
     var locationError: String?
 
-    private var continuation: CheckedContinuation<String?, Never>?
+    private var continuation: CheckedContinuation<LocationDetails?, Never>?
 
     private override init() {
         super.init()
@@ -26,7 +35,12 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     }
 
+    /// Legacy helper — returns only the display name.
     func requestLocationName() async -> String? {
+        await requestLocationDetails()?.displayName
+    }
+
+    func requestLocationDetails() async -> LocationDetails? {
         isLocating = true
         locationError = nil
         currentPlaceName = nil
@@ -58,15 +72,36 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             }
             return
         }
+        let coords = String(format: "%.6f,%.6f",
+                            location.coordinate.latitude,
+                            location.coordinate.longitude)
         geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            let name = placemarks?.first.map { placemark in
-                [placemark.name, placemark.locality]
+            let placemark = placemarks?.first
+            let name = placemark.map { p in
+                [p.name, p.locality]
                     .compactMap { $0 }
                     .joined(separator: ", ")
             }
+            let address = placemark.map { p -> String in
+                let line1 = [p.subThoroughfare, p.thoroughfare]
+                    .compactMap { $0 }
+                    .joined(separator: " ")
+                let line2 = [p.locality, p.administrativeArea, p.postalCode]
+                    .compactMap { $0 }
+                    .joined(separator: ", ")
+                return [line1, line2, p.country]
+                    .compactMap { $0 }
+                    .filter { !$0.isEmpty }
+                    .joined(separator: ", ")
+            }
+            let details = LocationDetails(
+                displayName: name,
+                streetAddress: address?.isEmpty == false ? address : nil,
+                gpsCoordinates: coords
+            )
             Task { @MainActor in
                 self.currentPlaceName = name
-                self.finishWithResult(name)
+                self.finishWithResult(details)
             }
         }
     }
@@ -78,7 +113,7 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    private func finishWithResult(_ result: String?) {
+    private func finishWithResult(_ result: LocationDetails?) {
         isLocating = false
         continuation?.resume(returning: result)
         continuation = nil
