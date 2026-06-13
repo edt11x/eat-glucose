@@ -28,6 +28,16 @@ so the work can be referenced later.
 - Include each user prompt verbatim and a concise summary of what was done.
 - Note key decisions, gotchas, and files touched.
 - If the session spans multiple topics, one file per cohesive topic is fine.
+- **Always include a `## Pickup Context` (or `## Handoff Notes`) section at
+  the end** with whatever the next session — whether the same model or another
+  — would need to pick the project back up:
+  - Open questions still pending from the user.
+  - Architectural decisions made this session and why.
+  - Known sharp edges (e.g. "deviations must come from `allEvents`, not
+    `events`").
+  - Any in-flight work or commitments that didn't ship.
+  - If the session was purely mechanical with no judgment calls, one line
+    ("Nothing in flight") is fine — but don't omit the section.
 
 ## 4. Update Project Documentation
 
@@ -55,7 +65,7 @@ so the work can be referenced later.
 Write a clear commit message following these conventions:
 - **Subject line**: Short imperative (<=72 chars) summarizing the change.
 - **Body**: Explain what changed and why if not obvious.
-- **Trailer**: Always include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`.
+- **Trailer**: Always include `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`.
 
 ```bash
 git add <files>
@@ -64,7 +74,7 @@ Subject line here
 
 Body explaining what and why.
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
 ```

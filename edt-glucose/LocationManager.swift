@@ -6,6 +6,7 @@
 //
 
 import CoreLocation
+import MapKit
 
 struct LocationDetails {
     /// Short display name: "<place name>, <locality>" — same as the legacy `requestLocationName` result.
@@ -21,7 +22,6 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
 
     private let manager = CLLocationManager()
-    private let geocoder = CLGeocoder()
 
     var currentPlaceName: String?
     var isLocating = false
@@ -67,42 +67,11 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else {
-            Task { @MainActor in
-                self.finishWithResult(nil)
-            }
+            Task { @MainActor in self.finishWithResult(nil) }
             return
         }
-        let coords = String(format: "%.6f,%.6f",
-                            location.coordinate.latitude,
-                            location.coordinate.longitude)
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            let placemark = placemarks?.first
-            let name = placemark.map { p in
-                [p.name, p.locality]
-                    .compactMap { $0 }
-                    .joined(separator: ", ")
-            }
-            let address = placemark.map { p -> String in
-                let line1 = [p.subThoroughfare, p.thoroughfare]
-                    .compactMap { $0 }
-                    .joined(separator: " ")
-                let line2 = [p.locality, p.administrativeArea, p.postalCode]
-                    .compactMap { $0 }
-                    .joined(separator: ", ")
-                return [line1, line2, p.country]
-                    .compactMap { $0 }
-                    .filter { !$0.isEmpty }
-                    .joined(separator: ", ")
-            }
-            let details = LocationDetails(
-                displayName: name,
-                streetAddress: address?.isEmpty == false ? address : nil,
-                gpsCoordinates: coords
-            )
-            Task { @MainActor in
-                self.currentPlaceName = name
-                self.finishWithResult(details)
-            }
+        Task { @MainActor in
+            await self.processLocation(location)
         }
     }
 
@@ -110,6 +79,45 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         Task { @MainActor in
             self.locationError = error.localizedDescription
             self.finishWithResult(nil)
+        }
+    }
+
+    @MainActor
+    private func processLocation(_ location: CLLocation) async {
+        let coords = String(format: "%.6f,%.6f",
+                            location.coordinate.latitude,
+                            location.coordinate.longitude)
+        let mapItem = await reverseGeocode(location)
+
+        let name: String? = {
+            guard let mapItem else { return nil }
+            // Prefer the descriptive name (POI) plus locality (city) — matches the
+            // old "name, locality" format.
+            let locality = mapItem.addressRepresentations?.cityWithContext(.short)
+            return [mapItem.name, locality]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
+                .joined(separator: ", ")
+        }()
+
+        let address: String? = mapItem?.address?.fullAddress
+
+        let details = LocationDetails(
+            displayName: (name?.isEmpty ?? true) ? nil : name,
+            streetAddress: (address?.isEmpty ?? true) ? nil : address,
+            gpsCoordinates: coords
+        )
+        currentPlaceName = details.displayName
+        finishWithResult(details)
+    }
+
+    private func reverseGeocode(_ location: CLLocation) async -> MKMapItem? {
+        guard let request = MKReverseGeocodingRequest(location: location) else { return nil }
+        do {
+            let items = try await request.mapItems
+            return items.first
+        } catch {
+            return nil
         }
     }
 

@@ -23,8 +23,11 @@ actor NotificationManager {
     }
 
     func scheduleRandomPostMealTimer() async {
-        let settings = SettingsManager.shared
-        let values = settings.postMealTimerValues.filter { $0 > 0 }
+        // SettingsManager is @MainActor-isolated, so read its values on the main
+        // actor and pass the resulting array back into this actor.
+        let values: [Int] = await MainActor.run {
+            SettingsManager.shared.postMealTimerValues.filter { $0 > 0 }
+        }
         guard !values.isEmpty else { return }
 
         guard let minutes = values.randomElement() else { return }

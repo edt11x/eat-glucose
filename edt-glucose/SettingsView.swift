@@ -339,20 +339,32 @@ struct MedicineTypeListSection: View {
     let units: [String]
     let onReset: () -> Void
 
-    @State private var showingAddAlert = false
-    @State private var newName = ""
-    @State private var newDose = ""
-    @State private var newUnit = "units"
+    @State private var showingEditor = false
+    @State private var editingIndex: Int?
+    @State private var draftName = ""
+    @State private var draftDose = ""
+    @State private var draftUnit = "units"
 
     var body: some View {
         Section {
-            ForEach(items) { item in
-                VStack(alignment: .leading) {
-                    Text(item.name)
-                    if item.name != "None" {
-                        Text("Default: \(item.defaultDose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", item.defaultDose) : String(item.defaultDose)) \(item.defaultUnit)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+            ForEach(Array(items.enumerated()), id: \.element.id) { idx, item in
+                Button {
+                    editingIndex = idx
+                    draftName = item.name
+                    draftDose = item.defaultDose.truncatingRemainder(dividingBy: 1) == 0
+                        ? String(format: "%.0f", item.defaultDose)
+                        : String(item.defaultDose)
+                    draftUnit = item.defaultUnit
+                    showingEditor = true
+                } label: {
+                    VStack(alignment: .leading) {
+                        Text(item.name)
+                            .foregroundStyle(.primary)
+                        if item.name != "None" {
+                            Text("Default: \(item.defaultDose.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", item.defaultDose) : String(item.defaultDose)) \(item.defaultUnit)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -360,7 +372,11 @@ struct MedicineTypeListSection: View {
             .onMove { from, to in items.move(fromOffsets: from, toOffset: to) }
 
             Button {
-                showingAddAlert = true
+                editingIndex = nil
+                draftName = ""
+                draftDose = ""
+                draftUnit = "units"
+                showingEditor = true
             } label: {
                 Label("Add Medicine Type", systemImage: "plus.circle")
             }
@@ -373,20 +389,76 @@ struct MedicineTypeListSection: View {
                     .textCase(.none)
             }
         }
-        .alert("Add Medicine Type", isPresented: $showingAddAlert) {
-            TextField("Name", text: $newName)
-            TextField("Default Dose", text: $newDose)
-            TextField("Unit (e.g., units, mg)", text: $newUnit)
-            Button("Add") {
-                let name = newName.trimmingCharacters(in: .whitespaces)
-                if !name.isEmpty && !items.contains(where: { $0.name == name }) {
-                    let dose = Double(newDose) ?? 0
-                    items.append(MedicineTypeConfig(name: name, defaultDose: dose, defaultUnit: newUnit))
+        .sheet(isPresented: $showingEditor) {
+            MedicineTypeEditorSheet(
+                editingIndex: editingIndex,
+                draftName: $draftName,
+                draftDose: $draftDose,
+                draftUnit: $draftUnit,
+                units: units,
+                onSave: { commitDraft() }
+            )
+            .presentationDetents([.medium])
+        }
+    }
+
+    private func commitDraft() {
+        let name = draftName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+        let dose = Double(draftDose) ?? 0
+        let entry = MedicineTypeConfig(name: name, defaultDose: dose, defaultUnit: draftUnit)
+        if let idx = editingIndex {
+            items[idx] = entry
+        } else if !items.contains(where: { $0.name == name }) {
+            items.append(entry)
+        }
+    }
+}
+
+private struct MedicineTypeEditorSheet: View {
+    let editingIndex: Int?
+    @Binding var draftName: String
+    @Binding var draftDose: String
+    @Binding var draftUnit: String
+    let units: [String]
+    let onSave: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var isEditing: Bool { editingIndex != nil }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Medicine") {
+                    TextField("Name", text: $draftName)
                 }
-                newName = ""; newDose = ""; newUnit = "units"
+                Section("Default Dose") {
+                    HStack {
+                        TextField("Dose", text: $draftDose)
+                            .keyboardType(.decimalPad)
+                        Picker("Unit", selection: $draftUnit) {
+                            ForEach(units, id: \.self) { unit in
+                                Text(unit).tag(unit)
+                            }
+                        }
+                        .labelsHidden()
+                    }
+                }
             }
-            Button("Cancel", role: .cancel) {
-                newName = ""; newDose = ""; newUnit = "units"
+            .navigationTitle(isEditing ? "Edit Medicine" : "Add Medicine")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave()
+                        dismiss()
+                    }
+                    .disabled(draftName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
             }
         }
     }
@@ -435,8 +507,6 @@ struct NamedLocationListSection: View {
     @State private var draftAddress = ""
     @State private var draftCoords = ""
 
-    private var isEditing: Bool { editingIndex != nil }
-
     var body: some View {
         Section {
             ForEach(Array(items.enumerated()), id: \.element.id) { idx, loc in
@@ -484,31 +554,77 @@ struct NamedLocationListSection: View {
                     .textCase(.none)
             }
         }
-        .alert(isEditing ? "Edit Location" : "Add Location", isPresented: $showingEditor) {
-            TextField("Name", text: $draftName)
-            TextField("Street Address", text: $draftAddress)
-            TextField("GPS (lat,lon)", text: $draftCoords)
-            Button(isEditing ? "Save" : "Add") {
-                let trimmedName = draftName.trimmingCharacters(in: .whitespaces)
-                guard !trimmedName.isEmpty else { return }
-                let trimmedAddress = draftAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-                let trimmedCoords = draftCoords.trimmingCharacters(in: .whitespaces)
-                let entry = NamedLocation(
-                    name: trimmedName,
-                    streetAddress: trimmedAddress.isEmpty ? nil : trimmedAddress,
-                    gpsCoordinates: trimmedCoords.isEmpty ? nil : trimmedCoords
-                )
-                if let idx = editingIndex {
-                    items[idx] = entry
-                } else if !items.contains(where: { $0.name == trimmedName }) {
-                    items.append(entry)
+        .sheet(isPresented: $showingEditor) {
+            NamedLocationEditorSheet(
+                editingIndex: editingIndex,
+                draftName: $draftName,
+                draftAddress: $draftAddress,
+                draftCoords: $draftCoords,
+                onSave: { commitDraft() }
+            )
+            .presentationDetents([.medium, .large])
+        }
+    }
+
+    private func commitDraft() {
+        let trimmedName = draftName.trimmingCharacters(in: .whitespaces)
+        guard !trimmedName.isEmpty else { return }
+        let trimmedAddress = draftAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCoords = draftCoords.trimmingCharacters(in: .whitespaces)
+        let entry = NamedLocation(
+            name: trimmedName,
+            streetAddress: trimmedAddress.isEmpty ? nil : trimmedAddress,
+            gpsCoordinates: trimmedCoords.isEmpty ? nil : trimmedCoords
+        )
+        if let idx = editingIndex {
+            items[idx] = entry
+        } else if !items.contains(where: { $0.name == trimmedName }) {
+            items.append(entry)
+        }
+    }
+}
+
+private struct NamedLocationEditorSheet: View {
+    let editingIndex: Int?
+    @Binding var draftName: String
+    @Binding var draftAddress: String
+    @Binding var draftCoords: String
+    let onSave: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var isEditing: Bool { editingIndex != nil }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Location") {
+                    TextField("Name", text: $draftName)
                 }
-                draftName = ""; draftAddress = ""; draftCoords = ""
-                editingIndex = nil
+                Section("Address") {
+                    TextField("Street Address", text: $draftAddress, axis: .vertical)
+                        .lineLimit(1...4)
+                }
+                Section("GPS Coordinates") {
+                    TextField("lat,lon", text: $draftCoords)
+                        .keyboardType(.numbersAndPunctuation)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                }
             }
-            Button("Cancel", role: .cancel) {
-                draftName = ""; draftAddress = ""; draftCoords = ""
-                editingIndex = nil
+            .navigationTitle(isEditing ? "Edit Location" : "Add Location")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave()
+                        dismiss()
+                    }
+                    .disabled(draftName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
             }
         }
     }

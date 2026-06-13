@@ -198,7 +198,7 @@ Access settings by tapping the gear icon in the top-left corner:
 
 ## Requirements
 
-- iOS 17.0+
+- iOS 26.2+
 - Xcode 16.0+
 - Location permission (optional, for GPS tagging)
 
@@ -207,7 +207,7 @@ Access settings by tapping the gear icon in the top-left corner:
 - **SwiftUI** — All views are built with SwiftUI.
 - **SwiftData** — `GlucoseEvent` is the single `@Model` class. Data is stored on-device in SQLite via SwiftData.
 - **Swift Charts** — Fasting, bedtime, daily (with day/week/month historical overlays), average, peak, weekly curve, A1C estimate, meal spacing, pre-meal scatter, and experiment comparison chart visualizations.
-- **CoreLocation** — GPS location and reverse geocoding via `LocationManager`.
+- **CoreLocation + MapKit** — GPS via `CLLocationManager`; reverse geocoding via MapKit's `MKReverseGeocodingRequest` in `LocationManager`.
 - **UserNotifications** — Post-meal timer reminders via `NotificationManager` (Swift `actor`).
 - **UserDefaults** — User-configurable lists and theme preference via `SettingsManager` singleton.
 - **@Observable** — `SettingsManager` and `LocationManager` use Observation framework for reactive updates.

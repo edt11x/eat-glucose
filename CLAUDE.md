@@ -7,9 +7,9 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 ## Build & Run
 
-- **Platform:** iOS 17.0+
+- **Platform:** iOS 26.2+
 - **IDE:** Xcode 16.0+
-- **Frameworks:** SwiftUI, SwiftData, Charts, UserNotifications, CoreLocation
+- **Frameworks:** SwiftUI, SwiftData, Charts, UserNotifications, CoreLocation, MapKit (reverse geocoding via `MKReverseGeocodingRequest`)
 - Build via Xcode or `xcodebuild -scheme edt-glucose -destination 'platform=iOS Simulator,name=iPhone 16'`
 - No tests exist yet
 
@@ -51,7 +51,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors |
 | `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |
 | `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. |
-| `LocationManager.swift` | GPS + reverse geocoding, returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
+| `LocationManager.swift` | GPS via CLLocationManager + MapKit `MKReverseGeocodingRequest`; returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
 | `NotificationManager.swift` | Post-meal timer notifications (`actor`) |
 
 ## Code Conventions
