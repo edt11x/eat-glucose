@@ -63,21 +63,58 @@ struct RollingAveragesChartView: View {
         let calendar = Calendar.current
         guard !source.isEmpty else { return [] }
 
+        // Two-pointer sliding window. Sort the source once, then for every
+        // visible day advance a `right` pointer to include readings before
+        // `dayEnd` and a per-window `left` pointer to drop readings older than
+        // `windowStart`. Maintaining a running sum gives O(N) per window
+        // instead of the previous O(N×D) full filter-per-day.
+        let sorted = source.sorted { $0.0 < $1.0 }
         let cutoff = timeRange.startDate()
-        let dayStarts = Set(source.map { calendar.startOfDay(for: $0.0) })
+        let dayStarts = Set(sorted.map { calendar.startOfDay(for: $0.0) })
             .filter { $0 >= cutoff }
             .sorted()
+        guard !dayStarts.isEmpty else { return [] }
+
         var results: [RollingAveragePoint] = []
+        results.reserveCapacity(dayStarts.count * windows.count)
+
+        // Maintain one sliding window per N-day window size, advancing as we
+        // walk forward through `dayStarts`.
+        var rightIdxByWindow = [Int: Int]()
+        var leftIdxByWindow = [Int: Int]()
+        var sumByWindow = [Int: Double]()
+        for w in windows {
+            rightIdxByWindow[w] = 0
+            leftIdxByWindow[w] = 0
+            sumByWindow[w] = 0
+        }
 
         for day in dayStarts {
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: day)!
             for window in windows {
                 let windowStart = calendar.date(byAdding: .day, value: -window, to: day)!
-                let values = source
-                    .filter { $0.0 >= windowStart && $0.0 < dayEnd }
-                    .map(\.1)
-                guard values.count >= 3 else { continue }
-                let avg = values.reduce(0, +) / Double(values.count)
+
+                // Advance right pointer to include every reading before dayEnd.
+                var right = rightIdxByWindow[window]!
+                var sum = sumByWindow[window]!
+                while right < sorted.count, sorted[right].0 < dayEnd {
+                    sum += sorted[right].1
+                    right += 1
+                }
+                rightIdxByWindow[window] = right
+
+                // Advance left pointer to drop readings before windowStart.
+                var left = leftIdxByWindow[window]!
+                while left < right, sorted[left].0 < windowStart {
+                    sum -= sorted[left].1
+                    left += 1
+                }
+                leftIdxByWindow[window] = left
+                sumByWindow[window] = sum
+
+                let count = right - left
+                guard count >= 3 else { continue }
+                let avg = sum / Double(count)
                 results.append(RollingAveragePoint(date: day, glucose: avg, windowDays: window))
             }
         }

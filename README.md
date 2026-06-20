@@ -65,6 +65,7 @@ Access from the chart icon in the toolbar:
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time. Draws a solid purple line for raw average BG and a dotted orange line for multi-meter average BG. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
 - **Rolling Averages** — Trailing 7, 14, 30, and 90-day average BG, one line per window with distinct colors (green / yellow / blue / purple). When meter-deviation data is available, an orange dashed line per window shows the multi-meter equivalent, and a `(MM)` row of orange Latest stats appears under the raw row. Days with fewer than 3 readings in the window are skipped.
+- **Overnight Processing** — For every morning where there's both a fasting reading and a bedtime reading from the prior evening, plots `fastingBG − bedtimeBG` as a blue line with color-coded points (green ≤ −20, yellow within ±20, red ≥ +20). Bedtime-window insulin (any BG measurement between 8 PM and 5 AM with a medicine dose) overlays as orange bars in the lower half of the chart. Includes a per-night table showing `bedtimeBG → fastingBG (±Δ)` and the insulin units / medicines per night. Useful for seeing how well overnight processing is working and how a given insulin dose affects the next morning's reading.
 - **Meter Comparison** — Shows all meters (from events and Settings) compared against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs. Meters without comparison pairs display a status message with their reading count.
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.
@@ -100,6 +101,14 @@ Settings → **Data Integrity** scans the entire event history for likely proble
 - Possible duplicates (same BG + meter within 60 seconds).
 - Medicine entries with no recorded dose.
 - Blood Glucose Measurement events missing a value.
+- Test strips used after their expiration date.
+- Bedtime events with no BG reading within 2 hours.
+- Walk distances over 30 miles (likely typo).
+- Injection distances over 12 in / 30 cm from the navel.
+- Two same-mealType meal starts on the same day (excluding Snack and Energy Drink, which legitimately repeat).
+- GPS coordinates not parseable as `lat,lon` within Earth's bounds.
+- A1C events with fewer than 5 BG readings in the prior 90 days.
+- Injection angles outside the valid 0–360° range.
 
 ### Multi-Meter Average Formula
 
@@ -240,6 +249,7 @@ edt-glucose/
 ├── PreMealBGScatterView.swift    # Pre-meal BG vs time since last meal
 ├── AverageBGChartView.swift     # Daily average BG chart
 ├── RollingAveragesChartView.swift # Trailing 7/14/30/90-day average BG chart
+├── OvernightProcessingChartView.swift # Overnight BG delta + bedtime insulin
 ├── ExperimentComparisonChartView.swift  # Before vs during experiment comparison
 ├── DataIntegrityView.swift      # Whole-history data sanity checks
 ├── ChartTimeRange.swift         # Shared Week/Month/Year/All picker
@@ -247,6 +257,19 @@ edt-glucose/
 ├── Assets.xcassets/              # App icon and colors
 ├── COMMIT_WORKFLOW.md            # Commit workflow procedure
 ├── prompts/                     # Per-session prompt/answer logs
+├── edt-glucoseTests/            # Swift Testing unit tests
 └── scripts/
     └── commit-workflow.sh        # Automated commit helper script
 ```
+
+## Testing
+
+Unit tests live in `edt-glucoseTests/edt_glucoseTests.swift` and use Apple's [Swift Testing framework](https://developer.apple.com/documentation/testing). Coverage includes:
+
+- `MultiMeterEstimator` deviation pairing math and the multi-meter estimate formula.
+- `ChartTimeRange` cutoff calculations.
+- `DataExporter` JSON round-trip, including a backwards-compatibility test that decodes a legacy JSON payload missing every field added in the recent releases.
+- `NamedLocation` Codable round-trip.
+- `GlucoseEvent` default initializer / optional-field invariants.
+
+Run tests via **Cmd+U** in Xcode. Cached APIs (`MultiMeterEstimator.computeDeviations(from:)`) are `@MainActor`-isolated; tests should use the `computeDeviationsUncached(from:)` variant to stay off MainActor.

@@ -10,9 +10,20 @@
 		287A0C6C2F55383500F70250 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 287A0C6B2F55383500F70250 /* README.md */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		288104302FE6E118009D80FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 283BD6392F552CA200AB8F0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 283BD6402F552CA200AB8F0D;
+			remoteInfo = "edt-glucose";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		283BD6412F552CA200AB8F0D /* edt-glucose.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "edt-glucose.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		287A0C6B2F55383500F70250 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		2881042C2FE6E118009D80FC /* edt-glucoseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "edt-glucoseTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -21,10 +32,22 @@
 			path = "edt-glucose";
 			sourceTree = "<group>";
 		};
+		2881042D2FE6E118009D80FC /* edt-glucoseTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "edt-glucoseTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		283BD63E2F552CA200AB8F0D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		288104292FE6E118009D80FC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				283BD6432F552CA200AB8F0D /* edt-glucose */,
+				2881042D2FE6E118009D80FC /* edt-glucoseTests */,
 				283BD6422F552CA200AB8F0D /* Products */,
 				287A0C6B2F55383500F70250 /* README.md */,
 			);
@@ -47,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				283BD6412F552CA200AB8F0D /* edt-glucose.app */,
+				2881042C2FE6E118009D80FC /* edt-glucoseTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +101,29 @@
 			productReference = 283BD6412F552CA200AB8F0D /* edt-glucose.app */;
 			productType = "com.apple.product-type.application";
 		};
+		2881042B2FE6E118009D80FC /* edt-glucoseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 288104342FE6E118009D80FC /* Build configuration list for PBXNativeTarget "edt-glucoseTests" */;
+			buildPhases = (
+				288104282FE6E118009D80FC /* Sources */,
+				288104292FE6E118009D80FC /* Frameworks */,
+				2881042A2FE6E118009D80FC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				288104312FE6E118009D80FC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				2881042D2FE6E118009D80FC /* edt-glucoseTests */,
+			);
+			name = "edt-glucoseTests";
+			packageProductDependencies = (
+			);
+			productName = "edt-glucoseTests";
+			productReference = 2881042C2FE6E118009D80FC /* edt-glucoseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -83,11 +131,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2630;
+				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					283BD6402F552CA200AB8F0D = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					2881042B2FE6E118009D80FC = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 283BD6402F552CA200AB8F0D;
 					};
 				};
 			};
@@ -106,6 +158,7 @@
 			projectRoot = "";
 			targets = (
 				283BD6402F552CA200AB8F0D /* edt-glucose */,
+				2881042B2FE6E118009D80FC /* edt-glucoseTests */,
 			);
 		};
 /* End PBXProject section */
@@ -119,6 +172,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2881042A2FE6E118009D80FC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -129,7 +189,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		288104282FE6E118009D80FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		288104312FE6E118009D80FC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 283BD6402F552CA200AB8F0D /* edt-glucose */;
+			targetProxy = 288104302FE6E118009D80FC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		283BD64C2F552CA400AB8F0D /* Debug */ = {
@@ -317,6 +392,50 @@
 			};
 			name = Release;
 		};
+		288104322FE6E118009D80FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W25R9G26A8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.edt11x.edt-glucoseTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/edt-glucose.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/edt-glucose";
+			};
+			name = Debug;
+		};
+		288104332FE6E118009D80FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W25R9G26A8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.edt11x.edt-glucoseTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/edt-glucose.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/edt-glucose";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -334,6 +453,15 @@
 			buildConfigurations = (
 				283BD64F2F552CA400AB8F0D /* Debug */,
 				283BD6502F552CA400AB8F0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		288104342FE6E118009D80FC /* Build configuration list for PBXNativeTarget "edt-glucoseTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				288104322FE6E118009D80FC /* Debug */,
+				288104332FE6E118009D80FC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

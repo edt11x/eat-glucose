@@ -30,6 +30,11 @@ struct A1CEstimateChartView: View {
     // Compute rolling 90-day eA1C for each day that has BG data.
     // When useMultiMeter is true, BG readings are first converted to a multi-meter
     // estimate using each event's meter type.
+    //
+    // Uses a two-pointer sliding window over readings sorted by timestamp so
+    // each per-day eA1C is computed in amortized O(1) rather than re-filtering
+    // the full reading list. Net cost: O(N + D) where N is total BG readings
+    // and D is the number of distinct days with data.
     private func computeA1CPoints(useMultiMeter: Bool) -> [A1CDataPoint] {
         let calendar = Calendar.current
         let bgEvents = events.filter {
@@ -54,26 +59,39 @@ struct A1CEstimateChartView: View {
 
         guard !allEstimates.isEmpty else { return [] }
 
-        let daySet = Set(allEstimates.map { calendar.startOfDay(for: $0.0) })
-        let sortedDays = daySet.sorted()
+        let sortedEstimates = allEstimates.sorted { $0.0 < $1.0 }
+        let sortedDays = Set(sortedEstimates.map { calendar.startOfDay(for: $0.0) }).sorted()
 
         var results: [A1CDataPoint] = []
         let windowDays = 90
+        let minimumReadings = 10
+
+        var leftIdx = 0
+        var rightIdx = 0
+        var sum = 0.0
 
         for day in sortedDays {
             let windowStart = calendar.date(byAdding: .day, value: -windowDays, to: day)!
             let windowEnd = calendar.date(byAdding: .day, value: 1, to: day)!
 
-            let windowReadings = allEstimates.filter {
-                $0.0 >= windowStart && $0.0 < windowEnd
+            // Right pointer: include every estimate strictly before windowEnd.
+            while rightIdx < sortedEstimates.count,
+                  sortedEstimates[rightIdx].0 < windowEnd {
+                sum += sortedEstimates[rightIdx].1
+                rightIdx += 1
+            }
+            // Left pointer: drop estimates older than windowStart.
+            while leftIdx < rightIdx,
+                  sortedEstimates[leftIdx].0 < windowStart {
+                sum -= sortedEstimates[leftIdx].1
+                leftIdx += 1
             }
 
-            // Require at least 10 readings for a meaningful estimate
-            guard windowReadings.count >= 10 else { continue }
+            let count = rightIdx - leftIdx
+            guard count >= minimumReadings else { continue }
 
-            let avgBG = windowReadings.map(\.1).reduce(0, +) / Double(windowReadings.count)
+            let avgBG = sum / Double(count)
             let eA1C = (avgBG + 46.7) / 28.7
-
             results.append(A1CDataPoint(date: day, eA1C: eA1C))
         }
 

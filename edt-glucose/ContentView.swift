@@ -30,6 +30,7 @@ struct ContentView: View {
     @State private var showingAverageBGChart = false
     @State private var showingExperimentComparison = false
     @State private var showingRollingAverages = false
+    @State private var showingOvernightProcessing = false
     @State private var displayedMonth: Date = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
 
     private var theme: AppTheme { settings.currentTheme }
@@ -215,6 +216,11 @@ struct ContentView: View {
                             } label: {
                                 Label("Rolling Averages", systemImage: "chart.line.uptrend.xyaxis.circle.fill")
                             }
+                            Button {
+                                showingOvernightProcessing = true
+                            } label: {
+                                Label("Overnight Processing", systemImage: "moon.zzz.fill")
+                            }
                             Divider()
                             Button {
                                 showingWeeklyCurve = true
@@ -330,6 +336,10 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingRollingAverages) {
                 RollingAveragesChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingOvernightProcessing) {
+                OvernightProcessingChartView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
         }

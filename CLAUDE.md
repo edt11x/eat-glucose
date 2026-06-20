@@ -11,7 +11,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 - **IDE:** Xcode 16.0+
 - **Frameworks:** SwiftUI, SwiftData, Charts, UserNotifications, CoreLocation, MapKit (reverse geocoding via `MKReverseGeocodingRequest`)
 - Build via Xcode or `xcodebuild -scheme edt-glucose -destination 'platform=iOS Simulator,name=iPhone 16'`
-- No tests exist yet
+- Unit tests live in `edt-glucoseTests/edt_glucoseTests.swift` (Swift Testing framework). Run via Xcode Cmd+U or `RunAllTests` MCP. Use `@testable import edt_glucose` and `MultiMeterEstimator.computeDeviationsUncached(from:)` for tests of cached APIs so the test doesn't have to be `@MainActor`.
 
 ## Architecture
 
@@ -48,7 +48,8 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `ExperimentComparisonChartView.swift` | Before vs during experiment BG comparison |
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
-| `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors |
+| `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors. Per-window two-pointer sliding window (O(N+D)) |
+| `OvernightProcessingChartView.swift` | Per-night `fastingBG − bedtimeBG` line + bedtime-window insulin bars |
 | `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |
 | `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. |
 | `LocationManager.swift` | GPS via CLLocationManager + MapKit `MKReverseGeocodingRequest`; returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
@@ -121,3 +122,7 @@ Shell script: `./scripts/commit-workflow.sh "message"`
 - **`ChartTimeRange` picker** — charts without their own day/week/month nav expose a `.week/.month/.year/.all` segmented picker at the top, default `.month`. Filter-input charts (Fasting, Bedtime, Average BG, Peak, AvgTimeBetweenMeals, PreMealScatter, BestMealSpacing, MeterDeviation) filter the underlying `events`. Filter-output charts (A1C Estimate, Rolling Averages) keep `events` full and filter only the displayed points so the rolling lookback windows stay intact.
 - **NamedLocation** — `SettingsManager.namedLocations: [NamedLocation]` is the source of truth for saved locations. Each entry carries optional `streetAddress` and `gpsCoordinates`. The location picker in `EventFormView` auto-fills those fields when an existing name is selected, and `saveEvent` calls `addOrUpdateNamedLocation(...)` so every save promotes the form's address/coords onto the saved entry.
 - **Finger options** — `SettingsManager.fingerOptions` (10 entries L/R × thumb / index / middle / ring / little) and `SettingsManager.fingerSideOptions` (Thumb Side / Little Finger Side) are static `[String]` arrays — not user-configurable since the list is closed.
+- **`MultiMeterEstimator.computeDeviations(from:)` is memoized** — keyed by event count + latest timestamp + a hashed map of meter-type counts. `@MainActor`-isolated cache; chart views call it freely without performance cost on re-render. Use `computeDeviationsUncached(from:)` from tests and `invalidateCache()` from callers that mutate the underlying data outside the normal MainActor write path (e.g. if SwiftData iCloud sync ever imports on a background context).
+- **Rolling-window chart algorithm** — A1CEstimate and RollingAverages use two-pointer sliding windows over date-sorted readings (running sum maintained incrementally). When adding new rolling-window charts, follow the same pattern instead of re-filtering all readings per day.
+- **Overnight Processing chart dividing line** — uses the same 5:00 AM convention as Fasting and Bedtime (fasting = first reading ≥ 5 AM that day, bedtime = last reading between 5 AM the prior day and 5 AM). Bedtime-window insulin = 8 PM–5 AM. If 5 AM ever becomes configurable, update Fasting, Bedtime, and OvernightProcessing together.
+- **DataIntegrityView "Duplicate Meal Type" check** — intentionally excludes Snack and Energy Drink, which are designed to repeat in a day.
