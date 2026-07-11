@@ -131,15 +131,31 @@ struct OvernightProcessingChartView: View {
         max(points.map(\.bedtimeInsulinUnits).max() ?? 0, 1)
     }
 
-    private func insulinScaled(_ units: Double) -> Double {
-        // Scale insulin so it lives in the same numerical range as the BG
-        // delta axis. We deliberately keep the bars in the *lower* half of the
-        // chart so they don't visually overlap with the delta line.
+    /// "Nice" integer tick values for the insulin (left) axis, e.g. 0, 2, 4, 6, 8.
+    private var insulinUnitTicks: [Double] {
+        let maxUnit = max(1.0, insulinMax)
+        let step = max(1.0, (ceil(maxUnit) / 4).rounded())
+        var ticks: [Double] = []
+        var u = 0.0
+        while u < maxUnit + step {
+            ticks.append(u)
+            u += step
+        }
+        return ticks
+    }
+
+    /// Top of the insulin axis — the largest tick, so the mapping and the
+    /// labelled ticks share the same ceiling.
+    private var insulinAxisMax: Double { insulinUnitTicks.last ?? 1 }
+
+    /// Swift Charts uses a single y-scale per chart, so we render insulin on its
+    /// own labelled left axis by linearly mapping insulin units onto the BG-delta
+    /// domain (0 units → bottom of the chart, `insulinAxisMax` → top). The left
+    /// axis then relabels those positions back into insulin units.
+    private func insulinToDelta(_ units: Double) -> Double {
         let domain = deltaYDomain
-        let bottomHalf = domain.lowerBound...((domain.lowerBound + domain.upperBound) / 2)
-        let range = bottomHalf.upperBound - bottomHalf.lowerBound
-        let normalized = units / insulinMax
-        return bottomHalf.lowerBound + (normalized * range)
+        let frac = units / insulinAxisMax
+        return domain.lowerBound + frac * (domain.upperBound - domain.lowerBound)
     }
 
     private func deltaColor(_ delta: Int) -> Color {
@@ -164,7 +180,7 @@ struct OvernightProcessingChartView: View {
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Overnight BG change (morning − bedtime) and bedtime-window insulin")
+                            Text("Overnight BG change (morning − bedtime, right axis) and bedtime-window insulin (left axis, units)")
                                 .font(.caption)
                                 .foregroundStyle(theme.secondaryTextColor)
                                 .padding(.horizontal)
@@ -199,16 +215,17 @@ struct OvernightProcessingChartView: View {
                 .foregroundStyle(theme.tertiaryTextColor.opacity(0.5))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
 
-            // Bedtime insulin bars (scaled to the bottom half of the y-axis,
-            // so they don't overlap with the delta line). Orange to match the
-            // project's secondary-data convention.
+            // Bedtime insulin bars, drawn against the left insulin-units axis.
+            // 0 units sits at the bottom of the chart; the bar height is the
+            // dose mapped onto the shared y-domain. Orange per the project's
+            // secondary-data convention.
             if hasInsulin {
                 ForEach(points) { point in
                     if point.bedtimeInsulinUnits > 0 {
                         BarMark(
                             x: .value("Date", point.morningDate, unit: .day),
-                            yStart: .value("Baseline", deltaYDomain.lowerBound),
-                            yEnd: .value("Insulin", insulinScaled(point.bedtimeInsulinUnits)),
+                            yStart: .value("Baseline", insulinToDelta(0)),
+                            yEnd: .value("Insulin", insulinToDelta(point.bedtimeInsulinUnits)),
                             width: .fixed(6)
                         )
                         .foregroundStyle(.orange.opacity(0.55))
@@ -233,8 +250,27 @@ struct OvernightProcessingChartView: View {
                 .symbolSize(45)
             }
         }
-        .chartYAxisLabel("Δ mg/dL  |  Insulin units (scaled)")
         .chartYScale(domain: deltaYDomain)
+        .chartYAxis {
+            if hasInsulin {
+                // Left axis: insulin units. Ticks are placed at the mapped
+                // positions but relabelled back into whole units.
+                AxisMarks(position: .leading, values: insulinUnitTicks.map { insulinToDelta($0) }) { value in
+                    AxisTick()
+                    AxisValueLabel {
+                        if value.index < insulinUnitTicks.count {
+                            Text("\(Int(insulinUnitTicks[value.index]))")
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                }
+                // Right axis: overnight BG delta.
+                AxisMarks(position: .trailing)
+            } else {
+                // No insulin data — show the BG-delta axis on the left as usual.
+                AxisMarks(position: .leading)
+            }
+        }
     }
 
     private var legend: some View {
@@ -291,6 +327,9 @@ struct OvernightProcessingChartView: View {
                     StatBox(label: "Nights w/ Insulin",
                             value: "\(nightsWithInsulin)",
                             unit: "", theme: theme, valueColor: .orange)
+                    StatBox(label: "Nights w/o Insulin",
+                            value: "\(nights - nightsWithInsulin)",
+                            unit: "", theme: theme)
                 }
             }
         }

@@ -37,7 +37,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `DataExporter.swift` | JSON import/export, `Codable` DTO, `FileDocument` |
 | `FastingChartView.swift` | Fasting BG chart with average line |
 | `BedtimeChartView.swift` | Bedtime BG chart (last reading before 5 AM) |
-| `DailyReadingsChartView.swift` | Day/Week/Month BG readings with historical overlays and previous night reading |
+| `DailyReadingsChartView.swift` | Day/Week/Month BG readings with historical overlays and previous night reading; current-period line split into one color-coded series per meter type |
 | `PeakReadingsChartView.swift` | Peak (max) BG per day chart |
 | `WeeklyCurveChartView.swift` | Historical smoothed vs current week comparison |
 | `A1CEstimateChartView.swift` | Rolling 90-day estimated A1C chart |
@@ -49,7 +49,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
 | `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors. Per-window two-pointer sliding window (O(N+D)) |
-| `OvernightProcessingChartView.swift` | Per-night `fastingBG − bedtimeBG` line + bedtime-window insulin bars |
+| `OvernightProcessingChartView.swift` | Per-night `fastingBG − bedtimeBG` line (right axis) + bedtime-window insulin bars on a units-labelled left axis; "Nights w/ Insulin" and "Nights w/o Insulin" stats |
 | `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |
 | `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. |
 | `LocationManager.swift` | GPS via CLLocationManager + MapKit `MKReverseGeocodingRequest`; returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
@@ -73,14 +73,16 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 Core fields: `timestamp`, `eventType`, `mealType?`, `bloodGlucose?`, `meterType?`, `activityDescription`, `notes`
 
-Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `injectionSite?`, `injectionAngleDegrees?`, `injectionDistanceValue?`, `injectionDistanceUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `locationName?`, `streetAddress?`, `gpsCoordinates?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `fingerUsed?`, `fingerSide?`, `experimentQuantity?`, `experimentQuantityUnit?`
+Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `injectionSite?`, `injectionAngleDegrees?`, `injectionDistanceValue?`, `injectionDistanceUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `nonDiabeticMeal` (Bool, default false), `locationName?`, `streetAddress?`, `gpsCoordinates?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `fingerUsed?`, `fingerSide?`, `experimentQuantity?`, `experimentQuantityUnit?`
+
+Derived (getter-only, non-persisted): `glycemicLoad: Double?` = `glycemicIndexGuess × carbGuess / 100` when both are present.
 
 ## Event Types & Conditional Logic
 
 | Event Type | Shows |
 |---|---|
 | Blood Glucose Measurement | BG input, meter picker, BG guess, medicine + injection site/angle/distance, test strip lot/expiration, finger used + finger side |
-| Start of Meal / End of Meal | Meal type, food description, calorie/carb/protein guess, glycemic index |
+| Start of Meal / End of Meal | Meal type, food description, calorie/carb/protein guess, glycemic index, live Glycemic Load (when GI + carbs present); Start of Meal also shows a "Non-Diabetic Meal" toggle |
 | Walk | Walk distance in miles |
 | A1C | A1C percentage input |
 | Bedtime | Activity + notes only |

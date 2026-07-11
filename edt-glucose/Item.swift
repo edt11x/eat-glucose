@@ -52,6 +52,10 @@ final class GlucoseEvent {
     var proteinGuess: Int?
     var glycemicIndexGuess: Int?
 
+    /// Flags a Start of Meal as a "non-diabetic" meal (higher carbs/sugar/calories),
+    /// to help recognize and track meals that may drive higher BG results.
+    var nonDiabeticMeal: Bool = false
+
     // Test strip tracking
     var testStripLot: String?
     var testStripExpiration: Date?
@@ -85,6 +89,7 @@ final class GlucoseEvent {
         a1cValue: Double? = nil,
         proteinGuess: Int? = nil,
         glycemicIndexGuess: Int? = nil,
+        nonDiabeticMeal: Bool = false,
         testStripLot: String? = nil,
         testStripExpiration: Date? = nil,
         experimentQuantity: Double? = nil,
@@ -117,6 +122,7 @@ final class GlucoseEvent {
         self.a1cValue = a1cValue
         self.proteinGuess = proteinGuess
         self.glycemicIndexGuess = glycemicIndexGuess
+        self.nonDiabeticMeal = nonDiabeticMeal
         self.testStripLot = testStripLot
         self.testStripExpiration = testStripExpiration
         self.experimentQuantity = experimentQuantity
@@ -129,5 +135,13 @@ final class GlucoseEvent {
         self.gpsCoordinates = gpsCoordinates
         self.fingerUsed = fingerUsed
         self.fingerSide = fingerSide
+    }
+
+    /// Glycemic Load = glycemic index × carbs / 100. `nil` unless both the
+    /// glycemic index and carb guess are present. Getter-only, so SwiftData
+    /// treats it as a derived (non-persisted) property.
+    var glycemicLoad: Double? {
+        guard let gi = glycemicIndexGuess, let carbs = carbGuess else { return nil }
+        return Double(gi) * Double(carbs) / 100.0
     }
 }

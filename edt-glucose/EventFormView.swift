@@ -54,6 +54,7 @@ struct EventFormView: View {
     // Meal nutrition
     @State private var proteinGuessText: String
     @State private var glycemicIndexGuessText: String
+    @State private var nonDiabeticMeal: Bool
 
     // Test strip
     @State private var testStripLot: String
@@ -138,6 +139,7 @@ struct EventFormView: View {
             event?.proteinGuess != nil ? "\(event!.proteinGuess!)" : "")
         _glycemicIndexGuessText = State(initialValue:
             event?.glycemicIndexGuess != nil ? "\(event!.glycemicIndexGuess!)" : "")
+        _nonDiabeticMeal = State(initialValue: event?.nonDiabeticMeal ?? false)
 
         // Experiment
         _experimentQuantityText = State(initialValue: {
@@ -394,6 +396,9 @@ struct EventFormView: View {
 
                 if showMealDetails {
                     Section("Meal Details") {
+                        if eventType == "Start of Meal" {
+                            Toggle("Non-Diabetic Meal", isOn: $nonDiabeticMeal)
+                        }
                         if !settings.mealPresets.isEmpty {
                             Picker("Saved Meal", selection: Binding(
                                 get: { foodDescription },
@@ -449,6 +454,17 @@ struct EventFormView: View {
                                 }
                             Text("GI (0–100)")
                                 .foregroundStyle(.secondary)
+                        }
+
+                        // Glycemic Load = GI × carbs / 100, shown when both are present.
+                        if let gl = glycemicLoad {
+                            HStack {
+                                Text("Glycemic Load")
+                                Spacer()
+                                Text(String(format: "%.0f", gl))
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(glycemicLoadColor(gl))
+                            }
                         }
                     }
                 }
@@ -565,6 +581,20 @@ struct EventFormView: View {
         }
     }
 
+    /// Live Glycemic Load from the entered GI and carb text fields
+    /// (GI × carbs / 100). `nil` until both are valid numbers.
+    private var glycemicLoad: Double? {
+        guard let gi = Int(glycemicIndexGuessText), let carbs = Int(carbGuessText) else { return nil }
+        return Double(gi) * Double(carbs) / 100.0
+    }
+
+    /// Standard Glycemic Load bands: Low ≤10 (green), Medium 11–19 (yellow), High ≥20 (red).
+    private func glycemicLoadColor(_ gl: Double) -> Color {
+        if gl >= 20 { return .red }
+        if gl > 10 { return .yellow }
+        return .green
+    }
+
     private func findMatchingStartOfMeal(mealType: String) -> GlucoseEvent? {
         allEvents.first { event in
             event.eventType == "Start of Meal"
@@ -576,6 +606,7 @@ struct EventFormView: View {
     private func populateFromStartOfMeal() {
         guard eventType == "End of Meal", !mealType.isEmpty, !isEditing else { return }
         if let startEvent = findMatchingStartOfMeal(mealType: mealType) {
+            if activityDescription.isEmpty { activityDescription = startEvent.activityDescription }
             if let food = startEvent.foodDescription { foodDescription = food }
             if let cal = startEvent.calorieGuess { calorieGuessText = "\(cal)" }
             if let carbs = startEvent.carbGuess { carbGuessText = "\(carbs)" }
@@ -685,6 +716,7 @@ struct EventFormView: View {
             event.a1cValue = effectiveA1cValue
             event.proteinGuess = effectiveProteinGuess
             event.glycemicIndexGuess = effectiveGlycemicIndexGuess
+            event.nonDiabeticMeal = (eventType == "Start of Meal") ? nonDiabeticMeal : false
             event.testStripLot = effectiveTestStripLot
             event.testStripExpiration = effectiveTestStripExpiration
             event.experimentQuantity = effectiveExperimentQuantity
@@ -718,6 +750,7 @@ struct EventFormView: View {
                 a1cValue: effectiveA1cValue,
                 proteinGuess: effectiveProteinGuess,
                 glycemicIndexGuess: effectiveGlycemicIndexGuess,
+                nonDiabeticMeal: (eventType == "Start of Meal") ? nonDiabeticMeal : false,
                 testStripLot: effectiveTestStripLot,
                 testStripExpiration: effectiveTestStripExpiration,
                 experimentQuantity: effectiveExperimentQuantity,

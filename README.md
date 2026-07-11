@@ -14,7 +14,7 @@ edt-glucose lets you log blood glucose measurements and related daily events —
 
 At the top of the event list, the app displays:
 - **Time since last BG measurement** — updates every minute. Shows the last BG value and a colored trend arrow: green (within 5% of prior reading), yellow (5–20% change), or red (>20% change). Arrow points up/down to indicate direction of change.
-- **Time since last meal** — updates every minute
+- **Time since start of last meal** and **Time since end of last meal** — two separate lines, each updates every minute
 - **Estimated A1C** — calculated from all BG readings using the ADAG formula: `eA1C = (avgBG + 46.7) / 28.7`. When meter-deviation data is available, a second line shows the multi-meter-adjusted eA1C in orange.
 
 ### Month Navigation
@@ -37,7 +37,8 @@ Each event captures:
 - **Medicine** — Track medicine name, dose, and unit (e.g., 3 units Lispro, 600 mg Berberine).
 - **Injection Site / Angle / Distance** — When a medicine is set, record the injection site (e.g., Left Abdomen), angle from navel (Right = 0°, Left = 180°), and distance with selectable in / cm unit. Site names auto-add to the saved list.
 - **Meal Type** — Shown for meal events. Choose from Breakfast, Lunch, Dinner, or Snack.
-- **Meal Details** — Food description, estimated calories, carbs, protein, and glycemic index.
+- **Meal Details** — Food description, estimated calories, carbs, protein, and glycemic index. When both glycemic index and carbs are entered, a live **Glycemic Load** (`GI × carbs / 100`) is shown, color-banded Low ≤10 / Medium 11–19 / High ≥20.
+- **Non-Diabetic Meal** — A toggle on Start of Meal events to flag higher-carb/sugar/calorie "non-diabetic" meals, making it easier to recognize meals that may drive higher BG.
 - **Walk Distance** — Distance in miles for Walk events.
 - **A1C** — A1C percentage for A1C events.
 - **Experiment Details** — Quantity and unit of measure for experiment events (e.g., 2000 mg Inositol).
@@ -58,14 +59,14 @@ Each event captures:
 
 Access from the chart icon in the toolbar:
 
-- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table (most recent first). Day view includes the last BG reading from the previous night as a purple diamond marker at midnight, providing a starting reference point. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
+- **Daily Readings** — All BG readings for a selected day with a day picker. Shows average dotted line, summary stats, and reading table (most recent first). The current period's readings are split into a separate color-coded line per meter type (with a legend), so you can see how different meters track. Day view includes the last BG reading from the previous night as a purple diamond marker at midnight, providing a starting reference point. Day view overlays faded curves from 1, 3, and 5 days ago. Week view shows a smoothed curve with faded overlays from 1, 3, and 5 weeks ago. Month view similarly overlays 1, 3, and 5 months ago.
 - **Fasting BG Chart** — First BG reading after 5:00 AM each day with average dotted line, summary stats, and reading table.
 - **Bedtime BG Chart** — Last BG reading before 5:00 AM each day with average dotted line, multi-meter estimate, summary stats, and reading table.
 - **Peak Readings** — Maximum BG reading per day over time with average dotted line, summary stats, and daily peaks table.
 - **Weekly Curve** — Smoothed historical weekly BG pattern (blue) vs current week raw readings (green), with multi-meter estimate line (orange) and historical average dotted line. Data is anchored at Monday and referenced in hours-from-Monday.
 - **A1C Estimate** — Rolling 90-day estimated A1C over time. Draws a solid purple line for raw average BG and a dotted orange line for multi-meter average BG. Shows color zones (green/yellow/red) for normal, prediabetes, and diabetes ranges. Includes the ADAG formula.
 - **Rolling Averages** — Trailing 7, 14, 30, and 90-day average BG, one line per window with distinct colors (green / yellow / blue / purple). When meter-deviation data is available, an orange dashed line per window shows the multi-meter equivalent, and a `(MM)` row of orange Latest stats appears under the raw row. Days with fewer than 3 readings in the window are skipped.
-- **Overnight Processing** — For every morning where there's both a fasting reading and a bedtime reading from the prior evening, plots `fastingBG − bedtimeBG` as a blue line with color-coded points (green ≤ −20, yellow within ±20, red ≥ +20). Bedtime-window insulin (any BG measurement between 8 PM and 5 AM with a medicine dose) overlays as orange bars in the lower half of the chart. Includes a per-night table showing `bedtimeBG → fastingBG (±Δ)` and the insulin units / medicines per night. Useful for seeing how well overnight processing is working and how a given insulin dose affects the next morning's reading.
+- **Overnight Processing** — For every morning where there's both a fasting reading and a bedtime reading from the prior evening, plots `fastingBG − bedtimeBG` as a blue line with color-coded points (green ≤ −20, yellow within ±20, red ≥ +20) on the right axis. Bedtime-window insulin (any BG measurement between 8 PM and 5 AM with a medicine dose) overlays as orange bars against a left axis labelled in insulin units. Summary stats include **Nights w/ Insulin** and **Nights w/o Insulin**. Includes a per-night table showing `bedtimeBG → fastingBG (±Δ)` and the insulin units / medicines per night. Useful for seeing how well overnight processing is working and how a given insulin dose affects the next morning's reading.
 - **Meter Comparison** — Shows all meters (from events and Settings) compared against the Precision Neo reference by pairing readings within 5 minutes. Shows average deviation, average % deviation, and individual pairs. Meters without comparison pairs display a status message with their reading count.
 - **Avg Time Between Meals** — Daily average hours between meals over time with trend line.
 - **Best Meal Spacing** — Scatter plot correlating average daily meal spacing (hours) with average daily BG to find optimal timing.

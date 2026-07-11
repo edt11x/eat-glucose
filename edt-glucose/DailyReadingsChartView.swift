@@ -9,6 +9,15 @@ import SwiftUI
 import SwiftData
 import Charts
 
+/// A BG reading that also carries its meter type, so the current-period line
+/// can be split into one differently-colored series per meter.
+private struct MeterReadingPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let glucose: Int
+    let meterType: String
+}
+
 struct DailyReadingsChartView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
@@ -187,6 +196,98 @@ struct DailyReadingsChartView: View {
     private var dailyMMReadings: [FastingDataPoint]   { mmReadingsForDayNormalized(offset: 0) }
     private var weeklyMMReadings: [FastingDataPoint]  { mmReadingsForWeekNormalized(weeksBack: 0) }
     private var monthlyMMReadings: [FastingDataPoint] { mmReadingsForMonthNormalized(monthsBack: 0) }
+
+    // MARK: - Per-meter readings for the current period
+
+    /// Line colors for meter series. Deliberately avoids red/yellow/green
+    /// (reserved for glucose-range point coloring), orange (multi-meter line),
+    /// and purple (previous-night marker).
+    private let meterPalette: [Color] = [.blue, .teal, .indigo, .cyan, .mint, .pink, .brown, .gray]
+
+    /// Readings in the current period tagged with their meter type, normalized
+    /// onto the current period's time axis exactly like the single-line variants.
+    private var currentMeterReadings: [MeterReadingPoint] {
+        switch navigationStep {
+        case .day:   return meterReadingsForDay()
+        case .week:  return meterReadingsForWeek()
+        case .month: return meterReadingsForMonth()
+        }
+    }
+
+    /// Distinct meter names in the current period, sorted for stable coloring.
+    private var currentMeterNames: [String] {
+        Array(Set(currentMeterReadings.map(\.meterType))).sorted()
+    }
+
+    /// Stable mapping of meter name → line color for the current period.
+    private var meterColorMap: [String: Color] {
+        var map: [String: Color] = [:]
+        for (index, name) in currentMeterNames.enumerated() {
+            map[name] = meterPalette[index % meterPalette.count]
+        }
+        return map
+    }
+
+    private func meterReadingsForDay() -> [MeterReadingPoint] {
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: selectedDate)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= dayStart
+                && $0.timestamp < dayEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { event in
+                let c = calendar.dateComponents([.hour, .minute, .second], from: event.timestamp)
+                let normalized = calendar.date(bySettingHour: c.hour!, minute: c.minute!, second: c.second!, of: selectedDate)!
+                return MeterReadingPoint(date: normalized, glucose: event.bloodGlucose!,
+                                         meterType: event.meterType ?? "Unknown")
+            }
+    }
+
+    private func meterReadingsForWeek() -> [MeterReadingPoint] {
+        var cal = Calendar.current
+        cal.firstWeekday = 2
+        let currentWeekStart = cal.dateInterval(of: .weekOfYear, for: selectedDate)!.start
+        let weekEnd = cal.date(byAdding: .day, value: 7, to: currentWeekStart)!
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= currentWeekStart
+                && $0.timestamp < weekEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { event in
+                let offset = event.timestamp.timeIntervalSince(currentWeekStart)
+                let normalized = currentWeekStart.addingTimeInterval(offset)
+                return MeterReadingPoint(date: normalized, glucose: event.bloodGlucose!,
+                                         meterType: event.meterType ?? "Unknown")
+            }
+    }
+
+    private func meterReadingsForMonth() -> [MeterReadingPoint] {
+        let calendar = Calendar.current
+        let currentMonthStart = calendar.dateInterval(of: .month, for: selectedDate)!.start
+        let monthEnd = calendar.date(byAdding: .month, value: 1, to: currentMonthStart)!
+        return events
+            .filter {
+                $0.eventType == "Blood Glucose Measurement"
+                && $0.bloodGlucose != nil
+                && $0.timestamp >= currentMonthStart
+                && $0.timestamp < monthEnd
+            }
+            .sorted { $0.timestamp < $1.timestamp }
+            .map { event in
+                let offset = event.timestamp.timeIntervalSince(currentMonthStart)
+                let normalized = currentMonthStart.addingTimeInterval(offset)
+                return MeterReadingPoint(date: normalized, glucose: event.bloodGlucose!,
+                                         meterType: event.meterType ?? "Unknown")
+            }
+    }
 
     // Last BG reading from the previous night (before the selected day's start)
     private func previousNightReading(for offset: Int) -> FastingDataPoint? {
@@ -382,35 +483,19 @@ struct DailyReadingsChartView: View {
                                 monthChart
                             }
 
-                            // Legend
+                            // Legend — current-period meter colors, then faded
+                            // historical periods.
+                            meterLegend
                             switch navigationStep {
                             case .day:
-                                HStack(spacing: 12) {
-                                    legendItem(color: .blue, label: "Selected Day")
-                                    legendItem(color: .blue.opacity(0.63), label: "1d ago")
-                                    legendItem(color: .blue.opacity(0.27), label: "3d ago")
-                                    legendItem(color: .blue.opacity(0.15), label: "5d ago")
-                                }
-                                .font(.caption2)
-                                .padding(.horizontal)
+                                historicalLegend(labels: ["1d ago", "3d ago", "5d ago"],
+                                                 opacities: [0.63, 0.27, 0.15])
                             case .week:
-                                HStack(spacing: 12) {
-                                    legendItem(color: .blue, label: "This Week")
-                                    legendItem(color: .blue.opacity(0.5), label: "1w ago")
-                                    legendItem(color: .blue.opacity(0.3), label: "3w ago")
-                                    legendItem(color: .blue.opacity(0.15), label: "5w ago")
-                                }
-                                .font(.caption2)
-                                .padding(.horizontal)
+                                historicalLegend(labels: ["1w ago", "3w ago", "5w ago"],
+                                                 opacities: [0.5, 0.3, 0.15])
                             case .month:
-                                HStack(spacing: 12) {
-                                    legendItem(color: .blue, label: "This Month")
-                                    legendItem(color: .blue.opacity(0.5), label: "1m ago")
-                                    legendItem(color: .blue.opacity(0.3), label: "3m ago")
-                                    legendItem(color: .blue.opacity(0.15), label: "5m ago")
-                                }
-                                .font(.caption2)
-                                .padding(.horizontal)
+                                historicalLegend(labels: ["1m ago", "3m ago", "5m ago"],
+                                                 opacities: [0.5, 0.3, 0.15])
                             }
 
                             // Summary stats
@@ -545,14 +630,15 @@ struct DailyReadingsChartView: View {
                 }
             }
 
-            // Current day (full opacity)
-            ForEach(dailyReadings) { point in
+            // Current day (full opacity) — one line per meter type, colored
+            // distinctly; points keep glucose-range coloring.
+            ForEach(meterReadingsForDay()) { point in
                 LineMark(
                     x: .value("Time", point.date),
                     y: .value("mg/dL", point.glucose),
-                    series: .value("Series", "Today")
+                    series: .value("Meter", point.meterType)
                 )
-                .foregroundStyle(Color.blue)
+                .foregroundStyle(meterColorMap[point.meterType] ?? .blue)
                 .interpolationMethod(.catmullRom)
 
                 PointMark(
@@ -628,14 +714,14 @@ struct DailyReadingsChartView: View {
                 }
             }
 
-            // Current week (full opacity, smoothed)
-            ForEach(weeklyReadings) { point in
+            // Current week (full opacity) — one line per meter type.
+            ForEach(meterReadingsForWeek()) { point in
                 LineMark(
                     x: .value("Time", point.date),
                     y: .value("mg/dL", point.glucose),
-                    series: .value("Series", "Current")
+                    series: .value("Meter", point.meterType)
                 )
-                .foregroundStyle(Color.blue)
+                .foregroundStyle(meterColorMap[point.meterType] ?? .blue)
                 .interpolationMethod(.catmullRom)
 
                 PointMark(
@@ -695,14 +781,14 @@ struct DailyReadingsChartView: View {
                 }
             }
 
-            // Current month (full opacity, smoothed)
-            ForEach(monthlyReadings) { point in
+            // Current month (full opacity) — one line per meter type.
+            ForEach(meterReadingsForMonth()) { point in
                 LineMark(
                     x: .value("Time", point.date),
                     y: .value("mg/dL", point.glucose),
-                    series: .value("Series", "Current")
+                    series: .value("Meter", point.meterType)
                 )
-                .foregroundStyle(Color.blue)
+                .foregroundStyle(meterColorMap[point.meterType] ?? .blue)
                 .interpolationMethod(.catmullRom)
 
                 PointMark(
@@ -787,6 +873,32 @@ struct DailyReadingsChartView: View {
             Text(label)
                 .foregroundStyle(theme.secondaryTextColor)
         }
+    }
+
+    /// Legend row of the current period's meter colors (one chip per meter).
+    @ViewBuilder
+    private var meterLegend: some View {
+        let names = currentMeterNames
+        if !names.isEmpty {
+            HStack(spacing: 12) {
+                ForEach(names, id: \.self) { name in
+                    legendItem(color: meterColorMap[name] ?? .blue, label: name)
+                }
+            }
+            .font(.caption2)
+            .padding(.horizontal)
+        }
+    }
+
+    /// Legend row for the faded historical-period overlays.
+    private func historicalLegend(labels: [String], opacities: [Double]) -> some View {
+        HStack(spacing: 12) {
+            ForEach(Array(zip(labels, opacities)), id: \.0) { label, opacity in
+                legendItem(color: .blue.opacity(opacity), label: label)
+            }
+        }
+        .font(.caption2)
+        .padding(.horizontal)
     }
 }
 

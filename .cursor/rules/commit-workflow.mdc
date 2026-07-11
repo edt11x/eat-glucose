@@ -1,0 +1,28 @@
+---
+description: How to run the edt-glucose Commit Workflow when the user asks for it
+alwaysApply: false
+---
+
+# Commit Workflow
+
+When the user says **"Run the Commit Workflow"** (or "commit this", "prepare a
+commit"), follow the canonical, ordered procedure in **`COMMIT_WORKFLOW.md`** at
+the repo root. Do not improvise a different order.
+
+Key points (see `COMMIT_WORKFLOW.md` for the full steps):
+
+- Assess state and **ask about anything ambiguous** (version scheme, feature vs fix).
+- Add/verify unit tests for new functionality **and** legacy-data compatibility;
+  **boot a simulator first** (`xcrun simctl boot <iPhone udid>`) or tests report
+  "TEST FAILED / No result" for every test with no crash log.
+- Run all tests; if any fail, add tests around that area and fix.
+- Refactor obvious duplication (no SwiftLint configured — rely on compiler warnings).
+- Bump the version in `project.pbxproj` (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`).
+- Full clean build (`xcodebuild clean build`).
+- Update docs: `prompts/YYYY-MM-DD-*.md` (verbatim prompts + `## Pickup Context`),
+  MEMORY.md, CLAUDE.md, README.md, SPEC.md.
+- **Stage once**, then commit with a conventional message and the trailer
+  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`, then push.
+
+`SPEC.md` is the live plan tracker — update its status markers and Progress
+Summary table for anything shipped this session.

@@ -105,12 +105,17 @@ struct ContentView: View {
                                     .foregroundStyle(theme.secondaryTextColor)
                             }
                         }
-                        if let mealInterval = timeSinceLastMealEnd(now: context.date) {
-                            let totalMinutes = Int(mealInterval) / 60
-                            let hours = totalMinutes / 60
-                            let minutes = totalMinutes % 60
+                        if let startInterval = timeSinceLastMealStart(now: context.date) {
                             Label(
-                                hours > 0 ? "\(hours)h \(minutes)m since last meal" : "\(minutes)m since last meal",
+                                "\(mealDurationText(startInterval)) since start of last meal",
+                                systemImage: "fork.knife"
+                            )
+                            .font(.subheadline)
+                            .foregroundStyle(theme.secondaryTextColor)
+                        }
+                        if let endInterval = timeSinceLastMealEnd(now: context.date) {
+                            Label(
+                                "\(mealDurationText(endInterval)) since end of last meal",
                                 systemImage: "fork.knife"
                             )
                             .font(.subheadline)
@@ -425,6 +430,19 @@ struct ContentView: View {
     private func timeSinceLastMealEnd(now: Date) -> TimeInterval? {
         guard let last = events.first(where: { $0.eventType == "End of Meal" }) else { return nil }
         return now.timeIntervalSince(last.timestamp)
+    }
+
+    private func timeSinceLastMealStart(now: Date) -> TimeInterval? {
+        guard let last = events.first(where: { $0.eventType == "Start of Meal" }) else { return nil }
+        return now.timeIntervalSince(last.timestamp)
+    }
+
+    /// Formats an elapsed interval as "Xh Ym" (or "Ym" when under an hour).
+    private func mealDurationText(_ interval: TimeInterval) -> String {
+        let totalMinutes = Int(interval) / 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        return hours > 0 ? "\(hours)h \(minutes)m" : "\(minutes)m"
     }
 
     // Estimated A1C from all blood glucose readings using ADAG formula

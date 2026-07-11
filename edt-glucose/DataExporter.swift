@@ -32,6 +32,7 @@ struct GlucoseEventData: Codable {
     var a1cValue: Double?
     var proteinGuess: Int?
     var glycemicIndexGuess: Int?
+    var nonDiabeticMeal: Bool = false
     var testStripLot: String?
     var testStripExpiration: Date?
     var experimentQuantity: Double?
@@ -68,6 +69,7 @@ struct GlucoseEventData: Codable {
         a1cValue = try container.decodeIfPresent(Double.self, forKey: .a1cValue)
         proteinGuess = try container.decodeIfPresent(Int.self, forKey: .proteinGuess)
         glycemicIndexGuess = try container.decodeIfPresent(Int.self, forKey: .glycemicIndexGuess)
+        nonDiabeticMeal = try container.decodeIfPresent(Bool.self, forKey: .nonDiabeticMeal) ?? false
         testStripLot = try container.decodeIfPresent(String.self, forKey: .testStripLot)
         testStripExpiration = try container.decodeIfPresent(Date.self, forKey: .testStripExpiration)
         experimentQuantity = try container.decodeIfPresent(Double.self, forKey: .experimentQuantity)
@@ -102,6 +104,7 @@ struct GlucoseEventData: Codable {
         self.a1cValue = event.a1cValue
         self.proteinGuess = event.proteinGuess
         self.glycemicIndexGuess = event.glycemicIndexGuess
+        self.nonDiabeticMeal = event.nonDiabeticMeal
         self.testStripLot = event.testStripLot
         self.testStripExpiration = event.testStripExpiration
         self.experimentQuantity = event.experimentQuantity
@@ -137,6 +140,7 @@ struct GlucoseEventData: Codable {
             a1cValue: a1cValue,
             proteinGuess: proteinGuess,
             glycemicIndexGuess: glycemicIndexGuess,
+            nonDiabeticMeal: nonDiabeticMeal,
             testStripLot: testStripLot,
             testStripExpiration: testStripExpiration,
             experimentQuantity: experimentQuantity,

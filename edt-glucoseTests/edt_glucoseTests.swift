@@ -170,6 +170,9 @@ struct DataExporterTests {
         original.injectionAngleDegrees = 145
         original.injectionDistanceValue = 2.5
         original.injectionDistanceUnit = "in"
+        original.carbGuess = 40
+        original.glycemicIndexGuess = 55
+        original.nonDiabeticMeal = true
 
         let data = try DataExporter.exportJSON(events: [original])
         let restored = try DataExporter.importJSON(data: data)
@@ -186,6 +189,10 @@ struct DataExporterTests {
         #expect(event.streetAddress == "1 Maple St, Springfield, IL 62701, USA")
         #expect(event.gpsCoordinates == "39.781721,-89.650148")
         #expect(event.locationName == "Home")
+        #expect(event.carbGuess == 40)
+        #expect(event.glycemicIndexGuess == 55)
+        #expect(event.nonDiabeticMeal == true)
+        #expect(event.glycemicLoad == 22.0) // 55 × 40 / 100
     }
 
     @Test("Decoder accepts legacy JSON missing the new keys")
@@ -214,6 +221,43 @@ struct DataExporterTests {
         #expect(event.injectionSite == nil)
         #expect(event.fingerUsed == nil)
         #expect(event.streetAddress == nil)
+        // Newly added fields must default cleanly for legacy data.
+        #expect(event.nonDiabeticMeal == false)
+        #expect(event.glycemicLoad == nil)
+    }
+}
+
+// MARK: - Glycemic Load & meal flags
+
+@Suite("Glycemic Load")
+struct GlycemicLoadTests {
+
+    @Test("Glycemic Load = GI × carbs / 100 when both present")
+    func computed() {
+        let event = GlucoseEvent(eventType: "Start of Meal")
+        event.carbGuess = 30
+        event.glycemicIndexGuess = 70
+        #expect(event.glycemicLoad == 21.0)
+    }
+
+    @Test("Glycemic Load is nil when carbs or GI is missing")
+    func missing() {
+        let noCarbs = GlucoseEvent(eventType: "Start of Meal")
+        noCarbs.glycemicIndexGuess = 70
+        #expect(noCarbs.glycemicLoad == nil)
+
+        let noGI = GlucoseEvent(eventType: "Start of Meal")
+        noGI.carbGuess = 30
+        #expect(noGI.glycemicLoad == nil)
+
+        #expect(GlucoseEvent(eventType: "Start of Meal").glycemicLoad == nil)
+    }
+
+    @Test("Non-diabetic meal flag defaults false and can be set")
+    func nonDiabeticFlag() {
+        #expect(GlucoseEvent().nonDiabeticMeal == false)
+        let flagged = GlucoseEvent(eventType: "Start of Meal", nonDiabeticMeal: true)
+        #expect(flagged.nonDiabeticMeal == true)
     }
 }
 

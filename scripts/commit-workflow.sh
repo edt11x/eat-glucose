@@ -59,13 +59,13 @@ fi
 if [ -n "${1:-}" ]; then
     COMMIT_MSG="$1
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 else
     echo ""
     read -p "Enter commit message: " COMMIT_MSG
     COMMIT_MSG="$COMMIT_MSG
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 fi
 
 git commit -m "$COMMIT_MSG"

@@ -1,6 +1,12 @@
 # Commit Workflow — edt-glucose
 
-When asked to "Run the Commit Workflow", follow these steps in order.
+When asked to **"Run the Commit Workflow"**, follow these steps **in order**.
+Each step happens once; do not repeat staging or re-run earlier steps. Prefer a
+high-thinking model for the judgment-heavy steps (tests, dedup, commit message).
+
+> Ordering rationale: verify correctness (tests) → clean up (lint/dedup) → stamp
+> the release (version) → prove it builds (clean build) → capture context (docs)
+> → then and only then stage/commit/push. Staging appears **once**, at step 9.
 
 ## 1. Assess Current State
 
@@ -10,102 +16,138 @@ git diff --stat
 git log --oneline -5
 ```
 
-Review what has changed since the last commit.
+Review what changed since the last commit. **Ask the user to clarify anything
+ambiguous — do not guess about intent** (e.g. version scheme, whether a change
+is a feature vs a fix).
 
-## 2. Stage New Files
+## 2. Tests — add/verify (skip if already done for this build)
 
-- Identify untracked files that belong in the repo (source code, configs, docs, assets).
-- Stage them with `git add`.
-- Do NOT add files covered by `.gitignore` (build artifacts, DerivedData, .DS_Store, etc.).
-- If `.gitignore` is missing entries, update it first.
+- Add or extend unit tests for the **new functionality** this session added.
+- **Verify legacy data still works**: old exports/records missing recently added
+  fields must decode and behave correctly (see `DataExporterTests`).
+- New `GlucoseEvent` fields need a default value AND a
+  `decodeIfPresent(...) ?? default` line in `DataExporter`.
+- If unit tests for this build are already complete, skip this step.
 
-## 3. Log Session Prompts
+## 3. Run All Tests
 
-Capture the prompts that drove this session and a short summary of the response,
-so the work can be referenced later.
+- **Boot a simulator first**, or every test reports "TEST FAILED / No result"
+  (even pure-logic tests) with no crash log:
+  ```bash
+  xcrun simctl list devices available | grep iPhone   # pick one
+  xcrun simctl boot <UDID>
+  ```
+- Run via the `RunAllTests` MCP (or Xcode Cmd+U).
+- **If any test fails, add more tests around that area**, fix, and re-run until green.
 
-- Write a new file in `prompts/` named `YYYY-MM-DD-short-topic.md`.
-- Include each user prompt verbatim and a concise summary of what was done.
+## 4. Lint / Cleanup
+
+- SwiftLint is **not** installed and there's no `.swiftlint.yml`; rely on the
+  Swift compiler's warnings (keep the build warning-clean). Install SwiftLint
+  only if the user asks.
+- **Refactor obvious duplication** introduced this session (extract shared
+  helpers rather than copy/paste).
+
+## 5. Executable Help
+
+Not applicable — the only "executable" is the iOS app (built by Xcode). The
+shell script `scripts/commit-workflow.sh` carries its own usage header; update it
+if its flags change.
+
+## 6. Version Number
+
+Bump in `edt-glucose.xcodeproj/project.pbxproj` (all build configs):
+- `MARKETING_VERSION` — feature batch → minor (1.0 → 1.1); small fixes → patch.
+- `CURRENT_PROJECT_VERSION` — increment the build number.
+
+```bash
+sed -i '' 's/MARKETING_VERSION = X;/MARKETING_VERSION = Y;/g;
+          s/CURRENT_PROJECT_VERSION = A;/CURRENT_PROJECT_VERSION = B;/g' \
+  edt-glucose.xcodeproj/project.pbxproj
+```
+
+## 7. Full Clean Build
+
+```bash
+xcodebuild clean build -scheme edt-glucose \
+  -destination 'platform=iOS Simulator,id=<booted-UDID>'
+```
+
+Confirm `** BUILD SUCCEEDED **`.
+
+## 8. Update Documentation
+
+### Session prompts log (`prompts/YYYY-MM-DD-short-topic.md`)
+- Include each user prompt **verbatim** and a concise summary of what was done.
 - Note key decisions, gotchas, and files touched.
-- If the session spans multiple topics, one file per cohesive topic is fine.
-- **Always include a `## Pickup Context` (or `## Handoff Notes`) section at
-  the end** with whatever the next session — whether the same model or another
-  — would need to pick the project back up:
-  - Open questions still pending from the user.
-  - Architectural decisions made this session and why.
-  - Known sharp edges (e.g. "deviations must come from `allEvents`, not
-    `events`").
-  - Any in-flight work or commitments that didn't ship.
-  - If the session was purely mechanical with no judgment calls, one line
-    ("Nothing in flight") is fine — but don't omit the section.
+- **Always end with a `## Pickup Context` section** covering what the next
+  session (this model or another) needs: pending questions, decisions + why,
+  known sharp edges, in-flight work. If nothing is in flight, say so in one line.
 
-## 4. Update Project Documentation
-
-### MEMORY.md (`memory/MEMORY.md` in Claude Agent config)
-- Record what was accomplished this session.
-- Note key decisions made and known issues.
-- Update architecture notes if new patterns were introduced.
-- Keep concise — this is loaded into context every session.
+### MEMORY.md (Claude Agent config `memory/MEMORY.md`)
+- Record what was accomplished, key decisions, known issues; keep concise.
 
 ### CLAUDE.md (repo root)
-- Update the Key Files table if files were added or removed.
-- Update Architecture section if frameworks or patterns changed.
-- Update Event Types table if new event types were added.
-- Update Data Model section if fields were added.
+- Update Key Files table, Architecture, Event Types table, Data Model as needed.
 
 ### README.md (repo root)
-- Update Features section for new user-facing features.
-- Update Charts & Analysis section for new charts.
-- Update Settings section for new configurable items.
-- Update Project Structure tree for new files.
-- Ensure "Vibe Coded with Anthropic Claude" attribution remains.
+- Update Features / Charts / Settings / Project Structure for user-facing changes.
+- Keep the "Vibe Coded with Anthropic Claude" attribution.
 
-## 5. Commit
+### SPEC.md / plan files (repo root)
+- Update status markers and the Progress Summary table for shipped items.
 
-Write a clear commit message following these conventions:
-- **Subject line**: Short imperative (<=72 chars) summarizing the change.
-- **Body**: Explain what changed and why if not obvious.
-- **Trailer**: Always include `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`.
+## 9. Stage Files (once)
+
+- Update `.gitignore` first if it's missing entries (build artifacts,
+  DerivedData, .DS_Store, etc.).
+- Stage untracked files that belong in the repo (source, configs, docs, assets)
+  and all modified tracked files. Do **not** stage `.gitignore`-covered artifacts.
 
 ```bash
 git add <files>
+```
+
+## 10. Commit
+
+- **Subject**: short imperative, ≤72 chars.
+- **Body**: what changed and why, when not obvious.
+- **Trailer**: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+
+```bash
 git commit -m "$(cat <<'EOF'
 Subject line here
 
 Body explaining what and why.
 
-Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 EOF
 )"
 ```
 
-## 6. Push
+## 11. Push
 
 ```bash
-git push
+git push          # or: git push --set-upstream origin <branch>  (no upstream set)
 ```
 
-If no upstream is set: `git push --set-upstream origin main`
-
-## 7. Verify
+## 12. Verify
 
 ```bash
-git status
+git status        # clean working tree
 git log --oneline -1
 ```
-
-Confirm clean working tree and correct commit.
 
 ---
 
 ## Quick Reference — Shell Script
 
-For the mechanical parts (stage, commit, push) without doc updates:
+For the mechanical parts only (stage → commit → push), after you've done the
+tests / version / docs steps manually:
 
 ```bash
 ./scripts/commit-workflow.sh "Your commit message here"
 ```
 
-## No Executable Files
-
-This project has no command-line executables requiring `--help` updates. The only executable is the iOS app itself (built by Xcode). The shell script `scripts/commit-workflow.sh` has its own usage comment at the top.
+The script does not run tests, bump the version, or update docs — those are the
+judgment steps above.
