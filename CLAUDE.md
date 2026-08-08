@@ -48,7 +48,8 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `ExperimentComparisonChartView.swift` | Before vs during experiment BG comparison |
 | `MeterDeviationView.swift` | Meter comparison (pairs within 5 min vs Precision Neo) |
 | `MultiMeterEstimator.swift` | Shared deviation computation and multi-meter average formula |
-| `InsulinEstimator.swift` | Insulin estimation core (SPEC 3.1): `InsulinProfile` PK curves, `InsulinEstimator` protocol, `PKCurveEstimator`. Pure/testable; no UI yet. Aid, not medical advice. |
+| `InsulinEstimator.swift` | Insulin estimation core (SPEC 3.1): `InsulinProfile` PK curves, `InsulinEstimator` protocol, `PKCurveEstimator`. Pure/testable. Aid, not medical advice. |
+| `InsulinEstimatorView.swift` | "Insulin Estimator" screen (Charts menu): dose inputs → recommendation + no-insulin-vs-suggested prediction chart. Drives `PKCurveEstimator`. |
 | `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors. Per-window two-pointer sliding window (O(N+D)) |
 | `OvernightProcessingChartView.swift` | Per-night `fastingBG − bedtimeBG` line (right axis) + bedtime-window insulin bars on a units-labelled left axis; "Nights w/ Insulin" and "Nights w/o Insulin" stats |
 | `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |

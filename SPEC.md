@@ -141,17 +141,19 @@ Multi-step; ships incrementally so each step is usable.
 
 > These are starting parameters to store in a config the user can edit. Berberine/Inositol are supplements with chronic (not acute per-dose) glucose effects — the estimator should treat them separately from injected insulin.
 
+**Increment 2 (input screen + prediction graph) — ✅ DONE.** `InsulinEstimatorView` wired into the Charts menu; Form inputs → live recommendation (units / projected BG / rationale) + no-insulin-vs-suggested prediction chart with target line. Supplement types show an explanatory note instead of a dose. Preview-rendered clean. **Remaining for 3.1:** step 4 (empirical fit of `effectiveISFPerUnit`/drift from overnight deltas), step 6 (filtering v1), step 9 (feedback loop via `insulinRecommendedByApp`).
+
 **Increment 1 (estimator core) — ✅ DONE.** New `InsulinEstimator.swift` (pure logic, no UI): `InsulinClass`, `InsulinProfile` (editable PK params + `fractionActive(at:)` cumulative curve — triangular for peaked rapid, uniform ramp for flat basals, 0 for chronic supplements) with `InsulinProfile.defaults` (Lispro/Lantus/Toujeo/Berberine/Inositol), `InsulinEstimateInput`/`DoseRecommendation`/`BGPredictionPoint`, the `InsulinEstimator` protocol, and `PKCurveEstimator` (dose = clamp(round(gap / effectiveISFPerUnit)), gap from a drift-adjusted no-insulin projection; PK curve shapes the predicted trajectory). 9 unit tests, green. Safety disclaimer in the file header.
 
 **Steps:**
 1. ✅ **Estimator abstraction** — `protocol InsulinEstimator` with `recommend(_:)` + `predictedCurve(units:input:step:)`. Concrete `PKCurveEstimator`; swappable.
-2. ⬜ **Input screen** — new selectable screen (same pattern as charts): current BG, activity (Bedtime/Before Lunch/etc.), target BG + target time (+ target activity like "Waking up"), insulin type, max dose cap.
+2. ✅ **Input screen** — `InsulinEstimatorView` (new "Insulin Estimator" entry in the Charts menu + sheet). Form: current BG, activity picker, insulin type (from `InsulinProfile.defaults`), target BG, reach-target-in hours, max dose, editable "drop per unit" + drift. Rendered/verified via preview.
 3. ✅ **PK-curve model** — `InsulinProfile.fractionActive(at:)` / `effectShape(at:targetHours:)` from editable params.
 4. ⬜ **Empirical fit (basic)** — regress overnight `bedtimeBG − fastingBG` against bedtime dose to estimate an **Insulin Sensitivity Factor (ISF)** = mg/dL drop per unit. Recommended dose ≈ `clamp(round(baseline + (currentBG − targetBG)/ISF), 0, maxDose)`.
 5. 🔷 **Liver-reservoir / drift term** — the additive drift term (`endogenousDriftPerHour`) is modeled and used in `PKCurveEstimator` (no-insulin baseline = `currentBG + drift·h`). **Pending:** estimating its value from history (a fixed/user input for now).
 6. ⬜ **Filtering (v1, replaceable)** — apply a simple recursive filter (start with exponentially-weighted / alpha-beta on ISF and drift) over history, per insulin type. Documented as v1 with a clear seam to replace with **Kalman** (recommended end-state: 2-state model = glucose + reservoir/drift). Rationale captured in code comments.
-7. 🔷 **Prediction graph** — the data (`PKCurveEstimator.predictedCurve`) exists and is tested; **pending** the chart UI plotting no-insulin vs suggested dose.
-8. ⬜ **Interpolated recommendation display** — show the single rounded integer dose for current circumstances with confidence/uncertainty context. (Design needs care — show the "why": current BG, target, ISF, curve.)
+7. ✅ **Prediction graph** — Swift Charts plot in `InsulinEstimatorView`: no-insulin (gray) vs suggested-dose (blue) BG curves over the horizon with a dotted target `RuleMark`.
+8. ✅ **Interpolated recommendation display** — recommendation section shows Suggested units / projected BG at target / no-insulin BG (StatBoxes) plus the plain-language rationale.
 9. ⬜ **Feedback loop** — consume the `insulinRecommendedByApp` flag (1.8): compare recommended vs. actual outcomes to refine the filter over time.
 
 **Verify (worked example from user):** BG 123 at bedtime + 13 u Toujeo → ~80 by morning; goal wake at 75. The estimator/curve should reproduce this order of magnitude once fit to history.

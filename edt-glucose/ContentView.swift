@@ -31,6 +31,7 @@ struct ContentView: View {
     @State private var showingExperimentComparison = false
     @State private var showingRollingAverages = false
     @State private var showingOvernightProcessing = false
+    @State private var showingInsulinEstimator = false
     @State private var displayedMonth: Date = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
 
     private var theme: AppTheme { settings.currentTheme }
@@ -228,6 +229,12 @@ struct ContentView: View {
                             }
                             Divider()
                             Button {
+                                showingInsulinEstimator = true
+                            } label: {
+                                Label("Insulin Estimator", systemImage: "syringe")
+                            }
+                            Divider()
+                            Button {
                                 showingWeeklyCurve = true
                             } label: {
                                 Label("Weekly Curve", systemImage: "waveform.path.ecg")
@@ -301,6 +308,10 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingDailyChart) {
                 DailyReadingsChartView()
+                    .preferredColorScheme(settings.preferredColorScheme)
+            }
+            .sheet(isPresented: $showingInsulinEstimator) {
+                InsulinEstimatorView()
                     .preferredColorScheme(settings.preferredColorScheme)
             }
             .sheet(isPresented: $showingPeakChart) {
