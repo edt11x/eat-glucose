@@ -23,7 +23,7 @@ This document tracks a batch of requested changes. Work proceeds in **small, ind
 |---|---|---|---|---|
 | 1 — Quick wins | 8 | 8 | 0 | 0 |
 | 2 — Medium | 4 | 4 | 0 | 0 |
-| 3 — Big features | 4 | 0 | 0 | 4 |
+| 3 — Big features | 4 | 0 | 1 | 3 |
 | 4 — Research / future | 5 | 0 | 0 | 5 |
 
 _Update this table as steps complete._
@@ -141,14 +141,16 @@ Multi-step; ships incrementally so each step is usable.
 
 > These are starting parameters to store in a config the user can edit. Berberine/Inositol are supplements with chronic (not acute per-dose) glucose effects — the estimator should treat them separately from injected insulin.
 
+**Increment 1 (estimator core) — ✅ DONE.** New `InsulinEstimator.swift` (pure logic, no UI): `InsulinClass`, `InsulinProfile` (editable PK params + `fractionActive(at:)` cumulative curve — triangular for peaked rapid, uniform ramp for flat basals, 0 for chronic supplements) with `InsulinProfile.defaults` (Lispro/Lantus/Toujeo/Berberine/Inositol), `InsulinEstimateInput`/`DoseRecommendation`/`BGPredictionPoint`, the `InsulinEstimator` protocol, and `PKCurveEstimator` (dose = clamp(round(gap / effectiveISFPerUnit)), gap from a drift-adjusted no-insulin projection; PK curve shapes the predicted trajectory). 9 unit tests, green. Safety disclaimer in the file header.
+
 **Steps:**
-1. ⬜ **Estimator abstraction** — `protocol InsulinEstimator { func recommend(input:) -> DoseRecommendation; func predictCurve(dose:input:) -> [Prediction] }`. Everything below is a concrete implementation so the algorithm is swappable.
+1. ✅ **Estimator abstraction** — `protocol InsulinEstimator` with `recommend(_:)` + `predictedCurve(units:input:step:)`. Concrete `PKCurveEstimator`; swappable.
 2. ⬜ **Input screen** — new selectable screen (same pattern as charts): current BG, activity (Bedtime/Before Lunch/etc.), target BG + target time (+ target activity like "Waking up"), insulin type, max dose cap.
-3. ⬜ **PK-curve model** — per-type dose-response curve from the table (editable params) giving fractional effect vs. time.
+3. ✅ **PK-curve model** — `InsulinProfile.fractionActive(at:)` / `effectShape(at:targetHours:)` from editable params.
 4. ⬜ **Empirical fit (basic)** — regress overnight `bedtimeBG − fastingBG` against bedtime dose to estimate an **Insulin Sensitivity Factor (ISF)** = mg/dL drop per unit. Recommended dose ≈ `clamp(round(baseline + (currentBG − targetBG)/ISF), 0, maxDose)`.
-5. ⬜ **Liver-reservoir / drift term** — add a baseline endogenous-glucose drift term (dawn effect / liver glucose output) as an additive bias so predictions aren't purely dose-driven. This is the state a Kalman filter would later estimate.
+5. 🔷 **Liver-reservoir / drift term** — the additive drift term (`endogenousDriftPerHour`) is modeled and used in `PKCurveEstimator` (no-insulin baseline = `currentBG + drift·h`). **Pending:** estimating its value from history (a fixed/user input for now).
 6. ⬜ **Filtering (v1, replaceable)** — apply a simple recursive filter (start with exponentially-weighted / alpha-beta on ISF and drift) over history, per insulin type. Documented as v1 with a clear seam to replace with **Kalman** (recommended end-state: 2-state model = glucose + reservoir/drift). Rationale captured in code comments.
-7. ⬜ **Prediction graph** — plot expected BG over time for **(a) no insulin** and **(b) suggested dose**, converging toward target.
+7. 🔷 **Prediction graph** — the data (`PKCurveEstimator.predictedCurve`) exists and is tested; **pending** the chart UI plotting no-insulin vs suggested dose.
 8. ⬜ **Interpolated recommendation display** — show the single rounded integer dose for current circumstances with confidence/uncertainty context. (Design needs care — show the "why": current BG, target, ISF, curve.)
 9. ⬜ **Feedback loop** — consume the `insulinRecommendedByApp` flag (1.8): compare recommended vs. actual outcomes to refine the filter over time.
 

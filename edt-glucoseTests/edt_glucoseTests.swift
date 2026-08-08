@@ -363,6 +363,102 @@ struct IntegrityCheckerTests {
     }
 }
 
+// MARK: - InsulinEstimator
+
+@Suite("InsulinEstimator")
+struct InsulinEstimatorTests {
+    private let estimator = PKCurveEstimator()
+    private let rapid = InsulinProfile(name: "Test Rapid", kind: .rapid,
+                                       onsetHours: 0.25, peakHours: 1.5,
+                                       durationHours: 4.5, hasPronouncedPeak: true)
+    private let basal = InsulinProfile(name: "Test Basal", kind: .longActing,
+                                       onsetHours: 1.5, peakHours: 12,
+                                       durationHours: 24, hasPronouncedPeak: false)
+    private let supplement = InsulinProfile(name: "Test Supp", kind: .supplement,
+                                            onsetHours: 1, peakHours: 2,
+                                            durationHours: 6, hasPronouncedPeak: false)
+
+    private func input(bg: Double, target: Double, hours: Double, isf: Double,
+                       max: Int, drift: Double = 0, profile: InsulinProfile? = nil) -> InsulinEstimateInput {
+        InsulinEstimateInput(currentBG: bg, targetBG: target, hoursToTarget: hours,
+                             profile: profile ?? rapid, maxDose: max,
+                             effectiveISFPerUnit: isf, endogenousDriftPerHour: drift)
+    }
+
+    @Test("fractionActive is 0 before onset, 1 after duration, and monotonic")
+    func fractionActiveShape() {
+        #expect(rapid.fractionActive(at: 0) == 0)
+        #expect(rapid.fractionActive(at: 0.1) == 0)      // before onset
+        #expect(rapid.fractionActive(at: 10) == 1)       // past duration
+        // Monotonic non-decreasing across the active window.
+        var last = -1.0
+        for t in stride(from: 0.0, through: 5.0, by: 0.25) {
+            let f = rapid.fractionActive(at: t)
+            #expect(f >= last - 1e-9)
+            last = f
+        }
+        // Flat basal is ~linear: half-active near the midpoint of [onset, duration].
+        #expect(abs(basal.fractionActive(at: 12.75) - 0.5) < 0.01)
+    }
+
+    @Test("Supplements contribute no acute per-dose effect")
+    func supplementInactive() {
+        #expect(supplement.fractionActive(at: 3) == 0)
+        let rec = estimator.recommend(input(bg: 150, target: 100, hours: 5, isf: 10, max: 20, profile: supplement))
+        #expect(rec.units == 0)
+    }
+
+    @Test("Basic recommendation: dose = gap / effective ISF")
+    func basicRecommend() {
+        // gap = 150 - 100 = 50; ISF 10 → 5 units; projected 150 - 50 = 100.
+        let rec = estimator.recommend(input(bg: 150, target: 100, hours: 5, isf: 10, max: 20))
+        #expect(rec.units == 5)
+        #expect(abs(rec.projectedBGAtTarget - 100) < 1e-6)
+        #expect(abs(rec.projectedBGNoInsulin - 150) < 1e-6)
+    }
+
+    @Test("Recommendation rounds to the nearest integer unit")
+    func roundsToInteger() {
+        // gap = 53; ISF 10 → 5.3 → 5 units.
+        let rec = estimator.recommend(input(bg: 153, target: 100, hours: 5, isf: 10, max: 20))
+        #expect(rec.units == 5)
+        #expect(abs(rec.rawUnits - 5.3) < 1e-6)
+    }
+
+    @Test("Recommendation is capped at the max dose")
+    func clampsToMax() {
+        // gap = 300; ISF 10 → 30 raw, capped at 8.
+        let rec = estimator.recommend(input(bg: 400, target: 100, hours: 5, isf: 10, max: 8))
+        #expect(rec.units == 8)
+        #expect(rec.rawUnits > 8)
+    }
+
+    @Test("No insulin when already at or below target")
+    func noNeed() {
+        let rec = estimator.recommend(input(bg: 90, target: 100, hours: 5, isf: 10, max: 20))
+        #expect(rec.units == 0)
+    }
+
+    @Test("Endogenous drift raises the no-insulin projection and the dose")
+    func driftIsAccounted() {
+        // currentBG 100, +5 mg/dL/h over 8h → 140 no-insulin; target 90 → gap 50; ISF 10 → 5 units.
+        let rec = estimator.recommend(input(bg: 100, target: 90, hours: 8, isf: 10, max: 20, drift: 5, profile: basal))
+        #expect(abs(rec.projectedBGNoInsulin - 140) < 1e-6)
+        #expect(rec.units == 5)
+    }
+
+    @Test("Predicted curve starts at current BG and lands near target")
+    func predictedCurveEndpoints() {
+        let inp = input(bg: 150, target: 100, hours: 5, isf: 10, max: 20)
+        let curve = estimator.predictedCurve(units: 5, input: inp, step: 0.5)
+        let first = try! #require(curve.first)
+        let last = try! #require(curve.last)
+        #expect(abs(first.bg - 150) < 1e-6)          // t=0, effect not yet applied
+        #expect(abs(last.hour - 5) < 1e-6)
+        #expect(abs(last.bg - 100) < 1e-6)           // full effect realized by target
+    }
+}
+
 // MARK: - NamedLocation (SettingsManager.NamedLocation type)
 
 @Suite("NamedLocation Codable")
