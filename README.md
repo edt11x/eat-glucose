@@ -34,7 +34,7 @@ Each event captures:
 - **Multi-Meter Average** — Automatically displays estimated reading averaged across all meters using historical deviation data.
 - **Finger Used** — Optional picker recording which finger was lanced (Left/Right × Thumb, Index, Middle, Ring, Little).
 - **Finger Side** — Optional picker for which side of the finger was used (Thumb Side or Little Finger Side).
-- **Medicine** — Track medicine name, dose, and unit (e.g., 3 units Lispro, 600 mg Berberine).
+- **Medicine** — Track medicine name, dose, and unit (e.g., 3 units Lispro, 600 mg Berberine). An **App-Recommended Dose** toggle records when a dose came from the app's insulin recommendation, so its accuracy can be tracked against actual outcomes.
 - **Injection Site / Angle / Distance** — When a medicine is set, record the injection site (e.g., Left Abdomen), angle from navel (Right = 0°, Left = 180°), and distance with selectable in / cm unit. Site names auto-add to the saved list.
 - **Meal Type** — Shown for meal events. Choose from Breakfast, Lunch, Dinner, or Snack.
 - **Meal Details** — Food description, estimated calories, carbs, protein, and glycemic index. When both glycemic index and carbs are entered, a live **Glycemic Load** (`GI × carbs / 100`) is shown, color-banded Low ≤10 / Medium 11–19 / High ≥20.
@@ -110,6 +110,7 @@ Settings → **Data Integrity** scans the entire event history for likely proble
 - GPS coordinates not parseable as `lat,lon` within Earth's bounds.
 - A1C events with fewer than 5 BG readings in the prior 90 days.
 - Injection angles outside the valid 0–360° range.
+- Experiment records whose name is no longer in the configured experiments list (renamed or removed in Settings).
 
 ### Multi-Meter Average Formula
 

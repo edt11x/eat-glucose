@@ -293,6 +293,25 @@ struct DataIntegrityView: View {
             }
         }
 
+        // 16. Experiment records whose name no longer matches a configured
+        // experiment. An event carrying experiment data (quantity / unit) is
+        // only ever produced for an experiment event type, so if its eventType
+        // isn't in the configured list the name was renamed or removed in
+        // Settings and the record is now orphaned.
+        let configuredExperiments = Set(settings.experiments)
+        for event in events {
+            let hasExperimentData = event.experimentQuantity != nil
+                || event.experimentQuantityUnit != nil
+            if hasExperimentData, !configuredExperiments.contains(event.eventType) {
+                results.append(IntegrityIssue(
+                    severity: .warning,
+                    category: "Unknown Experiment",
+                    message: "Event \"\(event.eventType)\" at \(formatted(event.timestamp)) has experiment data but \"\(event.eventType)\" is not in the configured experiments list.",
+                    event: event
+                ))
+            }
+        }
+
         return results
     }
 

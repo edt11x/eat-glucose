@@ -73,7 +73,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 
 Core fields: `timestamp`, `eventType`, `mealType?`, `bloodGlucose?`, `meterType?`, `activityDescription`, `notes`
 
-Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `injectionSite?`, `injectionAngleDegrees?`, `injectionDistanceValue?`, `injectionDistanceUnit?`, `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `nonDiabeticMeal` (Bool, default false), `locationName?`, `streetAddress?`, `gpsCoordinates?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `fingerUsed?`, `fingerSide?`, `experimentQuantity?`, `experimentQuantityUnit?`
+Extended fields: `medicineName?`, `medicineDose?`, `medicineDoseUnit?`, `injectionSite?`, `injectionAngleDegrees?`, `injectionDistanceValue?`, `injectionDistanceUnit?`, `insulinRecommendedByApp` (Bool, default false), `bloodGlucoseGuess?`, `walkDistanceMiles?`, `foodDescription?`, `calorieGuess?`, `carbGuess?`, `proteinGuess?`, `glycemicIndexGuess?`, `nonDiabeticMeal` (Bool, default false), `locationName?`, `streetAddress?`, `gpsCoordinates?`, `a1cValue?`, `testStripLot?`, `testStripExpiration?`, `fingerUsed?`, `fingerSide?`, `experimentQuantity?`, `experimentQuantityUnit?`
 
 Derived (getter-only, non-persisted): `glycemicLoad: Double?` = `glycemicIndexGuess × carbGuess / 100` when both are present.
 
@@ -81,7 +81,7 @@ Derived (getter-only, non-persisted): `glycemicLoad: Double?` = `glycemicIndexGu
 
 | Event Type | Shows |
 |---|---|
-| Blood Glucose Measurement | BG input, meter picker, BG guess, medicine + injection site/angle/distance, test strip lot/expiration, finger used + finger side |
+| Blood Glucose Measurement | BG input, meter picker, BG guess, medicine + injection site/angle/distance + "App-Recommended Dose" toggle, test strip lot/expiration, finger used + finger side |
 | Start of Meal / End of Meal | Meal type, food description, calorie/carb/protein guess, glycemic index, live Glycemic Load (when GI + carbs present); Start of Meal also shows a "Non-Diabetic Meal" toggle |
 | Walk | Walk distance in miles |
 | A1C | A1C percentage input |

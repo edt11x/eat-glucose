@@ -33,6 +33,7 @@ struct EventFormView: View {
     @State private var injectionAngleText: String
     @State private var injectionDistanceText: String
     @State private var injectionDistanceUnit: String
+    @State private var insulinRecommendedByApp: Bool
 
     // Blood Glucose Guess
     @State private var bloodGlucoseGuessText: String
@@ -111,6 +112,7 @@ struct EventFormView: View {
             return ""
         }())
         _injectionDistanceUnit = State(initialValue: event?.injectionDistanceUnit ?? "in")
+        _insulinRecommendedByApp = State(initialValue: event?.insulinRecommendedByApp ?? false)
 
         // BG Guess
         _bloodGlucoseGuessText = State(initialValue:
@@ -379,6 +381,8 @@ struct EventFormView: View {
                                 .pickerStyle(.segmented)
                                 .frame(width: 110)
                             }
+
+                            Toggle("App-Recommended Dose", isOn: $insulinRecommendedByApp)
                         }
                     }
                 }
@@ -725,6 +729,7 @@ struct EventFormView: View {
             event.injectionAngleDegrees = effectiveInjectionAngle
             event.injectionDistanceValue = effectiveInjectionDistance
             event.injectionDistanceUnit = effectiveInjectionDistanceUnit
+            event.insulinRecommendedByApp = (showMedicine && effectiveMedicineName != nil) ? insulinRecommendedByApp : false
             event.streetAddress = effectiveStreetAddress
             event.gpsCoordinates = effectiveGPSCoordinates
             event.fingerUsed = effectiveFingerUsed
@@ -759,6 +764,7 @@ struct EventFormView: View {
                 injectionAngleDegrees: effectiveInjectionAngle,
                 injectionDistanceValue: effectiveInjectionDistance,
                 injectionDistanceUnit: effectiveInjectionDistanceUnit,
+                insulinRecommendedByApp: (showMedicine && effectiveMedicineName != nil) ? insulinRecommendedByApp : false,
                 streetAddress: effectiveStreetAddress,
                 gpsCoordinates: effectiveGPSCoordinates,
                 fingerUsed: effectiveFingerUsed,

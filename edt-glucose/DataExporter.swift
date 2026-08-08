@@ -41,6 +41,7 @@ struct GlucoseEventData: Codable {
     var injectionAngleDegrees: Double?
     var injectionDistanceValue: Double?
     var injectionDistanceUnit: String?
+    var insulinRecommendedByApp: Bool = false
     var streetAddress: String?
     var gpsCoordinates: String?
     var fingerUsed: String?
@@ -78,6 +79,7 @@ struct GlucoseEventData: Codable {
         injectionAngleDegrees = try container.decodeIfPresent(Double.self, forKey: .injectionAngleDegrees)
         injectionDistanceValue = try container.decodeIfPresent(Double.self, forKey: .injectionDistanceValue)
         injectionDistanceUnit = try container.decodeIfPresent(String.self, forKey: .injectionDistanceUnit)
+        insulinRecommendedByApp = try container.decodeIfPresent(Bool.self, forKey: .insulinRecommendedByApp) ?? false
         streetAddress = try container.decodeIfPresent(String.self, forKey: .streetAddress)
         gpsCoordinates = try container.decodeIfPresent(String.self, forKey: .gpsCoordinates)
         fingerUsed = try container.decodeIfPresent(String.self, forKey: .fingerUsed)
@@ -113,6 +115,7 @@ struct GlucoseEventData: Codable {
         self.injectionAngleDegrees = event.injectionAngleDegrees
         self.injectionDistanceValue = event.injectionDistanceValue
         self.injectionDistanceUnit = event.injectionDistanceUnit
+        self.insulinRecommendedByApp = event.insulinRecommendedByApp
         self.streetAddress = event.streetAddress
         self.gpsCoordinates = event.gpsCoordinates
         self.fingerUsed = event.fingerUsed
@@ -149,6 +152,7 @@ struct GlucoseEventData: Codable {
             injectionAngleDegrees: injectionAngleDegrees,
             injectionDistanceValue: injectionDistanceValue,
             injectionDistanceUnit: injectionDistanceUnit,
+            insulinRecommendedByApp: insulinRecommendedByApp,
             streetAddress: streetAddress,
             gpsCoordinates: gpsCoordinates,
             fingerUsed: fingerUsed,

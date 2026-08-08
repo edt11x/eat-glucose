@@ -173,6 +173,7 @@ struct DataExporterTests {
         original.carbGuess = 40
         original.glycemicIndexGuess = 55
         original.nonDiabeticMeal = true
+        original.insulinRecommendedByApp = true
 
         let data = try DataExporter.exportJSON(events: [original])
         let restored = try DataExporter.importJSON(data: data)
@@ -192,6 +193,7 @@ struct DataExporterTests {
         #expect(event.carbGuess == 40)
         #expect(event.glycemicIndexGuess == 55)
         #expect(event.nonDiabeticMeal == true)
+        #expect(event.insulinRecommendedByApp == true)
         #expect(event.glycemicLoad == 22.0) // 55 × 40 / 100
     }
 
@@ -223,6 +225,7 @@ struct DataExporterTests {
         #expect(event.streetAddress == nil)
         // Newly added fields must default cleanly for legacy data.
         #expect(event.nonDiabeticMeal == false)
+        #expect(event.insulinRecommendedByApp == false)
         #expect(event.glycemicLoad == nil)
     }
 }

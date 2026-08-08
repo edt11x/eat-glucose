@@ -21,7 +21,7 @@ This document tracks a batch of requested changes. Work proceeds in **small, ind
 
 | Phase | Items | Done | In Progress | Pending |
 |---|---|---|---|---|
-| 1 — Quick wins | 8 | 6 | 0 | 2 |
+| 1 — Quick wins | 8 | 8 | 0 | 0 |
 | 2 — Medium | 4 | 0 | 0 | 4 |
 | 3 — Big features | 4 | 0 | 0 | 4 |
 | 4 — Research / future | 5 | 0 | 0 | 5 |
@@ -76,17 +76,18 @@ _Update this table as steps complete._
 - **Done:** Added `timeSinceLastMealStart(now:)` (last **Start of Meal**) + shared `mealDurationText(_:)` formatter. Summary now renders two labels — "…since start of last meal" and "…since end of last meal" — each independently hidden when its event type doesn't exist yet.
 - **Verify:** Diagnostics clean. In-app: both lines appear with correct durations; start-only or end-only cases degrade gracefully.
 
-### 1.7 ⬜ Experiment-name data integrity check
-- **Steps:** Add a `DataIntegrityView` check: any event whose `eventType` looks like an experiment but is **not** in `SettingsManager.shared.experiments` (and/or events with `experimentQuantity` set but an unrecognized experiment name). Follow the existing `IntegrityIssue` append pattern.
-- **Verify:** Rename an experiment in settings → orphaned events flagged.
+### 1.7 ✅ Experiment-name data integrity check
+- **Done:** Added check #16 "Unknown Experiment" to `DataIntegrityView`. Any event carrying experiment data (`experimentQuantity` or `experimentQuantityUnit` set — only ever produced for experiment event types) whose `eventType` is **not** in `Set(settings.experiments)` is flagged as a warning. Catches experiments renamed/removed in Settings that orphan historical records. Standard event types never carry experiment data, so no false positives.
+- **Verify:** Diagnostics clean. In-app: rename/remove an experiment in Settings → its past events surface under "Unknown Experiment".
+- **Test:** ⬜ Deferred to Phase 2.3 — `issues` is a View computed property over `@Query` + `SettingsManager.shared`; needs extraction to a pure function to unit-test (as do the other 15 checks).
 
-### 1.8 ⬜ "App-recommended insulin" checkbox in Medicine section
+### 1.8 ✅ "App-recommended insulin" checkbox in Medicine section
 - **Rationale:** Enables feedback loop for the estimator (Phase 3). The *field* is independent of the estimator, so it ships now.
-- **Steps:**
-  1. Add `insulinRecommendedByApp: Bool = false` to `GlucoseEvent`.
-  2. Add Toggle in the Medicine section of a Blood Glucose Measurement.
-  3. Add to `DataExporter` DTO.
-- **Verify:** Flag round-trips; later the estimator reads it.
+- **Done:**
+  1. Added `insulinRecommendedByApp: Bool = false` to `GlucoseEvent` (property, init param, assignment).
+  2. `EventFormView`: `Toggle("App-Recommended Dose")` inside the Medicine section, shown only when a medicine (dose) is set. Persisted in both save branches as `(showMedicine && effectiveMedicineName != nil) ? insulinRecommendedByApp : false`.
+  3. `DataExporter` DTO: property + backward-compatible `decodeIfPresent(...) ?? false` + both maps.
+- **Verify:** Full suite (22 tests; round-trip + legacy-default assertions extended to cover this field) — `** TEST SUCCEEDED **` on the iOS 26.5 sim.
 
 ---
 
@@ -196,3 +197,8 @@ Multi-step; ships incrementally so each step is usable.
 
 ## Changelog
 - 2026-07-11 — Initial spec created. 4 key decisions locked (overnight chart, CloudKit sync, estimator protocol-first, quick-wins-first ordering).
+- 2026-07-11 — Shipped 1.1–1.6 (committed as v1.1, build 2).
+- 2026-08-08 — Shipped 1.7 (experiment-name integrity check) and 1.8 (app-recommended-insulin checkbox). **Phase 1 complete (8/8).** Suite green (22 tests) on the iOS 26.5 sim. Not yet committed.
+
+## Testing Note
+- The test target's deployment target is **iOS 26.5**. Tests only run on a simulator with that runtime — a booted iPhone on 26.3/26.4 reports "TEST FAILED / No result" for every test (even pure-logic ones) with no crash log. Boot a 26.5 iPhone; if the RunAllTests MCP still reports "No result", run `xcodebuild test -scheme edt-glucose -destination 'platform=iOS Simulator,id=<26.5 udid>'` directly.

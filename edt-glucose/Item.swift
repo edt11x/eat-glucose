@@ -28,6 +28,9 @@ final class GlucoseEvent {
     var injectionDistanceValue: Double?
     /// "in" or "cm"
     var injectionDistanceUnit: String?
+    /// True when this dose was the app's recommended insulin amount, so the
+    /// insulin estimator's accuracy can be tracked against actual outcomes.
+    var insulinRecommendedByApp: Bool = false
 
     // Blood Glucose Guess
     var bloodGlucoseGuess: Int?
@@ -98,6 +101,7 @@ final class GlucoseEvent {
         injectionAngleDegrees: Double? = nil,
         injectionDistanceValue: Double? = nil,
         injectionDistanceUnit: String? = nil,
+        insulinRecommendedByApp: Bool = false,
         streetAddress: String? = nil,
         gpsCoordinates: String? = nil,
         fingerUsed: String? = nil,
@@ -131,6 +135,7 @@ final class GlucoseEvent {
         self.injectionAngleDegrees = injectionAngleDegrees
         self.injectionDistanceValue = injectionDistanceValue
         self.injectionDistanceUnit = injectionDistanceUnit
+        self.insulinRecommendedByApp = insulinRecommendedByApp
         self.streetAddress = streetAddress
         self.gpsCoordinates = gpsCoordinates
         self.fingerUsed = fingerUsed
