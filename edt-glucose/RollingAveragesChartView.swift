@@ -127,26 +127,30 @@ struct RollingAveragesChartView: View {
         rollingPoints(from: bgMultiMeterReadings)
     }
 
-    private var yDomain: ClosedRange<Double> {
-        let values = rollingPoints.map(\.glucose) + rollingMultiMeterPoints.map(\.glucose)
+    private func yDomain(points: [RollingAveragePoint], mmPoints: [RollingAveragePoint]) -> ClosedRange<Double> {
+        let values = points.map(\.glucose) + mmPoints.map(\.glucose)
         let minVal = max((values.min() ?? 60) - 10, 0)
         let maxVal = (values.max() ?? 200) + 10
         return minVal...maxVal
     }
 
-    private func latestAverage(for window: Int, multiMeter: Bool = false) -> Double? {
-        (multiMeter ? rollingMultiMeterPoints : rollingPoints)
-            .filter { $0.windowDays == window }
-            .last?
-            .glucose
+    private func latestAverage(in points: [RollingAveragePoint], window: Int) -> Double? {
+        points.filter { $0.windowDays == window }.last?.glucose
     }
 
     var body: some View {
-        NavigationStack {
+        // Compute the expensive rolling-window collections once per render and
+        // reuse them everywhere below (chart, y-scale, and the latest-value
+        // stats), instead of recomputing each ~7× via computed properties.
+        let points = rollingPoints
+        let mmPoints = rollingMultiMeterPoints
+        let domain = yDomain(points: points, mmPoints: mmPoints)
+
+        return NavigationStack {
             VStack(spacing: 0) {
                 ChartTimeRangePicker(selection: $timeRange)
                     .padding(.top, 8)
-                if rollingPoints.isEmpty {
+                if points.isEmpty {
                     ContentUnavailableView(
                         "Not Enough Data",
                         systemImage: "chart.line.uptrend.xyaxis.circle.fill",
@@ -162,7 +166,7 @@ struct RollingAveragesChartView: View {
                                 .padding(.horizontal)
 
                             Chart {
-                                ForEach(rollingPoints) { point in
+                                ForEach(points) { point in
                                     LineMark(
                                         x: .value("Date", point.date, unit: .day),
                                         y: .value("mg/dL", point.glucose),
@@ -173,7 +177,7 @@ struct RollingAveragesChartView: View {
                                 }
 
                                 // Multi-meter-adjusted overlay (dashed orange per window)
-                                ForEach(rollingMultiMeterPoints) { point in
+                                ForEach(mmPoints) { point in
                                     LineMark(
                                         x: .value("Date", point.date, unit: .day),
                                         y: .value("mg/dL", point.glucose),
@@ -185,7 +189,7 @@ struct RollingAveragesChartView: View {
                                 }
                             }
                             .chartYAxisLabel("mg/dL")
-                            .chartYScale(domain: yDomain)
+                            .chartYScale(domain: domain)
                             .frame(height: 320)
                             .padding()
 
@@ -221,7 +225,7 @@ struct RollingAveragesChartView: View {
                                     ForEach(windows, id: \.self) { w in
                                         StatBox(
                                             label: "\(w)-day",
-                                            value: latestAverage(for: w).map { String(format: "%.0f", $0) } ?? "—",
+                                            value: latestAverage(in: points, window: w).map { String(format: "%.0f", $0) } ?? "—",
                                             unit: "mg/dL",
                                             theme: theme,
                                             valueColor: color(for: w)
@@ -229,12 +233,12 @@ struct RollingAveragesChartView: View {
                                     }
                                 }
 
-                                if !rollingMultiMeterPoints.isEmpty {
+                                if !mmPoints.isEmpty {
                                     HStack(spacing: 24) {
                                         ForEach(windows, id: \.self) { w in
                                             StatBox(
                                                 label: "\(w)d (MM)",
-                                                value: latestAverage(for: w, multiMeter: true)
+                                                value: latestAverage(in: mmPoints, window: w)
                                                     .map { String(format: "%.0f", $0) } ?? "—",
                                                 unit: "mg/dL",
                                                 theme: theme,

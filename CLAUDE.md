@@ -51,7 +51,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `RollingAveragesChartView.swift` | Trailing 7 / 14 / 30 / 90-day average BG per day, distinct colors. Per-window two-pointer sliding window (O(N+D)) |
 | `OvernightProcessingChartView.swift` | Per-night `fastingBG − bedtimeBG` line (right axis) + bedtime-window insulin bars on a units-labelled left axis; "Nights w/ Insulin" and "Nights w/o Insulin" stats |
 | `ChartTimeRange.swift` | Shared `.week/.month/.year/.all` enum + `ChartTimeRangePicker` |
-| `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. |
+| `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. Checks live in a pure, unit-tested `IntegrityChecker` enum (19 checks); the view is a thin caller. |
 | `LocationManager.swift` | GPS via CLLocationManager + MapKit `MKReverseGeocodingRequest`; returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
 | `NotificationManager.swift` | Post-meal timer notifications (`actor`) |
 
@@ -128,3 +128,6 @@ Shell script: `./scripts/commit-workflow.sh "message"`
 - **Rolling-window chart algorithm** — A1CEstimate and RollingAverages use two-pointer sliding windows over date-sorted readings (running sum maintained incrementally). When adding new rolling-window charts, follow the same pattern instead of re-filtering all readings per day.
 - **Overnight Processing chart dividing line** — uses the same 5:00 AM convention as Fasting and Bedtime (fasting = first reading ≥ 5 AM that day, bedtime = last reading between 5 AM the prior day and 5 AM). Bedtime-window insulin = 8 PM–5 AM. If 5 AM ever becomes configurable, update Fasting, Bedtime, and OvernightProcessing together.
 - **DataIntegrityView "Duplicate Meal Type" check** — intentionally excludes Snack and Energy Drink, which are designed to repeat in a day.
+- **Integrity checks are pure/testable** — all rules live in `IntegrityChecker.issues(events:meterTypes:medicineTypes:experiments:now:)`; inject `now` for deterministic tests. Add new checks there (not in the view) so they get unit-test coverage.
+- **Atomic writes** — batch `modelContext` writes (JSON import, multi-row delete) are wrapped in `modelContext.transaction { }` with `rollback()` on error. Settings promotion in `saveEvent` writes to UserDefaults (separate store) and is intentionally not part of the SwiftData transaction.
+- **Compute-once in chart bodies** — expensive derived collections (e.g. rolling-window points) are bound to `let` at the top of `body` and reused, not recomputed via computed properties multiple times per render.

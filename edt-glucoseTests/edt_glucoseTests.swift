@@ -264,6 +264,105 @@ struct GlycemicLoadTests {
     }
 }
 
+// MARK: - IntegrityChecker
+
+@Suite("IntegrityChecker")
+struct IntegrityCheckerTests {
+    private let now = Date(timeIntervalSinceReferenceDate: 800_000_000)
+    private let meters = ["Precision Neo", "Contour Next"]
+    private let medicines = ["Lispro", "Lantus"]
+    private let experiments = ["Inositol"]
+
+    private func bg(_ value: Int?, meter: String? = "Precision Neo", at: TimeInterval = -3600) -> GlucoseEvent {
+        GlucoseEvent(
+            timestamp: now.addingTimeInterval(at),
+            eventType: "Blood Glucose Measurement",
+            bloodGlucose: value,
+            meterType: meter
+        )
+    }
+
+    private func run(_ events: [GlucoseEvent]) -> [IntegrityIssue] {
+        IntegrityChecker.issues(
+            events: events,
+            meterTypes: meters,
+            medicineTypes: medicines,
+            experiments: experiments,
+            now: now
+        )
+    }
+
+    private func categories(_ issues: [IntegrityIssue]) -> Set<String> {
+        Set(issues.map(\.category))
+    }
+
+    @Test("A single valid BG reading produces no issues")
+    func cleanDataHasNoIssues() {
+        let issues = run([bg(100)])
+        #expect(issues.isEmpty)
+    }
+
+    @Test("BG outside 20–600 is flagged as Implausible BG")
+    func implausibleBG() {
+        #expect(categories(run([bg(5)])).contains("Implausible BG"))
+        #expect(categories(run([bg(700)])).contains("Implausible BG"))
+    }
+
+    @Test("A non-empty meter not in the configured list is flagged")
+    func unknownMeter() {
+        let cats = categories(run([bg(100, meter: "Mystery Meter")]))
+        #expect(cats.contains("Unknown Meter"))
+        // A configured meter must not trip it.
+        #expect(!categories(run([bg(100, meter: "Contour Next")])).contains("Unknown Meter"))
+    }
+
+    @Test("A medicine name not in the configured list is flagged")
+    func unknownMedicine() {
+        let event = bg(100)
+        event.medicineName = "Ghost Med"
+        event.medicineDose = 5
+        #expect(categories(run([event])).contains("Unknown Medicine"))
+    }
+
+    @Test("A1C outside 3–20% is flagged as Implausible A1C")
+    func implausibleA1C() {
+        let event = GlucoseEvent(timestamp: now.addingTimeInterval(-3600), eventType: "A1C", a1cValue: 25)
+        #expect(categories(run([event])).contains("Implausible A1C"))
+    }
+
+    @Test("Experiment data with an unconfigured name is flagged")
+    func unknownExperiment() {
+        let event = GlucoseEvent(
+            timestamp: now.addingTimeInterval(-3600),
+            eventType: "Retired Experiment",
+            experimentQuantity: 100,
+            experimentQuantityUnit: "mg"
+        )
+        #expect(categories(run([event])).contains("Unknown Experiment"))
+        // A configured experiment name must not trip it.
+        let ok = GlucoseEvent(
+            timestamp: now.addingTimeInterval(-3600),
+            eventType: "Inositol",
+            experimentQuantity: 100,
+            experimentQuantityUnit: "mg"
+        )
+        #expect(!categories(run([ok])).contains("Unknown Experiment"))
+    }
+
+    @Test("Future-dated events are flagged relative to the supplied now")
+    func futureTimestamp() {
+        let future = bg(100, at: 24 * 60 * 60) // one day after `now`
+        #expect(categories(run([future])).contains("Future Timestamp"))
+    }
+
+    @Test("Medicine set without a dose is flagged")
+    func missingDose() {
+        let event = bg(100)
+        event.medicineName = "Lispro" // configured, so only Missing Dose should fire
+        #expect(categories(run([event])).contains("Missing Dose"))
+    }
+}
+
 // MARK: - NamedLocation (SettingsManager.NamedLocation type)
 
 @Suite("NamedLocation Codable")

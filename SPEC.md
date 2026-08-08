@@ -22,7 +22,7 @@ This document tracks a batch of requested changes. Work proceeds in **small, ind
 | Phase | Items | Done | In Progress | Pending |
 |---|---|---|---|---|
 | 1 — Quick wins | 8 | 8 | 0 | 0 |
-| 2 — Medium | 4 | 0 | 0 | 4 |
+| 2 — Medium | 4 | 4 | 0 | 0 |
 | 3 — Big features | 4 | 0 | 0 | 4 |
 | 4 — Research / future | 5 | 0 | 0 | 5 |
 
@@ -93,20 +93,34 @@ _Update this table as steps complete._
 
 ## Phase 2 — Medium (quality, correctness, performance)
 
-### 2.1 ⬜ Chart performance pass
-- **Approach:** Profile chart open time. Likely wins: reuse cached `MultiMeterEstimator.computeDeviations`, precompute per-day aggregates once (not per render), avoid re-filtering `@Query` results repeatedly, adopt the two-pointer sliding-window pattern (per CLAUDE.md) for any O(N·D) loops, lazy-load sheets.
-- **Verify:** Measure before/after open time on the heaviest charts (Daily Readings, Rolling Averages).
+### 2.1 ✅ Chart performance pass
+- **Findings:** Data scale is modest (~376 events/month in the bundled export → low-thousands total), so per-pass array filtering is cheap in absolute terms. Confirmed `A1CEstimate` and `RollingAverages` already use the two-pointer sliding window (O(N+D), not O(N·D)), and `MultiMeterEstimator.computeDeviations` is already MainActor-cached. The real smell was **expensive derived collections recomputed many times per render**.
+- **Done:**
+  - `RollingAveragesChartView`: `rollingPoints` / `rollingMultiMeterPoints` were each recomputed ~7× per render (empty-check, chart, y-scale, 4× latest-stats, MM equivalents). Now computed **once** in `body` and threaded through; `yDomain`/`latestAverage` converted to take the precomputed arrays.
+  - `A1CEstimateChartView`: `a1cDataPoints` / `a1cMultiMeterPoints` (each a full filter + per-reading estimate + 90-day sliding window) were recomputed ~6–8× per render. Now computed **once** in `body`; `averageA1C`/`yDomain` converted to functions over the precomputed arrays. This is the biggest win (the MM series runs the estimator per reading).
+  - Behavior-identical (same marks, scales, stats). Full build + suite green.
+- **Left as-is (diminishing returns):** Fasting/Bedtime/Average/Peak/DailyReadings do lighter per-render work (single-period filters, not repeated 90-day windows). DailyReadings' 1.3 meter-grouping is computed a few times per render but each pass is one period's readings — flagged for a future compute-once if profiling ever shows need.
+- **Note:** True open-time profiling needs Instruments + UI interaction (can't automate here); optimizations are algorithmic/structural and verified for parity via build + tests.
 
-### 2.2 ⬜ More data-integrity checks
-- **Candidates:** meter-type not in settings; medicine-name not in settings; injection angle/distance sanity (already partly present) extended; A1C plausibility range; duplicate experiment entries; timestamp ordering anomalies; location name w/o coords mismatch.
-- **Verify:** Each new check has a crafted failing example.
+### 2.2 ✅ More data-integrity checks
+- **Done:** Extracted all checks out of the view into a pure `enum IntegrityChecker.issues(events:meterTypes:medicineTypes:experiments:now:)` (testable without SwiftData/SwiftUI; `now` injected for deterministic future-date/A1C-window tests). Added 3 new checks:
+  - **Unknown Meter** — BG reading with a non-empty `meterType` not in `settings.meterTypes` (empty is still handled by "Missing Meter").
+  - **Unknown Medicine** — `medicineName` (≠ "None") not in `settings.medicineTypes`.
+  - **Implausible A1C** — `a1cValue` outside 3–20% (error).
+  - Total checks now 19. View recomputes the list once per render (compute-once, per 2.1).
+- **Verify:** Each new check covered by a unit test with a crafted failing example (and a passing counter-example for the "unknown" ones).
 
-### 2.3 ⬜ More unit tests
-- **Targets:** GL calc, meal-activity copy, two-timer summary logic, overnight insulin windowing, nights-with/without-insulin counts, experiment integrity, estimator math (Phase 3). Use `MultiMeterEstimator.computeDeviationsUncached` for cache-free tests.
+### 2.3 ✅ More unit tests
+- **Done:** Added an **IntegrityChecker** suite (8 tests: clean data, implausible BG, unknown meter ±, unknown medicine, implausible A1C, unknown experiment ±, future timestamp, missing dose) — enabled by the 2.2 extraction. Earlier added the Glycemic Load suite (3) and extended DataExporter round-trip/legacy for `nonDiabeticMeal` + `insulinRecommendedByApp`. Suite now 30 tests, green.
+- **Deferred test debt (needs the same extract-to-pure-function treatment):** meal-activity copy, two meal-timer summary logic, overnight insulin windowing / nights-with-vs-without counts, DailyReadings meter grouping. Estimator math will get tests in Phase 3.
 
-### 2.4 ⬜ Atomic transactions review
-- **Goal:** Ensure multi-write operations (save + settings promotion, import) are atomic.
-- **Approach:** Wrap related writes so a failure doesn't leave partial state; verify SwiftData `modelContext.save()` boundaries; for import, consider a single transaction/rollback on error. Interacts with CloudKit (3.2) — CloudKit sync is eventually-consistent, so define "atomic" as *local* transaction integrity.
+### 2.4 ✅ Atomic transactions review
+- **Audited** every `modelContext` write site. Findings + fixes:
+  - **JSON import (`SettingsView`)** — was a bare per-event `insert` loop relying on autosave, with **no error handling**, reporting "Successfully imported N" unconditionally. Now wrapped in `try modelContext.transaction { … }` (single atomic save via SwiftData; verified API signature), with `rollback()` + an honest failure message on error. This was the real gap.
+  - **Batch delete (`ContentView.deleteEvents`)** — multi-delete loop now wrapped in a `transaction` with `rollback()` on failure, so a partial failure can't delete some rows and leave others.
+  - **`EventFormView.saveEvent`** — a single event insert/update (atomic under autosave). Its settings promotion (named locations, injection sites, meal presets, activities) writes to **UserDefaults**, a *separate* store — cross-store (UserDefaults + SwiftData) atomicity isn't practically achievable and is low-stakes/idempotent (promoting a name even if the event didn't persist is harmless). Left as-is by design; documented here.
+- **Scope note:** "atomic" here = *local* transaction integrity. CloudKit (3.2) sync is eventually-consistent and orthogonal.
+- **Verify:** Full build + suite green.
 
 ---
 

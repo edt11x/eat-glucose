@@ -176,10 +176,21 @@ struct SettingsView: View {
             }
             .alert("Import Data", isPresented: $showingImportConfirm) {
                 Button("Import") {
-                    for event in pendingImportEvents {
-                        modelContext.insert(event)
+                    let count = pendingImportEvents.count
+                    do {
+                        // Insert all imported events in a single atomic transaction:
+                        // if the save fails partway, nothing is committed and we
+                        // report the failure instead of a false success.
+                        try modelContext.transaction {
+                            for event in pendingImportEvents {
+                                modelContext.insert(event)
+                            }
+                        }
+                        importMessage = "Successfully imported \(count) events."
+                    } catch {
+                        modelContext.rollback()
+                        importMessage = "Import failed: \(error.localizedDescription). No events were added."
                     }
-                    importMessage = "Successfully imported \(pendingImportEvents.count) events."
                     pendingImportEvents = []
                     showingImportAlert = true
                 }

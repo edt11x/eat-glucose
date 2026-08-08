@@ -107,24 +107,28 @@ struct A1CEstimateChartView: View {
         return computeA1CPoints(useMultiMeter: true).filter { $0.date >= cutoff }
     }
 
-    private var averageA1C: Double {
-        let values = a1cDataPoints.map(\.eA1C)
-        guard !values.isEmpty else { return 0 }
-        return values.reduce(0, +) / Double(values.count)
-    }
-
-    private var averageMultiMeterA1C: Double {
-        let values = a1cMultiMeterPoints.map(\.eA1C)
+    private func averageA1C(of points: [A1CDataPoint]) -> Double {
+        let values = points.map(\.eA1C)
         guard !values.isEmpty else { return 0 }
         return values.reduce(0, +) / Double(values.count)
     }
 
     var body: some View {
-        NavigationStack {
+        // Compute the two rolling-window series once per render (each does a
+        // full filter + sliding window, and the MM series also runs the
+        // per-reading estimator) and reuse them for the chart, y-scale,
+        // averages, and stats instead of recomputing them ~6–8× each.
+        let rawPoints = a1cDataPoints
+        let mmPoints = a1cMultiMeterPoints
+        let avgRaw = averageA1C(of: rawPoints)
+        let avgMM = averageA1C(of: mmPoints)
+        let domain = yDomain(raw: rawPoints, mm: mmPoints)
+
+        return NavigationStack {
             VStack(spacing: 0) {
                 ChartTimeRangePicker(selection: $timeRange)
                     .padding(.top, 8)
-                if a1cDataPoints.isEmpty {
+                if rawPoints.isEmpty {
                     ContentUnavailableView(
                         "Not Enough Data",
                         systemImage: "percent",
@@ -155,12 +159,12 @@ struct A1CEstimateChartView: View {
 
                                 RectangleMark(
                                     yStart: .value("", 6.5),
-                                    yEnd: .value("", yDomain.upperBound)
+                                    yEnd: .value("", domain.upperBound)
                                 )
                                 .foregroundStyle(.red.opacity(0.08))
 
                                 // A1C line (raw)
-                                ForEach(a1cDataPoints) { point in
+                                ForEach(rawPoints) { point in
                                     LineMark(
                                         x: .value("Date", point.date, unit: .day),
                                         y: .value("eA1C %", point.eA1C),
@@ -178,8 +182,8 @@ struct A1CEstimateChartView: View {
                                 }
 
                                 // Multi-meter A1C line
-                                if !a1cMultiMeterPoints.isEmpty {
-                                    ForEach(a1cMultiMeterPoints) { point in
+                                if !mmPoints.isEmpty {
+                                    ForEach(mmPoints) { point in
                                         LineMark(
                                             x: .value("Date", point.date, unit: .day),
                                             y: .value("eA1C %", point.eA1C),
@@ -192,22 +196,22 @@ struct A1CEstimateChartView: View {
                                 }
 
                                 // Average line
-                                RuleMark(y: .value("Average", averageA1C))
+                                RuleMark(y: .value("Average", avgRaw))
                                     .foregroundStyle(.orange.opacity(0.7))
                                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
                                     .annotation(position: .top, alignment: .leading) {
-                                        Text(String(format: "Avg: %.1f%%", averageA1C))
+                                        Text(String(format: "Avg: %.1f%%", avgRaw))
                                             .font(.caption2)
                                             .foregroundStyle(.orange)
                                     }
                             }
                             .chartYAxisLabel("eA1C %")
-                            .chartYScale(domain: yDomain)
+                            .chartYScale(domain: domain)
                             .frame(height: 300)
                             .padding()
 
                             // Legend
-                            if !a1cMultiMeterPoints.isEmpty {
+                            if !mmPoints.isEmpty {
                                 HStack(spacing: 16) {
                                     HStack(spacing: 4) {
                                         RoundedRectangle(cornerRadius: 2)
@@ -229,7 +233,7 @@ struct A1CEstimateChartView: View {
 
                             // Summary stats
                             VStack(alignment: .leading, spacing: 8) {
-                                let values = a1cDataPoints.map(\.eA1C)
+                                let values = rawPoints.map(\.eA1C)
                                 let current = values.last ?? 0
                                 let minVal = values.min() ?? 0
                                 let maxVal = values.max() ?? 0
@@ -240,20 +244,20 @@ struct A1CEstimateChartView: View {
 
                                 HStack(spacing: 24) {
                                     StatBox(label: "Current", value: String(format: "%.1f%%", current), unit: "", theme: theme)
-                                    StatBox(label: "Average", value: String(format: "%.1f%%", averageA1C), unit: "", theme: theme)
+                                    StatBox(label: "Average", value: String(format: "%.1f%%", avgRaw), unit: "", theme: theme)
                                     StatBox(label: "Min", value: String(format: "%.1f%%", minVal), unit: "", theme: theme)
                                     StatBox(label: "Max", value: String(format: "%.1f%%", maxVal), unit: "", theme: theme)
                                 }
 
-                                if !a1cMultiMeterPoints.isEmpty {
-                                    let mmValues = a1cMultiMeterPoints.map(\.eA1C)
+                                if !mmPoints.isEmpty {
+                                    let mmValues = mmPoints.map(\.eA1C)
                                     let mmCurrent = mmValues.last ?? 0
                                     let mmMin = mmValues.min() ?? 0
                                     let mmMax = mmValues.max() ?? 0
 
                                     HStack(spacing: 24) {
                                         StatBox(label: "Current (MM)", value: String(format: "%.1f%%", mmCurrent), unit: "", theme: theme, valueColor: .orange)
-                                        StatBox(label: "Avg (MM)", value: String(format: "%.1f%%", averageMultiMeterA1C), unit: "", theme: theme, valueColor: .orange)
+                                        StatBox(label: "Avg (MM)", value: String(format: "%.1f%%", avgMM), unit: "", theme: theme, valueColor: .orange)
                                         StatBox(label: "Min (MM)", value: String(format: "%.1f%%", mmMin), unit: "", theme: theme, valueColor: .orange)
                                         StatBox(label: "Max (MM)", value: String(format: "%.1f%%", mmMax), unit: "", theme: theme, valueColor: .orange)
                                     }
@@ -301,8 +305,8 @@ struct A1CEstimateChartView: View {
         }
     }
 
-    private var yDomain: ClosedRange<Double> {
-        let values = a1cDataPoints.map(\.eA1C) + a1cMultiMeterPoints.map(\.eA1C)
+    private func yDomain(raw: [A1CDataPoint], mm: [A1CDataPoint]) -> ClosedRange<Double> {
+        let values = raw.map(\.eA1C) + mm.map(\.eA1C)
         let minVal = max((values.min() ?? 4.0) - 0.5, 0)
         let maxVal = (values.max() ?? 8.0) + 0.5
         return minVal...maxVal

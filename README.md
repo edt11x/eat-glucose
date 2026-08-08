@@ -111,6 +111,9 @@ Settings → **Data Integrity** scans the entire event history for likely proble
 - A1C events with fewer than 5 BG readings in the prior 90 days.
 - Injection angles outside the valid 0–360° range.
 - Experiment records whose name is no longer in the configured experiments list (renamed or removed in Settings).
+- BG readings whose meter type isn't in the configured meter list (renamed, removed, or a typo).
+- Medicine names not in the configured medicine list.
+- A1C values outside the plausible 3–20% range.
 
 ### Multi-Meter Average Formula
 

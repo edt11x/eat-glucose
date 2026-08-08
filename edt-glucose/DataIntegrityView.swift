@@ -34,19 +34,21 @@ struct IntegrityIssue: Identifiable {
     let event: GlucoseEvent?
 }
 
-struct DataIntegrityView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
-
-    private var settings = SettingsManager.shared
-    private var theme: AppTheme { settings.currentTheme }
-
-    @State private var editingEvent: GlucoseEvent?
+/// Pure, view-independent data-integrity checks. Extracted from the view so the
+/// rules can be unit-tested directly (pass `events` + the relevant settings +
+/// a fixed `now`) without a SwiftData/SwiftUI environment.
+enum IntegrityChecker {
 
     /// Maximum time we'd expect a meal to remain open before its End of Meal.
-    private let maxMealDuration: TimeInterval = 6 * 60 * 60 // 6 hours
+    static let maxMealDuration: TimeInterval = 6 * 60 * 60 // 6 hours
 
-    private var issues: [IntegrityIssue] {
+    static func issues(
+        events: [GlucoseEvent],
+        meterTypes: [String],
+        medicineTypes: [String],
+        experiments: [String],
+        now: Date = Date()
+    ) -> [IntegrityIssue] {
         var results: [IntegrityIssue] = []
 
         // 1. Orphan Start of Meal (no matching End of Meal within 6h)
@@ -125,7 +127,6 @@ struct DataIntegrityView: View {
         }
 
         // 5. Future-dated events
-        let now = Date()
         for event in events where event.timestamp > now {
             results.append(IntegrityIssue(
                 severity: .warning,
@@ -298,7 +299,7 @@ struct DataIntegrityView: View {
         // only ever produced for an experiment event type, so if its eventType
         // isn't in the configured list the name was renamed or removed in
         // Settings and the record is now orphaned.
-        let configuredExperiments = Set(settings.experiments)
+        let configuredExperiments = Set(experiments)
         for event in events {
             let hasExperimentData = event.experimentQuantity != nil
                 || event.experimentQuantityUnit != nil
@@ -312,12 +313,55 @@ struct DataIntegrityView: View {
             }
         }
 
+        // 17. BG reading whose meter type isn't in the configured meter list
+        // (a non-empty but unrecognized name — renamed/removed in Settings, or
+        // a typo). Empty/missing meters are already covered by check 4.
+        let configuredMeters = Set(meterTypes)
+        for event in events where event.eventType == "Blood Glucose Measurement" {
+            if let meter = event.meterType, !meter.isEmpty,
+               !configuredMeters.contains(meter) {
+                results.append(IntegrityIssue(
+                    severity: .warning,
+                    category: "Unknown Meter",
+                    message: "BG reading at \(formatted(event.timestamp)) uses meter \"\(meter)\" which is not in the configured meter list.",
+                    event: event
+                ))
+            }
+        }
+
+        // 18. Medicine name not in the configured medicine list (renamed/removed).
+        let configuredMedicines = Set(medicineTypes)
+        for event in events {
+            if let med = event.medicineName, med != "None", !med.isEmpty,
+               !configuredMedicines.contains(med) {
+                results.append(IntegrityIssue(
+                    severity: .warning,
+                    category: "Unknown Medicine",
+                    message: "Medicine \"\(med)\" at \(formatted(event.timestamp)) is not in the configured medicine list.",
+                    event: event
+                ))
+            }
+        }
+
+        // 19. A1C value outside a plausible range (roughly 3–20%). Real-world
+        // A1C sits ~4–15%; anything past 3–20 is almost certainly bad data.
+        for event in events where event.eventType == "A1C" {
+            if let a1c = event.a1cValue, a1c < 3 || a1c > 20 {
+                results.append(IntegrityIssue(
+                    severity: .error,
+                    category: "Implausible A1C",
+                    message: "A1C of \(String(format: "%.1f", a1c))% at \(formatted(event.timestamp)) is outside the plausible 3–20% range.",
+                    event: event
+                ))
+            }
+        }
+
         return results
     }
 
     /// Validates that a "lat,lon" string parses to two finite numbers within
     /// Earth's coordinate bounds.
-    private func parsesAsLatLon(_ raw: String) -> Bool {
+    static func parsesAsLatLon(_ raw: String) -> Bool {
         let parts = raw.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
         guard parts.count == 2,
               let lat = Double(parts[0]),
@@ -329,21 +373,48 @@ struct DataIntegrityView: View {
         return true
     }
 
-    private func formattedDate(_ date: Date) -> String {
+    private static func formatted(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy h:mm a"
+        return formatter.string(from: date)
+    }
+
+    private static func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, yyyy"
         return formatter.string(from: date)
     }
+}
 
-    private var groupedByCategory: [(String, [IntegrityIssue])] {
-        Dictionary(grouping: issues, by: \.category)
-            .sorted { $0.key < $1.key }
+struct DataIntegrityView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \GlucoseEvent.timestamp) private var events: [GlucoseEvent]
+
+    private var settings = SettingsManager.shared
+    private var theme: AppTheme { settings.currentTheme }
+
+    @State private var editingEvent: GlucoseEvent?
+
+    private var issues: [IntegrityIssue] {
+        IntegrityChecker.issues(
+            events: events,
+            meterTypes: settings.meterTypes,
+            medicineTypes: settings.medicineTypes.map(\.name),
+            experiments: settings.experiments
+        )
     }
 
     var body: some View {
-        NavigationStack {
+        // Compute the issue list once per render (it's a full pass over the
+        // event history) and derive the grouping from it, rather than
+        // recomputing via `issues` for the empty-check, count, and grouping.
+        let allIssues = issues
+        let grouped = Dictionary(grouping: allIssues, by: \.category)
+            .sorted { $0.key < $1.key }
+
+        return NavigationStack {
             Group {
-                if issues.isEmpty {
+                if allIssues.isEmpty {
                     ContentUnavailableView(
                         "All Clear",
                         systemImage: "checkmark.shield.fill",
@@ -352,11 +423,11 @@ struct DataIntegrityView: View {
                 } else {
                     List {
                         Section {
-                            Text("Found \(issues.count) issue\(issues.count == 1 ? "" : "s"). Tap an issue to open the related event.")
+                            Text("Found \(allIssues.count) issue\(allIssues.count == 1 ? "" : "s"). Tap an issue to open the related event.")
                                 .font(.caption)
                                 .foregroundStyle(theme.secondaryTextColor)
                         }
-                        ForEach(groupedByCategory, id: \.0) { category, items in
+                        ForEach(grouped, id: \.0) { category, items in
                             Section(category) {
                                 ForEach(items) { issue in
                                     Button {
@@ -392,12 +463,6 @@ struct DataIntegrityView: View {
                     .preferredColorScheme(settings.preferredColorScheme)
             }
         }
-    }
-
-    private func formatted(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, yyyy h:mm a"
-        return formatter.string(from: date)
     }
 }
 

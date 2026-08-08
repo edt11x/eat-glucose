@@ -481,8 +481,16 @@ struct ContentView: View {
 
     private func deleteEvents(dayEvents: [GlucoseEvent], offsets: IndexSet) {
         withAnimation {
-            for index in offsets {
-                modelContext.delete(dayEvents[index])
+            // Delete the selected events as one atomic transaction so a partial
+            // failure doesn't leave some rows deleted and others not.
+            do {
+                try modelContext.transaction {
+                    for index in offsets {
+                        modelContext.delete(dayEvents[index])
+                    }
+                }
+            } catch {
+                modelContext.rollback()
             }
         }
     }
