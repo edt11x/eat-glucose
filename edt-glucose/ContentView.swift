@@ -179,6 +179,7 @@ struct ContentView: View {
             }
             } // TimelineView
             .navigationTitle("Blood Glucose")
+            .navigationSubtitle(BuildInfo.displayString)
             .tint(theme.accentColor)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

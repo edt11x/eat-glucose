@@ -34,3 +34,6 @@ playground.xcworkspace/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Local hang/build diagnostics
+debug/

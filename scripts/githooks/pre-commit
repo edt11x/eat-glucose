@@ -1,0 +1,23 @@
+#!/bin/bash
+# pre-commit — bumps build-number.txt so every commit carries a new build number.
+#
+# If a device build already bumped the counter since the last commit, that
+# number is new to GitHub (and matches what's on the phone), so it is staged
+# as-is instead of bumped again.
+#
+# Enabled with: git config core.hooksPath scripts/githooks
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+COUNTER_FILE="$REPO_ROOT/build-number.txt"
+
+[ -f "$COUNTER_FILE" ] || exit 0
+
+if git cat-file -e HEAD:build-number.txt 2>/dev/null && \
+   git diff --quiet HEAD -- build-number.txt; then
+    BUILD_NUMBER=$(tr -cd '0-9' < "$COUNTER_FILE")
+    echo $(( ${BUILD_NUMBER:-0} + 1 )) > "$COUNTER_FILE"
+fi
+
+git add "$COUNTER_FILE"

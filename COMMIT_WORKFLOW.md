@@ -56,9 +56,21 @@ if its flags change.
 
 ## 6. Version Number
 
+**Build number is automatic** — `build-number.txt` (repo root) is the build
+number shown under the main title ("Version 1.5 (9) · Oct 11, 2026"). It is
+bumped by the "Build Info" Run Script phase on every device build and by the
+`scripts/githooks/pre-commit` hook on commits (enable once per clone with
+`git config core.hooksPath scripts/githooks`). Don't edit it by hand.
+
 Bump in `edt-glucose.xcodeproj/project.pbxproj` (all build configs):
 - `MARKETING_VERSION` — feature batch → minor (1.0 → 1.1); small fixes → patch.
-- `CURRENT_PROJECT_VERSION` — increment the build number.
+- `CURRENT_PROJECT_VERSION` — optional; the displayed build number comes from
+  `build-number.txt`.
+
+> ⚠️ Editing `project.pbxproj` from the command line while Xcode has the
+> project open forces Xcode to reload it, and is the leading suspect for Xcode
+> hangs (2026-10-11). Prefer making project-file edits in Xcode, or with the
+> project closed.
 
 ```bash
 sed -i '' 's/MARKETING_VERSION = X;/MARKETING_VERSION = Y;/g;
@@ -112,7 +124,7 @@ git add <files>
 
 - **Subject**: short imperative, ≤72 chars.
 - **Body**: what changed and why, when not obvious.
-- **Trailer**: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+- **Trailer**: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -120,7 +132,7 @@ Subject line here
 
 Body explaining what and why.
 
-Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 EOF
 )"
 ```

@@ -10,6 +10,10 @@ edt-glucose lets you log blood glucose measurements and related daily events —
 
 ## Features
 
+### Version Line
+
+Under the "Blood Glucose" title the app shows its version, build number and build date in a small font (e.g. `Version 1.5 (9) · Oct 11, 2026`). The build number lives in `build-number.txt` and increments automatically on every build installed to an iPhone and on every commit (via the `scripts/githooks/pre-commit` hook — enable once per clone with `git config core.hooksPath scripts/githooks`).
+
 ### Live Summary
 
 At the top of the event list, the app displays:
@@ -260,12 +264,16 @@ edt-glucose/
 ├── DataIntegrityView.swift      # Whole-history data sanity checks
 ├── ChartTimeRange.swift         # Shared Week/Month/Year/All picker
 ├── NotificationManager.swift     # Post-meal timer notifications (actor)
+├── BuildInfo.swift               # Version / build number / build date line
 ├── Assets.xcassets/              # App icon and colors
 ├── COMMIT_WORKFLOW.md            # Commit workflow procedure
+├── build-number.txt             # Auto-incremented build number
 ├── prompts/                     # Per-session prompt/answer logs
 ├── edt-glucoseTests/            # Swift Testing unit tests
 └── scripts/
-    └── commit-workflow.sh        # Automated commit helper script
+    ├── commit-workflow.sh        # Automated commit helper script
+    ├── build-info.sh             # "Build Info" Run Script phase (bumps on device builds)
+    └── githooks/pre-commit       # Bumps build number on commits
 ```
 
 ## Testing

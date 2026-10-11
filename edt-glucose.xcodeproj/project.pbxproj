@@ -86,6 +86,7 @@
 				283BD63D2F552CA200AB8F0D /* Sources */,
 				283BD63E2F552CA200AB8F0D /* Frameworks */,
 				283BD63F2F552CA200AB8F0D /* Resources */,
+				28B1D0012FF0A00100BD1A01 /* Build Info */,
 			);
 			buildRules = (
 			);
@@ -180,6 +181,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		28B1D0012FF0A00100BD1A01 /* Build Info */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/build-info.sh",
+			);
+			name = "Build Info";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/build-number.txt",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/BuildInfo.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/build-info.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		283BD63D2F552CA200AB8F0D /* Sources */ = {

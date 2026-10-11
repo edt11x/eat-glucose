@@ -511,3 +511,23 @@ struct GlucoseEventTests {
         #expect(event.testStripExpiration == nil)
     }
 }
+
+// MARK: - BuildInfo
+
+@Suite("BuildInfo")
+struct BuildInfoTests {
+    @Test("Host app bundle carries the generated build number and date")
+    func generatedInfoPresent() {
+        #expect(BuildInfo.buildNumber != nil)
+        #expect(BuildInfo.buildDate != nil)
+    }
+
+    @Test("Display string shows version, build number and date")
+    func displayString() throws {
+        let text = BuildInfo.displayString
+        #expect(text.hasPrefix("Version \(BuildInfo.marketingVersion)"))
+        let buildNumber = try #require(BuildInfo.buildNumber)
+        #expect(text.contains("(\(buildNumber))"))
+        #expect(text.contains(" · "))
+    }
+}

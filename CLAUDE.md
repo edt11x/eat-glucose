@@ -56,6 +56,7 @@ Tracks BG measurements, meals, medicine, walks, A1C results, and related daily e
 | `DataIntegrityView.swift` | Surfaces orphan meal halves, BG out-of-range, duplicates, etc. Checks live in a pure, unit-tested `IntegrityChecker` enum (19 checks); the view is a thin caller. |
 | `LocationManager.swift` | GPS via CLLocationManager + MapKit `MKReverseGeocodingRequest`; returns `LocationDetails(displayName, streetAddress, gpsCoordinates)` |
 | `NotificationManager.swift` | Post-meal timer notifications (`actor`) |
+| `BuildInfo.swift` | Reads bundle `BuildInfo.plist` → `displayString` ("Version 1.5 (9) · Oct 11, 2026") shown via `.navigationSubtitle` under the main title |
 
 ## Code Conventions
 
@@ -132,4 +133,6 @@ Shell script: `./scripts/commit-workflow.sh "message"`
 - **DataIntegrityView "Duplicate Meal Type" check** — intentionally excludes Snack and Energy Drink, which are designed to repeat in a day.
 - **Integrity checks are pure/testable** — all rules live in `IntegrityChecker.issues(events:meterTypes:medicineTypes:experiments:now:)`; inject `now` for deterministic tests. Add new checks there (not in the view) so they get unit-test coverage.
 - **Atomic writes** — batch `modelContext` writes (JSON import, multi-row delete) are wrapped in `modelContext.transaction { }` with `rollback()` on error. Settings promotion in `saveEvent` writes to UserDefaults (separate store) and is intentionally not part of the SwiftData transaction.
+- **Build number** — `build-number.txt` (repo root) is the displayed build number. The "Build Info" Run Script phase (`scripts/build-info.sh`, always runs, sandboxed; outputs `build-number.txt` + `$(TARGET_BUILD_DIR)/.../BuildInfo.plist`) increments it only when `PLATFORM_NAME == iphoneos` and writes `BuildInfo.plist` into the bundle. `scripts/githooks/pre-commit` (enabled via `git config core.hooksPath scripts/githooks`) bumps it on commits unless a device build already bumped it since HEAD. Never list `build-number.txt` as a script *input* too — that's a dependency cycle.
+- **Avoid hanging Xcode from the agent** — editing `project.pbxproj` from the shell while Xcode has the project open, and driving builds/runs through the Xcode MCP right after, preceded repeated Xcode hangs (2026-10-11). Prefer command-line `xcodebuild` / `xcrun devicectl` run in the background (`nohup … > debug/<step>.log &`, then poll), one small step at a time, logging to `debug/xcode-hang-log.md` (gitignored).
 - **Compute-once in chart bodies** — expensive derived collections (e.g. rolling-window points) are bound to `let` at the top of `body` and reused, not recomputed via computed properties multiple times per render.
