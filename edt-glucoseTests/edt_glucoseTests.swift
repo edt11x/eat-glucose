@@ -531,3 +531,104 @@ struct BuildInfoTests {
         #expect(text.contains(" · "))
     }
 }
+
+// MARK: - Reference-meter preference (Daily Readings historical overlays)
+
+@Suite("Reference-meter preference")
+struct ReferenceMeterPreferenceTests {
+    private let order = ["Precision Neo", "Contour Next", "OneTouch"]
+
+    private func bg(_ reading: Int, _ meter: String?, atMinute minute: Double) -> GlucoseEvent {
+        let baseline = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        return GlucoseEvent(
+            timestamp: baseline.addingTimeInterval(minute * 60),
+            eventType: "Blood Glucose Measurement",
+            bloodGlucose: reading,
+            meterType: meter
+        )
+    }
+
+    private func prefer(_ events: [GlucoseEvent]) -> [Int] {
+        MultiMeterEstimator.preferReferenceMeter(events, meterOrder: order).compactMap(\.bloodGlucose)
+    }
+
+    @Test("Precision Neo wins over another meter logged within 10 minutes")
+    func neoWins() {
+        let result = prefer([
+            bg(130, "Contour Next", atMinute: 0),
+            bg(110, "Precision Neo", atMinute: 2),
+        ])
+        #expect(result == [110])
+    }
+
+    @Test("Other meter kept when Precision Neo is more than 10 minutes away")
+    func farFromNeoKept() {
+        let result = prefer([
+            bg(110, "Precision Neo", atMinute: 0),
+            bg(150, "Contour Next", atMinute: 11),
+        ])
+        #expect(result == [110, 150])
+    }
+
+    @Test("Exactly 10 minutes apart counts as the same window")
+    func windowBoundaryInclusive() {
+        let result = prefer([
+            bg(110, "Precision Neo", atMinute: 0),
+            bg(150, "Contour Next", atMinute: 10),
+        ])
+        #expect(result == [110])
+    }
+
+    @Test("Without Precision Neo, one reading kept per window in meter order")
+    func meterOrderWithoutNeo() {
+        let result = prefer([
+            bg(140, "OneTouch", atMinute: 0),
+            bg(125, "Contour Next", atMinute: 3),
+        ])
+        #expect(result == [125])
+    }
+
+    @Test("Unlisted meters rank after listed ones; ties keep the earliest")
+    func unlistedAndTies() {
+        #expect(prefer([
+            bg(200, "Mystery Meter", atMinute: 0),
+            bg(140, "OneTouch", atMinute: 1),
+        ]) == [140])
+        #expect(prefer([
+            bg(141, "OneTouch", atMinute: 0),
+            bg(142, "OneTouch", atMinute: 4),
+        ]) == [141])
+    }
+
+    @Test("All Precision Neo readings are kept, and output is time-sorted")
+    func allNeoKeptSorted() {
+        let result = prefer([
+            bg(105, "Precision Neo", atMinute: 5),
+            bg(100, "Precision Neo", atMinute: 0),
+            bg(160, "Contour Next", atMinute: 3),
+        ])
+        #expect(result == [100, 105])
+    }
+
+    @Test("Separate measurement moments each keep a reading")
+    func separateMoments() {
+        let result = prefer([
+            bg(100, "Precision Neo", atMinute: 0),
+            bg(105, "Contour Next", atMinute: 1),
+            bg(150, "Contour Next", atMinute: 60),
+            bg(155, "OneTouch", atMinute: 62),
+            bg(170, "OneTouch", atMinute: 120),
+        ])
+        #expect(result == [100, 150, 170])
+    }
+
+    @Test("Readings without a BG value are ignored")
+    func missingValuesIgnored() {
+        let empty = GlucoseEvent(
+            timestamp: Date(timeIntervalSinceReferenceDate: 800_000_000),
+            eventType: "Blood Glucose Measurement",
+            meterType: "Precision Neo"
+        )
+        #expect(MultiMeterEstimator.preferReferenceMeter([empty], meterOrder: order).isEmpty)
+    }
+}

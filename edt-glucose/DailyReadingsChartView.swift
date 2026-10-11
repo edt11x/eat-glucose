@@ -289,6 +289,30 @@ struct DailyReadingsChartView: View {
             }
     }
 
+    /// BG readings in `[start, end)`, time-sorted. Historical overlays pass
+    /// `preferReference: true` so readings logged on several meters within
+    /// 10 minutes collapse to the Precision Neo one (or one other meter, in
+    /// Settings order) — avoiding hard turns in the faded lines. The lookup is
+    /// padded by the preference window so a Precision Neo reading just across
+    /// the boundary still suppresses its partner.
+    private func bgReadings(from start: Date, to end: Date, preferReference: Bool) -> [GlucoseEvent] {
+        let pad = preferReference ? MultiMeterEstimator.preferenceWindow : 0
+        let paddedStart = start.addingTimeInterval(-pad)
+        let paddedEnd = end.addingTimeInterval(pad)
+        let candidates = events.filter {
+            $0.eventType == "Blood Glucose Measurement"
+            && $0.bloodGlucose != nil
+            && $0.timestamp >= paddedStart
+            && $0.timestamp < paddedEnd
+        }
+        guard preferReference else {
+            return candidates.sorted { $0.timestamp < $1.timestamp }
+        }
+        return MultiMeterEstimator
+            .preferReferenceMeter(candidates, meterOrder: SettingsManager.shared.meterTypes)
+            .filter { $0.timestamp >= start && $0.timestamp < end }
+    }
+
     // Last BG reading from the previous night (before the selected day's start)
     private func previousNightReading(for offset: Int) -> FastingDataPoint? {
         let calendar = Calendar.current
@@ -296,7 +320,7 @@ struct DailyReadingsChartView: View {
         let dayStart = calendar.startOfDay(for: targetDay)
 
         // Find the last BG reading before this day started
-        guard let lastNightEvent = events
+        guard var lastNightEvent = events
             .filter({
                 $0.eventType == "Blood Glucose Measurement"
                 && $0.bloodGlucose != nil
@@ -304,6 +328,17 @@ struct DailyReadingsChartView: View {
             })
             .max(by: { $0.timestamp < $1.timestamp })
         else { return nil }
+
+        // Historical overlays start from the preferred (Precision Neo) reading
+        // of that last measurement moment.
+        if offset > 0,
+           let preferred = bgReadings(
+               from: lastNightEvent.timestamp.addingTimeInterval(-MultiMeterEstimator.preferenceWindow),
+               to: dayStart,
+               preferReference: true
+           ).last {
+            lastNightEvent = preferred
+        }
 
         // Normalize to midnight of the selected date (left edge of chart)
         let normalizedDate = calendar.startOfDay(for: selectedDate)
@@ -323,14 +358,7 @@ struct DailyReadingsChartView: View {
             results.append(prevNight)
         }
 
-        let dayReadings = events
-            .filter {
-                $0.eventType == "Blood Glucose Measurement"
-                && $0.bloodGlucose != nil
-                && $0.timestamp >= dayStart
-                && $0.timestamp < dayEnd
-            }
-            .sorted { $0.timestamp < $1.timestamp }
+        let dayReadings = bgReadings(from: dayStart, to: dayEnd, preferReference: offset > 0)
             .map { event in
                 let components = calendar.dateComponents([.hour, .minute, .second], from: event.timestamp)
                 let normalizedDate = calendar.date(bySettingHour: components.hour!, minute: components.minute!, second: components.second!, of: selectedDate)!
@@ -353,14 +381,7 @@ struct DailyReadingsChartView: View {
         let targetWeekStart = cal.date(byAdding: .day, value: -7 * weeksBack, to: currentWeekStart)!
         let targetWeekEnd = cal.date(byAdding: .day, value: 7, to: targetWeekStart)!
 
-        return events
-            .filter {
-                $0.eventType == "Blood Glucose Measurement"
-                && $0.bloodGlucose != nil
-                && $0.timestamp >= targetWeekStart
-                && $0.timestamp < targetWeekEnd
-            }
-            .sorted { $0.timestamp < $1.timestamp }
+        return bgReadings(from: targetWeekStart, to: targetWeekEnd, preferReference: weeksBack > 0)
             .map { event in
                 // Normalize: preserve offset from week start, but map onto current week
                 let offset = event.timestamp.timeIntervalSince(targetWeekStart)
@@ -382,14 +403,7 @@ struct DailyReadingsChartView: View {
         let currentMonthDays = Double(calendar.range(of: .day, in: .month, for: currentMonthStart)!.count)
         let targetMonthDays = Double(calendar.range(of: .day, in: .month, for: targetMonthStart)!.count)
 
-        return events
-            .filter {
-                $0.eventType == "Blood Glucose Measurement"
-                && $0.bloodGlucose != nil
-                && $0.timestamp >= targetMonthStart
-                && $0.timestamp < targetMonthEnd
-            }
-            .sorted { $0.timestamp < $1.timestamp }
+        return bgReadings(from: targetMonthStart, to: targetMonthEnd, preferReference: monthsBack > 0)
             .map { event in
                 // Normalize: scale offset proportionally to handle different month lengths
                 let offset = event.timestamp.timeIntervalSince(targetMonthStart)

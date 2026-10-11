@@ -170,3 +170,76 @@ enum MultiMeterEstimator {
         return hasher.finalize()
     }
 }
+
+// MARK: - Reference-meter preference (historical overlays)
+
+extension MultiMeterEstimator {
+    /// Readings from different meters this close together are treated as the
+    /// same measurement moment.
+    static let preferenceWindow: TimeInterval = 10 * 60  // 10 minutes
+
+    /// Thins near-simultaneous BG readings from different meters so a single
+    /// line tracks the Precision Neo instead of zig-zagging between meters
+    /// logged at the same time.
+    ///
+    /// - Every Precision Neo reading is kept.
+    /// - Any other meter's reading within `window` of a Precision Neo reading
+    ///   is dropped.
+    /// - The remaining (non-reference) readings are grouped — each group spans
+    ///   at most `window` from its first reading — and one reading is kept per
+    ///   group: the meter listed first in `meterOrder` (unlisted meters after,
+    ///   alphabetically), earliest reading on a tie.
+    ///
+    /// Readings without a BG value are ignored. Output is sorted by timestamp.
+    static func preferReferenceMeter(
+        _ readings: [GlucoseEvent],
+        meterOrder: [String],
+        window: TimeInterval = preferenceWindow
+    ) -> [GlucoseEvent] {
+        let sorted = readings
+            .filter { $0.bloodGlucose != nil }
+            .sorted { $0.timestamp < $1.timestamp }
+
+        let reference = sorted.filter { $0.meterType == referenceMeter }
+        let referenceTimes = reference.map(\.timestamp)
+
+        // Drop other-meter readings that have a Precision Neo reading within
+        // the window. Both lists are time-sorted, so one forward pointer suffices.
+        var others: [GlucoseEvent] = []
+        var refIndex = 0
+        for event in sorted where event.meterType != referenceMeter {
+            let windowStart = event.timestamp.addingTimeInterval(-window)
+            while refIndex < referenceTimes.count, referenceTimes[refIndex] < windowStart {
+                refIndex += 1
+            }
+            let hasNearbyReference = refIndex < referenceTimes.count
+                && referenceTimes[refIndex] <= event.timestamp.addingTimeInterval(window)
+            if !hasNearbyReference {
+                others.append(event)
+            }
+        }
+
+        func rank(_ event: GlucoseEvent) -> (Int, String) {
+            let name = event.meterType ?? ""
+            return (meterOrder.firstIndex(of: name) ?? meterOrder.count, name)
+        }
+
+        // Keep one reading per group of other-meter readings.
+        var kept = reference
+        var groupStart = 0
+        while groupStart < others.count {
+            var groupEnd = groupStart
+            while groupEnd + 1 < others.count,
+                  others[groupEnd + 1].timestamp.timeIntervalSince(others[groupStart].timestamp) <= window {
+                groupEnd += 1
+            }
+            // min(by:) returns the first minimal element, so ties keep the earliest.
+            if let best = others[groupStart...groupEnd].min(by: { rank($0) < rank($1) }) {
+                kept.append(best)
+            }
+            groupStart = groupEnd + 1
+        }
+
+        return kept.sorted { $0.timestamp < $1.timestamp }
+    }
+}
